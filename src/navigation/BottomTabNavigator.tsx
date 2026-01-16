@@ -61,17 +61,17 @@
 
 
 
-import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import React from "react";
 import Icon from "react-native-vector-icons/Ionicons";
 
 // Screens
 import PunchScreen from "../../screen/PunchScreen";
 import { RequestScreen } from "../../screen/RequestScreen";
 import SalaryScreen from "../../screen/SalaryScreen";
-import SettingScreen from "../../screen/SettingScreen"; // Ensure this matches your export
 import { WorkScreen } from "../../screen/WorkScreen";
 import YouScreen from "../../screen/YouScreen";
+import SettingsStackNavigator from "./SettingsStackNavigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -114,7 +114,7 @@ export default function BottomTabNavigator() {
       <Tab.Screen name="You" component={YouScreen} />
       <Tab.Screen name="Requests" component={RequestScreen} />
       <Tab.Screen name="Work" component={WorkScreen} />
-      <Tab.Screen name="Settings" component={SettingScreen} />
+      <Tab.Screen name="Settings" component={SettingsStackNavigator} />
     </Tab.Navigator>
   );
 }

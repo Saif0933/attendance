@@ -1,25 +1,28 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  Image,
-  TouchableOpacity,
-  StatusBar,
-  ScrollView,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Using Material Icons
 
 const App = () => {
+  const navigation = useNavigation();
+  
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
       {/* --- Header Section --- */}
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="close" size={28} color="#000" />
         </TouchableOpacity>
         

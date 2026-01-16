@@ -4,6 +4,9 @@
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
   <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
 
 
     <application
@@ -27,5 +30,8 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      <meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="AIzaSyDp1m24jCv0artNLvNYGiRemEEjwAduk20"/>
     </application>
 </manifest>

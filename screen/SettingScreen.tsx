@@ -378,23 +378,25 @@
 
 
 
-import React, { useState, useRef, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Alert,
+  Animated,
+  Dimensions,
+  Image,
   ImageBackground,
   ScrollView,
-  TouchableOpacity,
-  Switch,
-  Animated,
   StatusBar,
-  Dimensions,
-  Alert,
-  Image,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import type { SettingsStackParamList } from '../src/navigation/SettingsStackNavigator';
 
 const { height } = Dimensions.get('window');
 
@@ -411,6 +413,8 @@ interface MenuItemProps {
 }
 
 const ProfileScreen = () => {
+  // --- Navigation ---
+  const navigation = useNavigation<NativeStackNavigationProp<SettingsStackParamList>>();
   // --- State for Profile Image ---
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -615,11 +619,29 @@ const ProfileScreen = () => {
                   index === menuItems.length - 1 && styles.lastMenuItem,
                   index !== menuItems.length - 1 && styles.menuBorder,
                 ]}
-                onPress={() =>
-                  item.type === 'navigation'
-                    ? Alert.alert('Navigation', `Go to ${item.title}`)
-                    : item.onToggle && item.onToggle(!item.value)
-                }
+                onPress={() => {
+                  if (item.type === 'navigation') {
+                    if (item.title === 'Your Personal Details') {
+                      navigation.navigate('PersonalDetails');
+                    } else if (item.title === 'Payroll Configurations') {
+                      navigation.navigate('PayConfigurations');
+                    } else if (item.title === 'Company Shifts') {
+                      navigation.navigate('ConpanyShifts');
+                    } else if (item.title === 'Holidays') {
+                      navigation.navigate('HolidaysScreen');
+                    } else if (item.title === 'Pay Slips') {
+                      navigation.navigate('PaySlipsScreen');
+                    } else if (item.title === 'Expense Types') {
+                      navigation.navigate('ExpenseTypes');
+                    } else if (item.title === 'Geo Fencing Locations') {
+                      navigation.navigate('GeoFencingLocations');
+                    } else {
+                      Alert.alert('Navigation', `Go to ${item.title}`);
+                    }
+                  } else {
+                    item.onToggle && item.onToggle(!item.value);
+                  }
+                }}
                 activeOpacity={item.type === 'toggle' ? 1 : 0.7}
               >
                 <Text style={styles.menuText}>{item.title}</Text>

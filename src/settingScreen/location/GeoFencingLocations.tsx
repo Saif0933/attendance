@@ -1,14 +1,18 @@
+
 import { useNavigation } from '@react-navigation/native';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
+  PermissionsAndroid, // Import for permissions
+  Platform,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  Alert
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -19,30 +23,88 @@ const GeoFencingScreen: React.FC = () => {
   const navigation = useNavigation();
   const mapRef = useRef<MapView>(null);
 
-  // Initial Region (Focused on Ranchi/Kadru area as per your image)
-  const [region, setRegion] = useState({
-    latitude: 23.3601, // Approx location near Astha Hospital/Susi Pizza
+  // User ki current location store karne ke liye state
+  const [currentLocation, setCurrentLocation] = useState({
+    latitude: 23.3601, // Default fallback
     longitude: 85.3250,
+  });
+
+  // Zoom level maintain karne ke liye
+  const [deltas, setDeltas] = useState({
     latitudeDelta: 0.012,
     longitudeDelta: 0.012,
   });
 
-  // Zoom In Function
+  // 1. App start hote hi Permission maangna zaroori hai
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: "Location Permission",
+              message: "App needs access to your location to show it on the map.",
+              buttonNeutral: "Ask Me Later",
+              buttonNegative: "Cancel",
+              buttonPositive: "OK"
+            }
+          );
+          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            Alert.alert("Permission Denied", "Location tracking won't work without permission.");
+          }
+        } catch (err) {
+          console.warn(err);
+        }
+      }
+    };
+
+    requestLocationPermission();
+  }, []);
+
+  // 2. Zoom In Function
   const handleZoomIn = () => {
+    const newDeltas = {
+      latitudeDelta: deltas.latitudeDelta / 2,
+      longitudeDelta: deltas.longitudeDelta / 2,
+    };
+    setDeltas(newDeltas);
     mapRef.current?.animateToRegion({
-      ...region,
-      latitudeDelta: region.latitudeDelta / 2,
-      longitudeDelta: region.longitudeDelta / 2,
+      ...currentLocation,
+      ...newDeltas,
     });
   };
 
-  // Zoom Out Function
+  // 3. Zoom Out Function
   const handleZoomOut = () => {
+    const newDeltas = {
+      latitudeDelta: deltas.latitudeDelta * 2,
+      longitudeDelta: deltas.longitudeDelta * 2,
+    };
+    setDeltas(newDeltas);
     mapRef.current?.animateToRegion({
-      ...region,
-      latitudeDelta: region.latitudeDelta * 2,
-      longitudeDelta: region.longitudeDelta * 2,
+      ...currentLocation,
+      ...newDeltas,
     });
+  };
+
+  // 4. Jab user ki location change ho (sabse important function)
+  const onUserLocationChange = (e: any) => {
+    const { coordinate } = e.nativeEvent;
+    if (coordinate) {
+      setCurrentLocation({
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+      });
+
+      // Map ko smoothly wahan le jao (Lock effect)
+      mapRef.current?.animateToRegion({
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+        latitudeDelta: deltas.latitudeDelta,
+        longitudeDelta: deltas.longitudeDelta,
+      }, 500); // 500ms animation speed
+    }
   };
 
   return (
@@ -68,18 +130,33 @@ const GeoFencingScreen: React.FC = () => {
       <View style={styles.mapContainer}>
         <MapView
           ref={mapRef}
-          provider={PROVIDER_GOOGLE} // Uses Google Maps
+          provider={PROVIDER_GOOGLE}
           style={styles.map}
-          region={region}
-          onRegionChangeComplete={(r) => setRegion(r)}
-          showsUserLocation={true}
-          showsMyLocationButton={false} // Hiding default button to use custom UI
+          
+          // User Location Settings
+          showsUserLocation={true} // Blue dot dikhata hai
+          showsMyLocationButton={true} // My Location button wapas laya hu debug ke liye
+          followsUserLocation={true} // iOS ke liye helper
+          
+          // Event Listener: Jab user move karega
+          onUserLocationChange={onUserLocationChange}
+          
+          // Initial Region (Bas shuruat ke liye)
+          initialRegion={{
+            ...currentLocation,
+            ...deltas
+          }}
         >
-          {/* Example Marker (Center of map) */}
-          <Marker coordinate={region} />
+          {/* MARKER: Ab yeh "currentLocation" state se juda hai.
+             Jaise hi onUserLocationChange chalega, state badlegi aur marker move karega.
+          */}
+          <Marker 
+            coordinate={currentLocation} 
+            title={"You are here"}
+          />
         </MapView>
 
-        {/* Zoom Controls Overlay */}
+        {/* Zoom Controls */}
         <View style={styles.zoomControls}>
           <TouchableOpacity style={styles.zoomBtn} onPress={handleZoomIn}>
             <Icon name="add" size={24} color="#333" />
@@ -94,14 +171,12 @@ const GeoFencingScreen: React.FC = () => {
       {/* LIST ITEM SECTION */}
       <View style={styles.listContainer}>
         <View style={styles.listItem}>
-          
-          {/* Text Info */}
           <View style={styles.itemInfo}>
-            <Text style={styles.itemTitle}>N/A</Text>
-            <Text style={styles.itemSubtitle}>Radius: 20 meters</Text>
+            <Text style={styles.itemTitle}>Current Location</Text>
+            <Text style={styles.itemSubtitle}>
+              Lat: {currentLocation.latitude.toFixed(4)}, Lng: {currentLocation.longitude.toFixed(4)}
+            </Text>
           </View>
-
-          {/* Action Buttons */}
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('AddGeofenceScreen' as never)}>
               <MaterialIcons name="edit" size={22} color="#555" />
@@ -110,7 +185,6 @@ const GeoFencingScreen: React.FC = () => {
               <MaterialIcons name="delete" size={22} color="#D32F2F" />
             </TouchableOpacity>
           </View>
-
         </View>
       </View>
 
@@ -125,7 +199,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  // Header Styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -133,8 +206,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 15,
     backgroundColor: '#fff',
-    elevation: 2, // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
+    elevation: 2,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     zIndex: 10,
@@ -149,12 +222,9 @@ const styles = StyleSheet.create({
   iconButton: {
     padding: 5,
   },
-  
-  // Map Styles
   mapContainer: {
-    height: height * 0.55, // Takes up about 55% of the screen height
+    height: height * 0.55,
     width: '100%',
-    position: 'relative',
   },
   map: {
     ...StyleSheet.absoluteFillObject,
@@ -182,8 +252,6 @@ const styles = StyleSheet.create({
     width: '80%',
     alignSelf: 'center',
   },
-
-  // List Item Styles
   listContainer: {
     flex: 1,
     backgroundColor: '#fff',
@@ -196,9 +264,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: '#fff',
-    // Optional: Border bottom if you plan to have multiple items
-    // borderBottomWidth: 1,
-    // borderBottomColor: '#f0f0f0',
   },
   itemInfo: {
     flex: 1,

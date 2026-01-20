@@ -1,383 +1,4 @@
 
-// import React, { useState, useRef } from 'react';
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   ImageBackground,
-//   ScrollView,
-//   TouchableOpacity,
-//   Switch,
-//   Animated,
-//   StatusBar,
-//   Dimensions,
-//   Alert,
-// } from 'react-native';
-// import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-// // import Ionicons from 'react-native-vector-icons/Ionicons';
-// import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-
-// const { } = Dimensions.get('window');
-
-// // --- Types for Menu Items ---
-// type MenuItemType = 'navigation' | 'toggle';
-
-// interface MenuItemProps {
-//   id: string;
-//   title: string;
-//   type: MenuItemType;
-//   value?: boolean; // For toggles
-//   onToggle?: (val: boolean) => void;
-//   onPress?: () => void;
-// }
-
-// const ProfileScreen = () => {
-//   // --- State for Toggles ---
-//   const [toggles, setToggles] = useState({
-//     leaveSystem: false,
-//     faceAttendance: false,
-//     expenseSystem: false,
-//     geoFencing: false,
-//     customSalary: false,
-//   });
-
-//   // --- Scroll Animation Value ---
-//   const scrollY = useRef(new Animated.Value(0)).current;
-
-//   // --- Toggle Handler ---
-//   const handleToggle = (key: keyof typeof toggles) => {
-//     setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
-//   };
-
-//   // --- Menu Data List (Icons Removed) ---
-//   const menuItems: MenuItemProps[] = [
-//     {
-//       id: '1',
-//       title: 'Your Personal Details',
-//       type: 'navigation',
-//     },
-//     {
-//       id: '2',
-//       title: 'Company Shifts',
-//       type: 'navigation',
-//     },
-//     {
-//       id: '3',
-//       title: 'Payroll Configurations',
-//       type: 'navigation',
-//     },
-//     {
-//       id: '4',
-//       title: 'Leave System',
-//       type: 'toggle',
-//       value: toggles.leaveSystem,
-//       onToggle: () => handleToggle('leaveSystem'),
-//     },
-//     {
-//       id: '5',
-//       title: 'Face Attendance',
-//       type: 'toggle',
-//       value: toggles.faceAttendance,
-//       onToggle: () => handleToggle('faceAttendance'),
-//     },
-//     {
-//       id: '6',
-//       title: 'Expense System',
-//       type: 'toggle',
-//       value: toggles.expenseSystem,
-//       onToggle: () => handleToggle('expenseSystem'),
-//     },
-//     {
-//       id: '7',
-//       title: 'Expense Types',
-//       type: 'navigation',
-//     },
-//     {
-//       id: '8',
-//       title: 'Geo Fencing',
-//       type: 'toggle',
-//       value: toggles.geoFencing,
-//       onToggle: () => handleToggle('geoFencing'),
-//     },
-//     {
-//       id: '9',
-//       title: 'Geo Fencing Locations',
-//       type: 'navigation',
-//     },
-//     {
-//       id: '10',
-//       title: 'Custom Daywise Salary',
-//       type: 'toggle',
-//       value: toggles.customSalary,
-//       onToggle: () => handleToggle('customSalary'),
-//     },
-//     {
-//       id: '11',
-//       title: 'Holidays',
-//       type: 'navigation',
-//     },
-//     {
-//       id: '12',
-//       title: 'Pay Slips',
-//       type: 'navigation',
-//     },
-//   ];
-
-//   // --- Animations Interpolation ---
-//   const headerOpacity = scrollY.interpolate({
-//     inputRange: [0, 100],
-//     outputRange: [1, 0],
-//     extrapolate: 'clamp',
-//   });
-
-//   const imageScale = scrollY.interpolate({
-//     inputRange: [0, 100],
-//     outputRange: [1, 0.6],
-//     extrapolate: 'clamp',
-//   });
-
-//   const imageTranslateY = scrollY.interpolate({
-//     inputRange: [0, 100],
-//     outputRange: [0, -50],
-//     extrapolate: 'clamp',
-//   });
-
-
-//   return (
-//     <View style={styles.container}>
-//       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-
-//       {/* Background with Overlay */}
-//       <View style={styles.backgroundContainer}>
-//         <ImageBackground
-//           source={require('../src/assets/profile.jpg')}
-//           style={styles.backgroundImage}
-//           resizeMode="repeat"
-//         >
-//           <View style={styles.whiteOverlay} />
-//         </ImageBackground>
-//       </View>
-
-//       <ScrollView
-//         contentContainerStyle={styles.scrollContent}
-//         showsVerticalScrollIndicator={false}
-//         onScroll={Animated.event(
-//           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-//           { useNativeDriver: false }
-//         )}
-//         scrollEventThrottle={16}
-//       >
-//         {/* --- Header Section (Centered) --- */}
-//         <View style={styles.headerContainer}>
-//           <Animated.View style={{ opacity: headerOpacity }}>
-//             <Text style={styles.headerTitle}>
-//               Your Info<Text style={styles.headerDot}>.</Text>
-//             </Text>
-//           </Animated.View>
-
-//           <Animated.View
-//             style={[
-//               styles.profileIconContainer, // Changed to Icon Container
-//               {
-//                 transform: [
-//                   { scale: imageScale },
-//                   { translateY: imageTranslateY },
-//                 ],
-//                 opacity: headerOpacity,
-//               },
-//             ]}
-//           >
-//             {/* Professional Vector Icon */}
-//             <FontAwesome5 name="user-circle" size={85} color="#4A4A4A" />
-//           </Animated.View>
-//         </View>
-
-//         {/* --- Menu Items List --- */}
-//         <View style={styles.menuContainer}>
-//           {menuItems.map((item, index) => (
-//             <TouchableOpacity
-//               key={item.id}
-//               style={[
-//                 styles.menuItem,
-//                 index === 0 && styles.firstMenuItem,
-//                 index === menuItems.length - 1 && styles.lastMenuItem,
-//                 index !== menuItems.length - 1 && styles.menuBorder,
-//               ]}
-//               onPress={() =>
-//                 item.type === 'navigation'
-//                   ? Alert.alert('Navigation', `Go to ${item.title}`)
-//                   : item.onToggle && item.onToggle(!item.value)
-//               }
-//               activeOpacity={item.type === 'toggle' ? 1 : 0.7}
-//             >
-//               {/* Icon Removed - Title Only */}
-//               <Text style={styles.menuText}>{item.title}</Text>
-
-//               {/* Right Action (Arrow or Switch) */}
-//               <View style={styles.rightAction}>
-//                 {item.type === 'toggle' ? (
-//                   <Switch
-//                     trackColor={{ false: '#D1D1D6', true: '#E0E0E0' }}
-//                     thumbColor={item.value ? '#FFFFFF' : '#FFFFFF'}
-//                     ios_backgroundColor="#D1D1D6"
-//                     onValueChange={item.onToggle}
-//                     value={item.value}
-//                     style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }}
-//                   />
-//                 ) : (
-//                   <MaterialCommunityIcons
-//                     name="chevron-right"
-//                     size={24}
-//                     color="#8E8E93"
-//                   />
-//                 )}
-//               </View>
-//             </TouchableOpacity>
-//           ))}
-//         </View>
-
-//         {/* --- Logout Button --- */}
-//         <TouchableOpacity
-//           style={styles.logoutButton}
-//           onPress={() => Alert.alert('Logout', 'Logging out...')}
-//         >
-//           <Text style={styles.logoutText}>Logout</Text>
-//         </TouchableOpacity>
-
-//         {/* --- Footer Info --- */}
-//         <View style={styles.footerContainer}>
-//           <Text style={styles.versionText}>Version 0.0.80 P4TCH 1</Text>
-//           <Text style={styles.companyText}>A cloud product of RRV SOFTECH PVT LTD</Text>
-//         </View>
-
-//         <View style={{ height: 40 }} />
-//       </ScrollView>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#F2F2F7',
-//   },
-//   backgroundContainer: {
-//     ...StyleSheet.absoluteFillObject,
-//     zIndex: -1,
-//   },
-//   backgroundImage: {
-//     flex: 1,
-//     width: '100%',
-//     height: '100%',
-//   },
-//   whiteOverlay: {
-//     ...StyleSheet.absoluteFillObject,
-//     backgroundColor: 'rgba(255,255,255,0.9)', // Slightly stronger overlay for cleaner look
-//   },
-//   scrollContent: {
-//     paddingTop: 60,
-//     paddingBottom: 20,
-//   },
-//   // --- Header ---
-//   headerContainer: {
-//     paddingHorizontal: 20,
-//     marginBottom: 20,
-//     alignItems: 'center', // Centered alignment
-//   },
-//   headerTitle: {
-//     fontSize: 34,
-//     fontWeight: 'bold',
-//     color: '#000',
-//     marginBottom: 20,
-//     textAlign: 'center',
-//   },
-//   headerDot: {
-//     color: '#FFD700',
-//   },
-//   profileIconContainer: {
-//     // Removed image specific styles (overflow/bg) to fit the icon naturally
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     marginBottom: 10,
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 4 },
-//     shadowOpacity: 0.2,
-//     shadowRadius: 5,
-//     elevation: 5,
-//   },
-
-//   // --- Menu List ---
-//   menuContainer: {
-//     marginHorizontal: 16,
-//   },
-//   menuItem: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: 'rgba(255, 255, 255, 0.7)',
-//     paddingVertical: 18, // Slightly taller for better touch area without icons
-//     paddingHorizontal: 20,
-//     height: 60,
-//   },
-//   firstMenuItem: {
-//     borderTopLeftRadius: 12,
-//     borderTopRightRadius: 12,
-//   },
-//   lastMenuItem: {
-//     borderBottomLeftRadius: 12,
-//     borderBottomRightRadius: 12,
-//   },
-//   menuBorder: {
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#E5E5EA',
-//   },
-//   menuText: {
-//     flex: 1,
-//     fontSize: 16,
-//     color: '#000',
-//     fontWeight: '500', // Slightly bolder text since icons are gone
-//   },
-//   rightAction: {
-//     justifyContent: 'center',
-//     alignItems: 'flex-end',
-//   },
-
-//   // --- Logout Button ---
-//   logoutButton: {
-//     marginTop: 30,
-//     marginHorizontal: 16,
-//     backgroundColor: 'rgba(255, 59, 48, 0.1)',
-//     borderRadius: 12,
-//     paddingVertical: 14,
-//     alignItems: 'center',
-//     borderWidth: 1,
-//     borderColor: 'rgba(255, 59, 48, 0.1)',
-//   },
-//   logoutText: {
-//     color: '#FF3B30',
-//     fontSize: 16,
-//     fontWeight: '600',
-//   },
-
-//   // --- Footer ---
-//   footerContainer: {
-//     marginTop: 20,
-//     alignItems: 'center',
-//   },
-//   versionText: {
-//     fontSize: 12,
-//     color: '#8E8E93',
-//     marginBottom: 4,
-//   },
-//   companyText: {
-//     fontSize: 12,
-//     color: '#8E8E93',
-//   },
-// });
-
-// export default ProfileScreen;
-
-
-
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
@@ -410,6 +31,8 @@ interface MenuItemProps {
   value?: boolean; // For toggles
   onToggle?: (val: boolean) => void;
   onPress?: () => void;
+  icon: string;      // Added Icon Name
+  iconColor: string; // Added Background Color for Icon
 }
 
 const ProfileScreen = () => {
@@ -467,24 +90,46 @@ const ProfileScreen = () => {
     );
   };
 
-  // --- Menu Data List ---
+  // --- Menu Data List (Added Icons & Colors) ---
   const menuItems: MenuItemProps[] = [
-    { id: '1', title: 'Your Personal Details', type: 'navigation' },
-    { id: '2', title: 'Company Shifts', type: 'navigation' },
-    { id: '3', title: 'Payroll Configurations', type: 'navigation' },
+    { 
+      id: '1', 
+      title: 'Your Personal Details', 
+      type: 'navigation', 
+      icon: 'person', 
+      iconColor: '#007AFF' 
+    },
+    { 
+      id: '2', 
+      title: 'Company Shifts', 
+      type: 'navigation', 
+      icon: 'time', 
+      iconColor: '#FF9500' 
+    },
+    { 
+      id: '3', 
+      title: 'Payroll Configurations', 
+      type: 'navigation', 
+      icon: 'settings', 
+      iconColor: '#8E8E93' 
+    },
     {
       id: '4',
       title: 'Leave System',
       type: 'toggle',
       value: toggles.leaveSystem,
       onToggle: () => handleToggle('leaveSystem'),
+      icon: 'calendar',
+      iconColor: '#FF3B30'
     },
     {
       id: '5',
-      title: 'Face Attendance',
+      title: 'Fingerprint Attendance',
       type: 'toggle',
       value: toggles.faceAttendance,
       onToggle: () => handleToggle('faceAttendance'),
+      icon: 'finger-print', // Changed from 'scan' to 'finger-print'
+      iconColor: '#34C759'
     },
     {
       id: '6',
@@ -492,25 +137,55 @@ const ProfileScreen = () => {
       type: 'toggle',
       value: toggles.expenseSystem,
       onToggle: () => handleToggle('expenseSystem'),
+      icon: 'wallet',
+      iconColor: '#5856D6'
     },
-    { id: '7', title: 'Expense Types', type: 'navigation' },
+    { 
+      id: '7', 
+      title: 'Expense Types', 
+      type: 'navigation', 
+      icon: 'list', 
+      iconColor: '#AF52DE' 
+    },
     {
       id: '8',
       title: 'Geo Fencing',
       type: 'toggle',
       value: toggles.geoFencing,
       onToggle: () => handleToggle('geoFencing'),
+      icon: 'location',
+      iconColor: '#00C7BE'
     },
-    { id: '9', title: 'Geo Fencing Locations', type: 'navigation' },
+    { 
+      id: '9', 
+      title: 'Geo Fencing Locations', 
+      type: 'navigation', 
+      icon: 'map', 
+      iconColor: '#30B0C7' 
+    },
     {
       id: '10',
       title: 'Custom Daywise Salary',
       type: 'toggle',
       value: toggles.customSalary,
       onToggle: () => handleToggle('customSalary'),
+      icon: 'cash', 
+      iconColor: '#FFCC00'
     },
-    { id: '11', title: 'Holidays', type: 'navigation' },
-    { id: '12', title: 'Pay Slips', type: 'navigation' },
+    { 
+      id: '11', 
+      title: 'Holidays', 
+      type: 'navigation', 
+      icon: 'airplane', 
+      iconColor: '#5AC8FA' 
+    },
+    { 
+      id: '12', 
+      title: 'Pay Slips', 
+      type: 'navigation', 
+      icon: 'document-text', 
+      iconColor: '#A2845E' 
+    },
   ];
 
   // --- Animations Interpolation ---
@@ -561,7 +236,7 @@ const ProfileScreen = () => {
         <View style={styles.headerContainer}>
           <Animated.View style={{ opacity: headerOpacity }}>
             <Text style={styles.headerTitle}>
-              My Profile
+              Your Info.
             </Text>
           </Animated.View>
 
@@ -597,7 +272,7 @@ const ProfileScreen = () => {
           {/* USER NAME & ROLE - CENTERED */}
           <Animated.View style={{ opacity: headerOpacity, alignItems: 'center', width: '100%' }}>
              <Text style={styles.userName}>Md. Saif</Text>
-             <Text style={styles.userRole}>Full Stack Developer</Text>
+             {/* <Text style={styles.userRole}>Full Stack Developer</Text> */}
           </Animated.View>
         </View>
 
@@ -644,6 +319,11 @@ const ProfileScreen = () => {
                 }}
                 activeOpacity={item.type === 'toggle' ? 1 : 0.7}
               >
+                {/* --- Added Icon Wrapper --- */}
+                <View style={[styles.iconWrapper, { backgroundColor: item.iconColor }]}>
+                  <Ionicons name={item.icon} size={18} color="#FFF" />
+                </View>
+
                 <Text style={styles.menuText}>{item.title}</Text>
 
                 <View style={styles.rightAction}>
@@ -777,7 +457,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: '#000',
-    marginTop: 5,
+    marginTop: 3,
     textAlign: 'center', // Explicit center alignment for text
   },
   userRole: {
@@ -810,7 +490,7 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#f1f1f1ff',
     paddingVertical: 18,
     paddingHorizontal: 20,
     height: 60,
@@ -826,6 +506,15 @@ const styles = StyleSheet.create({
   menuBorder: {
     borderBottomWidth: 1,
     borderBottomColor: '#EFEFEF',
+  },
+  // --- New Icon Style ---
+  iconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
   },
   menuText: {
     flex: 1,

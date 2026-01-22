@@ -17,7 +17,8 @@ import {
   View,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import type { SettingsStackParamList } from '../src/navigation/SettingsStackNavigator';
+// import type { SettingsStackParamList } from '../src/navigation/SettingsStackNavigator';
+import type { RootStackParamList } from '../src/navigation/Stack';
 
 const { height } = Dimensions.get('window');
 
@@ -37,7 +38,7 @@ interface MenuItemProps {
 
 const ProfileScreen = () => {
   // --- Navigation ---
-  const navigation = useNavigation<NativeStackNavigationProp<SettingsStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // --- State for Profile Image ---
   const [profileImage, setProfileImage] = useState<string | null>(null);
 

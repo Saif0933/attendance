@@ -8,8 +8,11 @@ import PunchScreen from "../../screen/PunchScreen";
 import { RequestScreen } from "../../screen/RequestScreen";
 import { WorkScreen } from "../../screen/WorkScreen";
 import YouScreen from "../../screen/YouScreen";
-import SalaryStackNavigator from "./SalaryStackNavigator";
-import SettingsStackNavigator from "./SettingsStackNavigator";
+import SalaryScreen from "../../screen/SalaryScreen";
+import SettingScreen from "../../screen/SettingScreen";
+// import SalaryStackNavigator from "./SalaryStackNavigator";
+// import SettingsStackNavigator from "../navigation/SettingsStackNavigator";
+import Stack from "../navigation/Stack";
 
 
 const Tab = createBottomTabNavigator();
@@ -49,11 +52,12 @@ export default function BottomTabNavigator() {
       })}
     >
       <Tab.Screen name="Punch" component={PunchScreen} />
-      <Tab.Screen name="Salary" component={SalaryStackNavigator} />
+      <Tab.Screen name="Salary" component={SalaryScreen} />
       <Tab.Screen name="You" component={YouScreen} />
       <Tab.Screen name="Requests" component={RequestScreen} />
       <Tab.Screen name="Work" component={WorkScreen} />
-      <Tab.Screen name="Settings" component={SettingsStackNavigator} />
+      {/* <Tab.Screen name="Settings" component={SettingsStackNavigator} /> */}
+      <Tab.Screen name="Settings" component={SettingScreen} />
     </Tab.Navigator>
   );
 }

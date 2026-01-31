@@ -1,750 +1,385 @@
-// import React, { useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   StyleSheet,
-//   StatusBar,
-//   Alert,
-//   KeyboardAvoidingView,
-//   Platform,
-//   SafeAreaView,
-// } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
-// import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // Make sure to link vector icons
-
-// const LoginScreen = () => {
-//   const navigation = useNavigation<any>();
-
-//   // State Management
-//   const [phoneNumber, setPhoneNumber] = useState('');
-//   const [otp, setOtp] = useState('');
-//   const [isOtpSent, setIsOtpSent] = useState(false);
-//   const [role, setRole] = useState<'ADMIN' | 'EMPLOYEE'>('EMPLOYEE');
-
-//   // Mock: Handle Sending OTP
-//   const handleSendOtp = () => {
-//     if (phoneNumber.length < 10) {
-//       Alert.alert('Invalid Number', 'Please enter a valid 10-digit phone number.');
-//       return;
-//     }
-//     // TODO: Integrate your Backend API or Firebase Auth here
-//     setIsOtpSent(true);
-//     Alert.alert('OTP Sent', 'A verification code has been sent to your phone.');
-//   };
-
-//   // Mock: Handle Verifying OTP & Navigation
-//   const handleVerifyOtp = () => {
-//     if (otp.length !== 4) {
-//       Alert.alert('Invalid OTP', 'Please enter the 4-digit code.');
-//       return;
-//     }
-
-//     // TODO: Verify OTP with Backend
-//     // On success:
-//     if (role === 'ADMIN') {
-//       navigation.replace('Admin');
-//     } else {
-//       navigation.replace('Employee');
-//     }
-//   };
-
-//   const handleEditNumber = () => {
-//     setIsOtpSent(false);
-//     setOtp('');
-//   };
-
-//   return (
-//     <SafeAreaView style={styles.safeArea}>
-//       <StatusBar barStyle="dark-content" backgroundColor="#F3F4F6" />
-      
-//       <KeyboardAvoidingView 
-//         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-//         style={styles.container}
-//       >
-//         <View style={styles.headerContainer}>
-//           <Text style={styles.welcomeText}>Welcome Back!</Text>
-//           <Text style={styles.subText}>Login to manage your attendance</Text>
-//         </View>
-
-//         {/* Role Selector */}
-//         <View style={styles.roleSelectorContainer}>
-//           <TouchableOpacity
-//             style={[styles.roleButton, role === 'EMPLOYEE' && styles.activeRoleButton]}
-//             onPress={() => setRole('EMPLOYEE')}
-//             activeOpacity={0.8}
-//           >
-//             <Icon 
-//               name="account" 
-//               size={20} 
-//               color={role === 'EMPLOYEE' ? '#FFF' : '#6B7280'} 
-//             />
-//             <Text style={[styles.roleText, role === 'EMPLOYEE' && styles.activeRoleText]}>
-//               Employee
-//             </Text>
-//           </TouchableOpacity>
-
-//           <TouchableOpacity
-//             style={[styles.roleButton, role === 'ADMIN' && styles.activeRoleButton]}
-//             onPress={() => setRole('ADMIN')}
-//             activeOpacity={0.8}
-//           >
-//             <Icon 
-//               name="shield-account" 
-//               size={20} 
-//               color={role === 'ADMIN' ? '#FFF' : '#6B7280'} 
-//             />
-//             <Text style={[styles.roleText, role === 'ADMIN' && styles.activeRoleText]}>
-//               Admin
-//             </Text>
-//           </TouchableOpacity>
-//         </View>
-
-//         {/* Form Card */}
-//         <View style={styles.card}>
-//           {!isOtpSent ? (
-//             // STATE 1: PHONE INPUT
-//             <>
-//               <Text style={styles.label}>Mobile Number</Text>
-//               <View style={styles.inputContainer}>
-//                 <Icon name="phone" size={20} color="#9CA3AF" style={styles.inputIcon} />
-//                 <TextInput
-//                   placeholder="Enter 10 digit number"
-//                   value={phoneNumber}
-//                   onChangeText={setPhoneNumber}
-//                   style={styles.input}
-//                   keyboardType="phone-pad"
-//                   maxLength={10}
-//                   placeholderTextColor="#9CA3AF"
-//                 />
-//               </View>
-
-//               <TouchableOpacity 
-//                 style={styles.actionButton} 
-//                 onPress={handleSendOtp}
-//                 activeOpacity={0.8}
-//               >
-//                 <Text style={styles.actionButtonText}>Get OTP</Text>
-//                 <Icon name="arrow-right" size={20} color="#FFF" />
-//               </TouchableOpacity>
-//             </>
-//           ) : (
-//             // STATE 2: OTP INPUT
-//             <>
-//                <View style={styles.otpHeader}>
-//                   <Text style={styles.label}>Enter OTP</Text>
-//                   <TouchableOpacity onPress={handleEditNumber}>
-//                     <Text style={styles.changeNumberText}>Change Number</Text>
-//                   </TouchableOpacity>
-//                </View>
-              
-//               <Text style={styles.sentToText}>Sent to +91 {phoneNumber}</Text>
-
-//               <View style={styles.inputContainer}>
-//                 <Icon name="lock-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-//                 <TextInput
-//                   placeholder="X X X X"
-//                   value={otp}
-//                   onChangeText={setOtp}
-//                   style={[styles.input, { letterSpacing: 8, fontSize: 18 }]} // Letter spacing for OTP look
-//                   keyboardType="number-pad"
-//                   maxLength={4}
-//                   autoFocus
-//                   placeholderTextColor="#9CA3AF"
-//                 />
-//               </View>
-
-//               <TouchableOpacity 
-//                 style={styles.actionButton} 
-//                 onPress={handleVerifyOtp}
-//                 activeOpacity={0.8}
-//               >
-//                 <Text style={styles.actionButtonText}>Verify & Login</Text>
-//               </TouchableOpacity>
-              
-//               <TouchableOpacity style={styles.resendContainer}>
-//                  <Text style={styles.resendText}>Didn't receive code? </Text>
-//                  <Text style={styles.resendLink}>Resend</Text>
-//               </TouchableOpacity>
-//             </>
-//           )}
-//         </View>
-
-//         <Text style={styles.footerText}>
-//           By logging in, you agree to our Terms & Privacy Policy
-//         </Text>
-
-//       </KeyboardAvoidingView>
-//     </SafeAreaView>
-//   );
-// };
-
-// export default LoginScreen;
-
-// const styles = StyleSheet.create({
-//   safeArea: {
-//     flex: 1,
-//     backgroundColor: '#F3F4F6', // Light gray background
-//   },
-//   container: {
-//     flex: 1,
-//     paddingHorizontal: 24,
-//     justifyContent: 'center',
-//   },
-//   headerContainer: {
-//     marginBottom: 32,
-//     alignItems: 'center',
-//   },
-//   welcomeText: {
-//     fontSize: 28,
-//     fontWeight: '800',
-//     color: '#1F2937',
-//     marginBottom: 8,
-//   },
-//   subText: {
-//     fontSize: 16,
-//     color: '#6B7280',
-//     textAlign: 'center',
-//   },
-//   /* Role Selector Styles */
-//   roleSelectorContainer: {
-//     flexDirection: 'row',
-//     backgroundColor: '#E5E7EB',
-//     borderRadius: 12,
-//     padding: 4,
-//     marginBottom: 24,
-//   },
-//   roleButton: {
-//     flex: 1,
-//     flexDirection: 'row',
-//     paddingVertical: 12,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     borderRadius: 10,
-//     gap: 8, // Space between icon and text
-//   },
-//   activeRoleButton: {
-//     backgroundColor: '#2563EB', // Main Blue
-//     elevation: 2,
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-//   },
-//   roleText: {
-//     fontSize: 15,
-//     fontWeight: '600',
-//     color: '#6B7280',
-//   },
-//   activeRoleText: {
-//     color: '#FFFFFF',
-//   },
-//   /* Card & Input Styles */
-//   card: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 20,
-//     padding: 24,
-//     elevation: 4, // Android shadow
-//     shadowColor: '#000', // iOS shadow
-//     shadowOffset: { width: 0, height: 4 },
-//     shadowOpacity: 0.05,
-//     shadowRadius: 12,
-//   },
-//   label: {
-//     fontSize: 14,
-//     fontWeight: '600',
-//     color: '#374151',
-//     marginBottom: 8,
-//   },
-//   inputContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     borderWidth: 1.5,
-//     borderColor: '#E5E7EB',
-//     borderRadius: 12,
-//     paddingHorizontal: 16,
-//     marginBottom: 20,
-//     backgroundColor: '#F9FAFB',
-//     height: 56,
-//   },
-//   inputIcon: {
-//     marginRight: 12,
-//   },
-//   input: {
-//     flex: 1,
-//     fontSize: 16,
-//     color: '#111827',
-//     fontWeight: '500',
-//   },
-//   /* Action Buttons */
-//   actionButton: {
-//     backgroundColor: '#2563EB',
-//     borderRadius: 12,
-//     height: 56,
-//     flexDirection: 'row',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     gap: 8,
-//     elevation: 2,
-//   },
-//   actionButtonText: {
-//     color: '#FFFFFF',
-//     fontSize: 16,
-//     fontWeight: '700',
-//   },
-//   /* OTP Specific Styles */
-//   otpHeader: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     marginBottom: 8,
-//   },
-//   changeNumberText: {
-//     fontSize: 13,
-//     color: '#2563EB',
-//     fontWeight: '600',
-//   },
-//   sentToText: {
-//     fontSize: 13,
-//     color: '#6B7280',
-//     marginBottom: 16,
-//   },
-//   resendContainer: {
-//     flexDirection: 'row',
-//     justifyContent: 'center',
-//     marginTop: 20,
-//   },
-//   resendText: {
-//     color: '#6B7280',
-//     fontSize: 14,
-//   },
-//   resendLink: {
-//     color: '#2563EB',
-//     fontSize: 14,
-//     fontWeight: '700',
-//   },
-//   /* Footer */
-//   footerText: {
-//     textAlign: 'center',
-//     marginTop: 32,
-//     color: '#9CA3AF',
-//     fontSize: 12,
-//   },
-// });
-
-
-import React, { useState, useEffect, useRef } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  StatusBar,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  LayoutAnimation,
-  UIManager,
-  Dimensions,
-  Animated,
-  Image,
+  View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-// Enable LayoutAnimation for Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useRequestOtp } from '../../../api/hook/company/auth/useAuth';
+import { RootStackParamList } from '../../../src/navigation/Stack';
 
 const { width } = Dimensions.get('window');
 
 const LoginScreen = () => {
-  const navigation = useNavigation<any>();
-
-  // State Management
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [role, setRole] = useState<'ADMIN' | 'EMPLOYEE'>('EMPLOYEE');
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
-  // UI States for Focus Animation
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const { mutate: requestOtp, isPending } = useRequestOtp();
 
-  // Mock: Handle Sending OTP
-  const handleSendOtp = () => {
-    if (phoneNumber.length < 10) {
-      Alert.alert('Invalid Number', 'Please enter a valid 10-digit phone number.');
+  const handleGetOtp = () => {
+    if (!phoneNumber || phoneNumber.length < 10) {
+      Alert.alert('Error', 'Please enter a valid phone number');
       return;
     }
-    // Animate the layout change
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setIsOtpSent(true);
-  };
 
-  // Mock: Handle Verifying OTP & Navigation
-  const handleVerifyOtp = () => {
-    if (otp.length !== 4) {
-      Alert.alert('Invalid OTP', 'Please enter the 4-digit code.');
-      return;
-    }
-    if (role === 'ADMIN') {
-      navigation.replace('Admin');
-    } else {
-      navigation.replace('Employee');
-    }
-  };
-
-  const handleEditNumber = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setIsOtpSent(false);
-    setOtp('');
+    requestOtp(
+      { mobile: phoneNumber },
+      {
+        onSuccess: (data) => {
+          console.log('OTP requested successfully:', data);
+          navigation.navigate('VerificationScreen', { mobile: phoneNumber });
+        },
+        onError: (error: any) => {
+          console.error('Failed to request OTP:', error);
+          const errorMessage = error?.response?.data?.message || error.message || 'Network Error. Check your server connection.';
+          Alert.alert('Error', errorMessage);
+        },
+      }
+    );
   };
 
   return (
-    <View style={styles.mainContainer}>
-      <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F8F9FB" />
       
-      {/* Decorative Background Shapes */}
-      <View style={styles.bgHeader} />
-      <View style={styles.bgCircle} />
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={24} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Secure Login</Text>
+        <View style={{ width: 24 }} /> {/* Spacer to balance header */}
+      </View>
 
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          
-          {/* Header Section */}
-          <View style={styles.headerContainer}>
-            <View style={styles.logoPlaceholder}>
-                <Icon name="rhombus-split" size={40} color="#FFF" />
-            </View>
-            <Text style={styles.welcomeText}>Welcome Back</Text>
-            <Text style={styles.subText}>Sign in to manage your workspace</Text>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+      >
+        
+        {/* Logo Section */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoBox}>
+            <MaterialCommunityIcons name="fingerprint" size={40} color="#FFF" />
           </View>
+          <Text style={styles.appName}>WorkFlow Pro</Text>
+          <Text style={styles.tagline}>Biometric Work Management</Text>
+        </View>
 
-          {/* Main Card */}
-          <View style={styles.card}>
-            
-            {/* Role Selector */}
-            <View style={styles.roleSelectorContainer}>
-              {['EMPLOYEE', 'ADMIN'].map((item) => (
-                <TouchableOpacity
-                  key={item}
-                  style={[styles.roleButton, role === item && styles.activeRoleButton]}
-                  onPress={() => {
-                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                    setRole(item as any);
-                  }}
-                  activeOpacity={0.9}
-                >
-                  <Icon 
-                    name={item === 'EMPLOYEE' ? "account" : "shield-account"} 
-                    size={20} 
-                    color={role === item ? '#2563EB' : '#9CA3AF'} 
-                  />
-                  <Text style={[styles.roleText, role === item && styles.activeRoleText]}>
-                    {item === 'EMPLOYEE' ? 'Employee' : 'Administrator'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Form Content */}
-            {!isOtpSent ? (
-              // STATE 1: PHONE INPUT
-              <View>
-                <Text style={styles.label}>Mobile Number</Text>
-                <View style={[
-                  styles.inputContainer, 
-                  focusedInput === 'phone' && styles.inputFocused
-                ]}>
-                  <Icon name="phone" size={20} color={focusedInput === 'phone' ? "#2563EB" : "#9CA3AF"} style={styles.inputIcon} />
-                  <TextInput
-                    placeholder="Enter 10 digit number"
-                    value={phoneNumber}
-                    onChangeText={setPhoneNumber}
-                    onFocus={() => setFocusedInput('phone')}
-                    onBlur={() => setFocusedInput(null)}
-                    style={styles.input}
-                    keyboardType="phone-pad"
-                    maxLength={10}
-                    placeholderTextColor="#9CA3AF"
-                  />
-                </View>
-
-                <TouchableOpacity 
-                  style={styles.primaryButton} 
-                  onPress={handleSendOtp}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.primaryButtonText}>Get OTP</Text>
-                  <Icon name="chevron-right" size={20} color="#FFF" />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              // STATE 2: OTP INPUT
-              <View>
-                 <View style={styles.otpHeader}>
-                    <Text style={styles.label}>Enter Verification Code</Text>
-                 </View>
-                 
-                <Text style={styles.sentToText}>
-                    We sent a code to <Text style={{fontWeight: '700', color: '#1F2937'}}>+91 {phoneNumber}</Text>
-                </Text>
-
-                <View style={[
-                  styles.inputContainer,
-                  focusedInput === 'otp' && styles.inputFocused
-                ]}>
-                  <Icon name="lock-outline" size={20} color={focusedInput === 'otp' ? "#2563EB" : "#9CA3AF"} style={styles.inputIcon} />
-                  <TextInput
-                    placeholder="• • • •"
-                    value={otp}
-                    onChangeText={setOtp}
-                    onFocus={() => setFocusedInput('otp')}
-                    onBlur={() => setFocusedInput(null)}
-                    style={[styles.input, styles.otpInput]}
-                    keyboardType="number-pad"
-                    maxLength={4}
-                    autoFocus
-                    placeholderTextColor="#9CA3AF"
-                  />
-                </View>
-
-                <TouchableOpacity 
-                  style={styles.primaryButton} 
-                  onPress={handleVerifyOtp}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.primaryButtonText}>Verify & Login</Text>
-                </TouchableOpacity>
-                
-                <View style={styles.footerActions}>
-                    <TouchableOpacity onPress={handleEditNumber}>
-                        <Text style={styles.linkText}>Change Number</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                         <Text style={styles.linkText}>Resend Code</Text>
-                    </TouchableOpacity>
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/* Simple Footer */}
-          <Text style={styles.footerText}>
-            Protected by reCAPTCHA and subject to the Privacy Policy.
+        {/* Welcome Text */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Welcome Back</Text>
+          <Text style={styles.welcomeSubtitle}>
+            Enter your mobile number to receive a verification code.
           </Text>
+        </View>
 
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+        {/* Input Forms */}
+        <View style={styles.inputContainer}>
+          
+          {/* Country Code Input */}
+          <View style={styles.inputWrapperCode}>
+            <Text style={styles.label}>Code</Text>
+            <TouchableOpacity style={styles.countrySelector}>
+              <Image 
+                source={{ uri: 'https://cdn.britannica.com/33/4833-004-828A9A84/Flag-United-States-of-America.jpg' }} 
+                style={styles.flagIcon} 
+              />
+              <Text style={styles.countryCodeText}>+1</Text>
+              <Ionicons name="chevron-down" size={16} color="#7D8A99" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Phone Number Input */}
+          <View style={styles.inputWrapperPhone}>
+            <Text style={styles.label}>Phone Number</Text>
+            <View style={styles.phoneInputBox}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="000-000-0000"
+                placeholderTextColor="#C5CEE0"
+                keyboardType="phone-pad"
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Get OTP Button */}
+        <TouchableOpacity 
+          style={styles.buttonContainer} 
+          activeOpacity={0.8}
+          onPress={handleGetOtp}
+          disabled={isPending}
+        >
+          <LinearGradient
+            colors={['#2D9CDB', '#2D9CDB', '#56CCF2']} // Gradient simulation
+            start={{x: 0, y: 0}} 
+            end={{x: 1, y: 0}}
+            style={styles.gradientButton}
+          >
+            {isPending ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <>
+                <Text style={styles.buttonText}>Get OTP</Text>
+                <Ionicons name="arrow-forward" size={20} color="#FFF" style={styles.buttonIcon} />
+              </>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Divider */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.line} />
+          <Text style={styles.dividerText}>OR LOGIN WITH</Text>
+          <View style={styles.line} />
+        </View>
+
+        {/* Biometric Login */}
+        <TouchableOpacity style={styles.biometricContainer}>
+          <View style={styles.biometricCircle}>
+            <Ionicons name="finger-print-outline" size={32} color="#45B6D6" />
+          </View>
+          <Text style={styles.biometricText}>Use Fingerprint</Text>
+        </TouchableOpacity>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            By continuing, you agree to our <Text style={styles.linkText}>Terms of Service</Text> and <Text style={styles.linkText}>Privacy Policy</Text>
+          </Text>
+        </View>
+
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
-export default LoginScreen;
-
 const styles = StyleSheet.create({
-  mainContainer: {
+  container: {
     flex: 1,
-    backgroundColor: '#F8FAFC', // Very light blue-gray
+    backgroundColor: '#F8F9FB', // Very light grey/blue background
   },
-  /* Background Decor */
-  bgHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 250,
-    backgroundColor: '#2563EB', // Primary Blue
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-  },
-  bgCircle: {
-    position: 'absolute',
-    top: -50,
-    right: -50,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: '#FFFFFF',
-    opacity: 0.1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  
-  /* Header */
-  headerContainer: {
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
-  logoPlaceholder: {
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  backButton: {
+    padding: 5,
+  },
+  scrollContent: {
+    paddingBottom: 30,
+    alignItems: 'center',
+  },
+  // Logo Styles
+  logoContainer: {
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 40,
+  },
+  logoBox: {
     width: 80,
     height: 80,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 25,
+    backgroundColor: '#2FAED7', // The specific blue from the logo
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-  },
-  welcomeText: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  subText: {
-    fontSize: 16,
-    color: '#DBEAFE', // Light blue text
-    textAlign: 'center',
-  },
-
-  /* Card */
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 32,
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
+    marginBottom: 20,
+    shadowColor: '#2FAED7',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
     elevation: 10,
   },
-
-  /* Role Selector */
-  roleSelectorContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
-    borderRadius: 16,
-    padding: 4,
-    marginBottom: 28,
+  appName: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#111',
+    letterSpacing: 0.5,
   },
-  roleButton: {
-    flex: 1,
-    flexDirection: 'row',
-    paddingVertical: 12,
-    justifyContent: 'center',
+  tagline: {
+    fontSize: 14,
+    color: '#7D8A99', // Slate gray
+    marginTop: 5,
+    fontWeight: '400',
+  },
+  // Welcome Section
+  welcomeSection: {
     alignItems: 'center',
-    borderRadius: 12,
-    gap: 8,
+    paddingHorizontal: 40,
+    marginBottom: 30,
   },
-  activeRoleButton: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#111',
+    marginBottom: 10,
   },
-  roleText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#64748B',
+  welcomeSubtitle: {
+    fontSize: 15,
+    color: '#7D8A99',
+    textAlign: 'center',
+    lineHeight: 22,
   },
-  activeRoleText: {
-    color: '#2563EB',
-  },
-
-  /* Inputs */
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#334155',
-    marginBottom: 8,
-    marginLeft: 4,
-  },
+  // Inputs
   inputContainer: {
     flexDirection: 'row',
+    paddingHorizontal: 24,
+    width: '100%',
+    justifyContent: 'space-between',
+    marginBottom: 25,
+  },
+  label: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  inputWrapperCode: {
+    width: '30%',
+  },
+  inputWrapperPhone: {
+    width: '65%',
+  },
+  countrySelector: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    marginBottom: 24,
-    backgroundColor: '#F8FAFC',
-    height: 58,
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF',
+    height: 55,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E4E9F2',
+    paddingHorizontal: 10,
   },
-  inputFocused: {
-    borderColor: '#2563EB',
-    backgroundColor: '#FFFFFF',
+  flagIcon: {
+    width: 24,
+    height: 16,
+    borderRadius: 2,
   },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
+  countryCodeText: {
     fontSize: 16,
-    color: '#1E293B',
+    color: '#111',
     fontWeight: '500',
   },
-  otpInput: {
-    fontSize: 22,
-    letterSpacing: 6,
-    fontWeight: '700',
+  phoneInputBox: {
+    backgroundColor: '#FFF',
+    height: 55,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E4E9F2',
+    justifyContent: 'center',
+    paddingHorizontal: 15,
   },
-
-  /* Buttons */
-  primaryButton: {
-    backgroundColor: '#2563EB',
-    borderRadius: 16,
-    height: 56,
+  textInput: {
+    fontSize: 16,
+    color: '#111',
+    letterSpacing: 1,
+  },
+  // Button
+  buttonContainer: {
+    width: '100%',
+    paddingHorizontal: 24,
+    marginBottom: 30,
+  },
+  gradientButton: {
+    height: 58,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
-    shadowColor: '#2563EB',
+    shadowColor: '#2FAED7',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
-    shadowRadius: 12,
+    shadowRadius: 10,
     elevation: 8,
   },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-
-  /* OTP & Footer Specific */
-  otpHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sentToText: {
-    fontSize: 14,
-    color: '#64748B',
-    marginBottom: 20,
-    marginLeft: 4,
-  },
-  footerActions: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: 20,
-      paddingHorizontal: 8
-  },
-  linkText: {
-    color: '#2563EB',
-    fontSize: 14,
+  buttonText: {
+    color: '#FFF',
+    fontSize: 18,
     fontWeight: '600',
+    marginRight: 8,
+  },
+  buttonIcon: {
+    marginTop: 2, // optical alignment
+  },
+  // Divider
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    marginBottom: 30,
+    width: '100%',
+  },
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E4E9F2',
+  },
+  dividerText: {
+    marginHorizontal: 15,
+    color: '#7D8A99',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  // Biometric
+  biometricContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  biometricCircle: {
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+    borderWidth: 1.5,
+    borderColor: '#D0D9E6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    backgroundColor: '#F8F9FB',
+  },
+  biometricText: {
+    fontSize: 15,
+    color: '#111',
+    fontWeight: '500',
+  },
+  // Footer
+  footer: {
+    paddingHorizontal: 30,
   },
   footerText: {
+    fontSize: 13,
+    color: '#7D8A99',
     textAlign: 'center',
-    marginTop: 40,
-    color: '#94A3B8',
-    fontSize: 12,
+    lineHeight: 20,
+  },
+  linkText: {
+    color: '#2FAED7',
+    fontWeight: '600',
   },
 });
+
+export default LoginScreen;

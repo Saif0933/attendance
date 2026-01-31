@@ -6,13 +6,12 @@ import Icon from "react-native-vector-icons/Ionicons";
 // Screens
 import PunchScreen from "../../screen/PunchScreen";
 import { RequestScreen } from "../../screen/RequestScreen";
-import { WorkScreen } from "../../screen/WorkScreen";
-import YouScreen from "../../screen/YouScreen";
 import SalaryScreen from "../../screen/SalaryScreen";
 import SettingScreen from "../../screen/SettingScreen";
+import { WorkScreen } from "../../screen/WorkScreen";
+import YouScreen from "../../screen/YouScreen";
 // import SalaryStackNavigator from "./SalaryStackNavigator";
 // import SettingsStackNavigator from "../navigation/SettingsStackNavigator";
-import Stack from "../navigation/Stack";
 
 
 const Tab = createBottomTabNavigator();

@@ -28,12 +28,21 @@ import PersonalDetails from '../settingScreen/PersonalDetails';
 import PopUpDesignationScreen from '../settingScreen/PopUpDesignationScreen';
 import ReportsScreen from '../settingScreen/ReportsScreen';
 
+import SelectRoleScreen from '../auth/SelectRoleScreen';
+import EmployeeLoginScreen from '../employee/employeeAuth/EmployeeLoginScreen';
+import EmployeeVerificationScreen from '../employee/employeeAuth/VerificationScreen';
+import BottomTabNavigator from './BottomTabNavigator';
+
 //Admin
 import AdminHomeScreen from '../../Admin/src/screen/homeScreen/AdminHomeScreen';
 import AdminPunching from '../../Admin/src/screen/homeScreen/AdminPunching';
 import Others from '../../Admin/src/screen/homeScreen/Others';
 
+
 import LoginScreen from '../../Admin/src/auth/LoginScreen';
+import RegisterBusinessScreen from '../../Admin/src/auth/RegisterBusinessScreen';
+// import SelectAccountTypeScreen from '../../Admin/src/auth/SelectAccountTypeScreen';
+import VerificationScreen from '../../Admin/src/auth/VerificationScreen';
 import BottomTabNavigation from '../../Admin/src/navigation/BottomTabNavigation';
 import { AdminWork } from '../../Admin/src/screen/AdminWork';
 import AllRequestsScreen from '../../Admin/src/screen/AllRequestsScreen';
@@ -43,6 +52,7 @@ import NewCategoryScreen from '../../Admin/src/screen/staff/NewCategoryScreen';
 import SearchStaff from '../../Admin/src/screen/staff/SearchStaff';
 import StaffHomeScreen from '../../Admin/src/screen/staff/StaffHomeScreen';
 import TodaysAbsentScreen from '../../Admin/src/screen/staff/TodaysAbsentScreen';
+
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -65,12 +75,17 @@ export type RootStackParamList = {
   AddGeofenceScreen:undefined;
   HolidaysScreen:undefined;
   PaySlipScreen:undefined;
+  PaySlipsScreen:undefined;
   AddPayrollHead:undefined;
   EmployeeBottomTab:undefined;
   ReportsScreen:undefined;
   DesignationsScreen:undefined;
   AddDesignationsScreen:undefined;
   PopUpDesignationScreen:undefined;
+
+  EmployeeLoginScreen:undefined;
+  EmployeeVerificationScreen: { mobile: string };
+  SelectRoleScreen: undefined;
 
   //Admin
   AdminHomeScreen:undefined;
@@ -87,6 +102,9 @@ export type RootStackParamList = {
   AdminBottomTabNavigation:undefined;  
 
   LoginScreen:undefined;
+  VerificationScreen: { mobile: string };
+  // SelectAccountTypeScreen: undefined;
+  RegisterBusinessScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -99,11 +117,15 @@ const RootNavigator = () => {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}
-    initialRouteName='AdminBottomTabNavigation'
+    initialRouteName='SelectRoleScreen'
     >
 
+      {/* Role Selection Screen */}
+      <Stack.Screen name="SelectRoleScreen" component={SelectRoleScreen} />
+
       {/* Emplyee screen */}
-      {/* <Stack.Screen name="HomeScreen" component={HomeScreen} /> */}
+      {/* <Stack.Screen name="HomeScreen" component={HomeScreen} 
+      AdminBottomTabNavigation/> */}
 
 
       <Stack.Screen name="PunchScreen" component={PunchScreen} />
@@ -125,6 +147,7 @@ const RootNavigator = () => {
       <Stack.Screen name="AddGeofenceScreen" component={AddGeofenceScreen} />
       <Stack.Screen name="HolidaysScreen" component={HolidaysScreen} />
       <Stack.Screen name="PaySlipScreen" component={PaySlipScreen} />
+      <Stack.Screen name="PaySlipsScreen" component={PaySlipScreen} />
       <Stack.Screen name="ReportsScreen" component={ReportsScreen} />
       <Stack.Screen name="DesignationsScreen" component={DesignationsScreen} />
       <Stack.Screen name="AddDesignationsScreen" component={AddDesignationScreen} />
@@ -137,6 +160,9 @@ const RootNavigator = () => {
           contentStyle: { backgroundColor: 'transparent' },
         }}
       />
+      <Stack.Screen name="EmployeeLoginScreen" component={EmployeeLoginScreen} />
+      <Stack.Screen name="EmployeeVerificationScreen" component={EmployeeVerificationScreen} />
+      <Stack.Screen name="EmployeeBottomTab" component={BottomTabNavigator} />
 
 
 
@@ -158,6 +184,9 @@ const RootNavigator = () => {
 
       {/* login screen */}
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
+      <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
+      {/* <Stack.Screen name="SelectAccountTypeScreen" component={SelectAccountTypeScreen} /> */}
+      <Stack.Screen name="RegisterBusinessScreen" component={RegisterBusinessScreen} />
       
 
     </Stack.Navigator>

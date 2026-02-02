@@ -1,92 +1,200 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
-    Platform,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Modal,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useCreateShift, useUpdateShift } from '../../api/hook/company/shift/useShift';
+import { Shift } from '../../api/hook/type/shift';
+
+const { width, height } = Dimensions.get('window');
 
 const AddShiftScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
   
-  // State placeholders to manage UI selections (toggles, radios)
-  const [punchInType, setPunchInType] = useState<'anytime' | 'limit'>('anytime');
-  const [punchOutType, setPunchOutType] = useState<'anytime' | 'limit'>('anytime');
-  const [isOvernight, setIsOvernight] = useState(false);
-  const [autoPunchOut, setAutoPunchOut] = useState(false);
-  const [minWorkingHour, setMinWorkingHour] = useState(false);
+  // Check if we are editing
+  const editingShift = (route.params as { shift?: Shift })?.shift;
 
-  // Helper Component for Custom Radio Option
-  const RadioOption = ({ label, selected, onSelect }: any) => (
-    <TouchableOpacity
-      style={[
-        styles.radioOptionContainer,
-        selected ? styles.radioSelected : styles.radioUnselected,
-      ]}
-      onPress={onSelect}
-      activeOpacity={0.8}>
-      <Icon
-        name={selected ? 'radio-button-checked' : 'radio-button-unchecked'}
-        size={24}
-        color={selected ? '#FF7F50' : '#9E9E9E'} // Coral orange vs Grey
-      />
-      <Text style={[styles.radioLabel, selected && styles.radioLabelSelected]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
+  // Hooks
+  const { mutate: createShift, isPending: isCreating } = useCreateShift();
+  const { mutate: updateShift, isPending: isUpdating } = useUpdateShift();
 
-  // Helper for the Time Input blocks (Hours/Minutes)
-  const TimeBlockInput = ({ label, unit, placeholder }: any) => (
-    <View style={styles.timeBlockContainer}>
-      <Text style={styles.timeBlockLabel}>{label}</Text>
-      <View style={styles.timeBlockInputWrapper}>
-        <TextInput
-          style={styles.timeBlockInput}
-          placeholder={placeholder}
-          keyboardType="numeric"
-          placeholderTextColor="#000"
-        />
-        <Text style={styles.timeBlockUnit}>{unit}</Text>
-      </View>
-    </View>
-  );
+  // Core State (Backend Fields)
+  const [name, setName] = useState(editingShift?.name || '');
+  const [startTime, setStartTime] = useState(editingShift?.startTime || '09:00');
+  const [endTime, setEndTime] = useState(editingShift?.endTime || '18:00');
+  const [lateLimit, setLateLimit] = useState(editingShift?.latePunchInLimit?.toString() || '0');
 
-  // Helper for the bottom complex numeric inputs
-  const ComplexNumericInput = ({ label, placeholder, helperText }: any) => (
-    <View style={styles.complexInputSection}>
-      <Text style={styles.labelBold}>{label}</Text>
-      <View style={styles.complexInputContainer}>
-        <Text style={styles.complexInputInternalLabel}>{placeholder}</Text>
-        <TextInput
-          style={styles.standardInputWhite}
-          placeholder={placeholder === "Number of Lates" ? "" : "0"} // Adjusting based on image
-          keyboardType="numeric"
-        />
-      </View>
-      <Text style={styles.helperText}>{helperText}</Text>
-    </View>
-  );
+  // Time Picker State
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerType, setPickerType] = useState<'start' | 'end'>('start');
+  const [tempHour, setTempHour] = useState('09');
+  const [tempMinute, setTempMinute] = useState('00');
+
+  const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+
+  const handleSave = () => {
+    if (!name.trim()) {
+      Alert.alert("Error", "Please enter a shift name");
+      return;
+    }
+
+    const payload = {
+      name,
+      startTime,
+      endTime,
+      latePunchInLimit: parseInt(lateLimit) || 0,
+    };
+
+    if (editingShift) {
+      updateShift(
+        { id: editingShift.id, payload },
+        {
+          onSuccess: (res) => {
+            Alert.alert("Success", res.message || "Shift updated successfully");
+            navigation.goBack();
+          },
+          onError: (err: any) => {
+            Alert.alert("Error", err?.response?.data?.message || "Failed to update shift");
+          },
+        }
+      );
+    } else {
+      createShift(payload, {
+        onSuccess: (res) => {
+          Alert.alert("Success", res.message || "Shift created successfully");
+          navigation.goBack();
+        },
+        onError: (err: any) => {
+          Alert.alert("Error", err?.response?.data?.message || "Failed to create shift");
+        },
+      });
+    }
+  };
+
+  const openPicker = (type: 'start' | 'end') => {
+    const currentTime = type === 'start' ? startTime : endTime;
+    const [h, m] = currentTime.split(':');
+    setTempHour(h);
+    setTempMinute(m);
+    setPickerType(type);
+    setShowPicker(true);
+  };
+
+  const confirmTime = () => {
+    const newTime = `${tempHour}:${tempMinute}`;
+    if (pickerType === 'start') setStartTime(newTime);
+    else setEndTime(newTime);
+    setShowPicker(false);
+  };
+
+  const isLoading = isCreating || isUpdating;
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      
+      {/* Time Picker Modal */}
+      <Modal
+        visible={showPicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.pickerContainer}>
+            <Text style={styles.pickerTitle}>Select {pickerType === 'start' ? 'Start' : 'End'} Time</Text>
+            
+            <View style={styles.pickerRow}>
+              {/* Hours Column */}
+              <View style={styles.columnWrapper}>
+                <Text style={styles.columnLabel}>Hour</Text>
+                <FlatList
+                  data={hours}
+                  keyExtractor={(item) => `hour-${item}`}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity 
+                      style={[styles.timeItem, tempHour === item && styles.selectedTimeItem]}
+                      onPress={() => setTempHour(item)}
+                    >
+                      <Text style={[styles.timeText, tempHour === item && styles.selectedTimeText]}>{item}</Text>
+                    </TouchableOpacity>
+                  )}
+                  showsVerticalScrollIndicator={false}
+                  snapToInterval={40}
+                  getItemLayout={(_, index) => ({ length: 40, offset: 40 * index, index })}
+                  initialScrollIndex={parseInt(tempHour)}
+                  style={styles.timeList}
+                />
+              </View>
+
+              <Text style={styles.separator}>:</Text>
+
+              {/* Minutes Column */}
+              <View style={styles.columnWrapper}>
+                <Text style={styles.columnLabel}>Minute</Text>
+                <FlatList
+                  data={minutes}
+                  keyExtractor={(item) => `min-${item}`}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity 
+                      style={[styles.timeItem, tempMinute === item && styles.selectedTimeItem]}
+                      onPress={() => setTempMinute(item)}
+                    >
+                      <Text style={[styles.timeText, tempMinute === item && styles.selectedTimeText]}>{item}</Text>
+                    </TouchableOpacity>
+                  )}
+                  showsVerticalScrollIndicator={false}
+                  snapToInterval={40}
+                  getItemLayout={(_, index) => ({ length: 40, offset: 40 * index, index })}
+                  initialScrollIndex={parseInt(tempMinute)}
+                  style={styles.timeList}
+                />
+              </View>
+            </View>
+
+            <View style={styles.pickerFooter}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowPicker(false)}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.confirmBtn} onPress={confirmTime}>
+                <Text style={styles.confirmBtnText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="close" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Shift</Text>
-        <TouchableOpacity style={styles.addButton}>
-          <Text style={styles.addButtonText}>Add</Text>
+        <Text style={styles.headerTitle}>{editingShift ? "Edit Shift" : "Add Shift"}</Text>
+        <TouchableOpacity 
+          style={[styles.addButton, isLoading && { opacity: 0.7 }]} 
+          onPress={handleSave}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.addButtonText}>{editingShift ? "Update" : "Add"}</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -94,140 +202,45 @@ const AddShiftScreen = () => {
         {/* Shift Name */}
         <View style={styles.section}>
           <Text style={styles.labelBold}>Shift Name</Text>
-          <TextInput style={styles.standardInput} />
+          <TextInput 
+            style={styles.standardInput} 
+            value={name}
+            onChangeText={setName}
+            placeholder="e.g. Morning Shift"
+          />
         </View>
 
         {/* Shift Start Time */}
         <View style={styles.section}>
           <Text style={styles.labelBold}>Shift Start Time</Text>
-          <TouchableOpacity style={styles.timeSelectorInput}>
-            <Text style={styles.selectTimeText}>Select Time</Text>
+          <TouchableOpacity style={styles.timeSelectorInput} onPress={() => openPicker('start')}>
+            <Text style={styles.selectTimeText}>{startTime}</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Can Punch In -> Radio Group */}
-        <View style={styles.section}>
-          <Text style={styles.labelBold}>Can Punch In</Text>
-          <View style={styles.rowSplit}>
-            <RadioOption
-              label="Anytime"
-              selected={punchInType === 'anytime'}
-              onSelect={() => setPunchInType('anytime')}
-            />
-            <View style={styles.spacerX} />
-            <RadioOption
-              label="Add Limit"
-              selected={punchInType === 'limit'}
-              onSelect={() => setPunchInType('limit')}
-            />
-          </View>
         </View>
 
         {/* Shift End Time */}
         <View style={styles.section}>
           <Text style={styles.labelBold}>Shift End Time</Text>
-          <TouchableOpacity style={styles.timeSelectorInput}>
-            <Text style={styles.selectTimeText}>Select Time</Text>
+          <TouchableOpacity style={styles.timeSelectorInput} onPress={() => openPicker('end')}>
+            <Text style={styles.selectTimeText}>{endTime}</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Late Cut Off Section */}
+        {/* Late Cut Off Section -> Mapped to latePunchInLimit */}
         <View style={styles.section}>
-          <Text style={styles.labelBold}>Late Cut Off</Text>
+          <Text style={styles.labelBold}>Late Cut Off (Minutes)</Text>
           <View style={styles.reddishContainer}>
-            <Text style={styles.subLabel}>Late Cut Off Time:</Text>
-            <View style={styles.rowSplit}>
-              <TimeBlockInput label="Hours" unit="hr" placeholder="0" />
-              <View style={styles.spacerXWide} />
-              <TimeBlockInput label="Minutes" unit="min" placeholder="0" />
-            </View>
-          </View>
-        </View>
-
-        {/* Can Punch Out -> Radio Group */}
-        <View style={styles.section}>
-          <Text style={styles.labelBold}>Can Punch Out</Text>
-          <View style={styles.rowSplit}>
-            <RadioOption
-              label="Anytime"
-              selected={punchOutType === 'anytime'}
-              onSelect={() => setPunchOutType('anytime')}
-            />
-            <View style={styles.spacerX} />
-            <RadioOption
-              label="Add Limit"
-              selected={punchOutType === 'limit'}
-              onSelect={() => setPunchOutType('limit')}
+            <Text style={styles.subLabel}>Allowed late minutes before marked as Half Day:</Text>
+            <TextInput
+              style={styles.standardInput}
+              value={lateLimit}
+              onChangeText={setLateLimit}
+              keyboardType="numeric"
+              placeholder="10"
             />
           </View>
-        </View>
-
-        {/* Early Cut Off Section */}
-        <View style={styles.section}>
-          <Text style={styles.labelBold}>Early Cut Off</Text>
-          <View style={styles.reddishContainer}>
-            <Text style={styles.subLabel}>Early Cut Off Time:</Text>
-            <View style={styles.rowSplit}>
-              <TimeBlockInput label="Hours" unit="hr" placeholder="0" />
-              <View style={styles.spacerXWide} />
-              <TimeBlockInput label="Minutes" unit="min" placeholder="0" />
-            </View>
-          </View>
-        </View>
-
-        {/* Toggles Section */}
-        <View style={styles.toggleSection}>
-          <Text style={styles.toggleLabel}>Applicable for Overnight</Text>
-          <Switch
-            value={isOvernight}
-            onValueChange={setIsOvernight}
-            trackColor={{ false: '#D3D3D3', true: '#FF7F50' }}
-            thumbColor={Platform.OS === 'android' ? '#fff' : ''}
-          />
-        </View>
-
-        <View style={styles.toggleSection}>
-          <Text style={styles.toggleLabel}>Auto Punch Out</Text>
-          <Switch
-            value={autoPunchOut}
-            onValueChange={setAutoPunchOut}
-            trackColor={{ false: '#D3D3D3', true: '#FF7F50' }}
-             thumbColor={Platform.OS === 'android' ? '#fff' : ''}
-          />
-        </View>
-
-        <View style={styles.toggleSection}>
-          <Text style={styles.toggleLabel}>Minimum working hour</Text>
-          <Switch
-            value={minWorkingHour}
-            onValueChange={setMinWorkingHour}
-            trackColor={{ false: '#D3D3D3', true: '#FF7F50' }}
-             thumbColor={Platform.OS === 'android' ? '#fff' : ''}
-          />
         </View>
         
-        {/* Numeric Inputs Section */}
-        <ComplexNumericInput 
-            label="Number of Lates Counted as Half Day"
-            placeholder="Number of Lates"
-            helperText="Enter 0 to disable this feature"
-        />
-         <ComplexNumericInput 
-            label="Number of Early Departures Counted as Half Day"
-            placeholder="Number of Early Departures"
-            helperText="Enter 0 to disable this feature"
-        />
-         <ComplexNumericInput 
-            label="Number of Lates Counted as Absent"
-            placeholder="Number of Lates"
-            helperText="Enter 0 to disable this feature"
-        />
-         <ComplexNumericInput 
-            label="Number of Early Departures Counted as Absent"
-            placeholder="Number of Early Departures"
-            helperText="Enter 0 to disable this feature"
-        />
-
         <View style={{ height: 40 }} /> 
       </ScrollView>
     </SafeAreaView>
@@ -258,6 +271,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 20,
+    minWidth: 70,
+    alignItems: 'center',
   },
   addButtonText: {
     color: '#fff',
@@ -288,6 +303,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 16,
     color: '#000',
+    backgroundColor: '#fff',
   },
   timeSelectorInput: {
     borderWidth: 1,
@@ -298,49 +314,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   selectTimeText: {
-    color: '#FF6B6B', // Salmon/Red color
+    color: '#FF6B6B',
     fontWeight: '600',
   },
-  rowSplit: {
-    flexDirection: 'row',
-    flex: 1,
-  },
-  spacerX: {
-    width: 15,
-  },
-  spacerXWide: {
-    width: 25,
-  },
-  // Radio Button Styles
-  radioOptionContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  radioSelected: {
-    borderColor: '#FF7F50',
-    backgroundColor: '#FFF5F0',
-  },
-  radioUnselected: {
-    borderColor: '#E0E0E0',
-    backgroundColor: '#fff',
-  },
-  radioLabel: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#9E9E9E',
-    fontWeight: '600',
-  },
-  radioLabelSelected: {
-    color: '#000',
-  },
-  // Reddish container sections
   reddishContainer: {
-    backgroundColor: '#FFF0F0', // Very light red background
+    backgroundColor: '#FFF0F0',
     padding: 16,
     borderRadius: 12,
   },
@@ -349,79 +327,114 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 10,
   },
-  // Time Block Inputs (Hours/Minutes)
-  timeBlockContainer: {
+
+  // Modal Styles
+  modalOverlay: {
     flex: 1,
-  },
-  timeBlockLabel: {
-    fontSize: 12,
-    color: '#777',
-    marginBottom: 4,
-    marginLeft: 4,
-  },
-  timeBlockInputWrapper: {
-    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  pickerContainer: {
+    width: width * 0.85,
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderRadius: 20,
+    padding: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
   },
-  timeBlockInput: {
-    flex: 1,
-    paddingVertical: 8,
-    fontSize: 16,
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#000',
-  },
-  timeBlockUnit: {
-    color: '#999',
-    fontSize: 14,
-  },
-  // Toggles
-  toggleSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  toggleLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#333',
-  },
-  // Complex Numeric Inputs at bottom
-  complexInputSection: {
+    textAlign: 'center',
     marginBottom: 20,
   },
-  complexInputContainer: {
-     backgroundColor: '#FFF0F0', // The slightly reddish background
-     padding: 10,
-     borderRadius: 8,
-     borderWidth: 1,
-     borderColor: '#F5E6E6'
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 250,
   },
-  complexInputInternalLabel: {
-      fontSize: 12,
-      color: '#888',
-      marginBottom: 4,
+  columnWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    height: '100%',
   },
-  standardInputWhite: {
-      backgroundColor: '#fff',
-      borderWidth: 1,
-      borderColor: '#E0E0E0',
-      borderRadius: 6,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      fontSize: 16,
-      color: '#000',
+  columnLabel: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '600',
+    marginBottom: 10,
   },
-  helperText: {
-      marginTop: 6,
-      fontSize: 12,
-      color: '#888',
-      marginLeft: 4,
-  }
+  timeList: {
+    flex: 1,
+    width: '100%',
+  },
+  timeItem: {
+    height: 40,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  selectedTimeItem: {
+    backgroundColor: '#FFF0F0',
+    borderWidth: 1,
+    borderColor: '#FF7F50',
+  },
+  timeText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  selectedTimeText: {
+    color: '#FF7F50',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  separator: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#FF7F50',
+    marginHorizontal: 10,
+    marginTop: 25,
+  },
+  pickerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 25,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    marginRight: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    alignItems: 'center',
+  },
+  cancelBtnText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confirmBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    marginLeft: 10,
+    borderRadius: 10,
+    backgroundColor: '#FF7F50',
+    alignItems: 'center',
+  },
+  confirmBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
+
 
 export default AddShiftScreen;

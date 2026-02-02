@@ -25,6 +25,7 @@ export interface Company {
   id: number;
   phone: string;
   code: string;
+  name?: string;
 }
 
 export interface VerifyOtpResponse {

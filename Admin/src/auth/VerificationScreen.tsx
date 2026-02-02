@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useRef, useState } from 'react';
@@ -58,13 +59,32 @@ const VerificationScreen = () => {
     verifyOtp(
       { mobile, otp: otpValue },
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           console.log('OTP verified successfully:', data);
-          // Here you would typically store the token in secure storage or context
-          // For now, let's navigate to Admin dashboard
+          
+          let isRegistered = false;
+          // Check if business is already registered (if name exists)
+          if (data.data?.company?.name) {
+            isRegistered = true;
+          }
+
+          try {
+            await AsyncStorage.setItem('adminIsLoggedIn', 'true');
+            if (isRegistered) {
+              await AsyncStorage.setItem('adminIsBusinessRegistered', 'true');
+            }
+            if (data.data?.token) {
+              await AsyncStorage.setItem('adminToken', data.data.token);
+            }
+          } catch (error) {
+            console.error('Error saving admin login state', error);
+          }
+
           navigation.reset({
             index: 0,
-            routes: [{ name: 'RegisterBusinessScreen' }],
+            routes: [{ 
+              name: isRegistered ? 'AdminBottomTabNavigation' : 'RegisterBusinessScreen' 
+            }],
           });
         },
         onError: (error: any) => {

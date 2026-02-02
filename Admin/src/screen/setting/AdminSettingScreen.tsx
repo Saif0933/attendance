@@ -655,6 +655,7 @@
 // export default AdminSettingScreen;
 
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
@@ -734,6 +735,35 @@ const AdminSettingScreen = () => {
         { text: "Camera", onPress: () => console.log("Camera") },
         { text: "Cancel", style: "cancel" }
     ]);
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+             try {
+                await AsyncStorage.multiRemove([
+                    'adminIsLoggedIn', 
+                    'adminToken', 
+                    'adminIsBusinessRegistered'
+                ]);
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'SelectRoleScreen' }],
+                });
+             } catch (error) {
+                console.error('Error during logout:', error);
+             }
+          }
+        }
+      ]
+    );
   };
 
   // --- Menu Data List ---
@@ -1089,7 +1119,7 @@ const AdminSettingScreen = () => {
           {/* --- Logout Button --- */}
           <TouchableOpacity
             style={styles.logoutButton}
-            onPress={() => Alert.alert('Logout', 'Logging out...')}
+            onPress={handleLogout}
           >
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>

@@ -1,441 +1,23 @@
-// import React, { useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   StyleSheet,
-//   StatusBar,
-//   Alert,
-//   KeyboardAvoidingView,
-//   Platform,
-//   SafeAreaView,
-//   LayoutAnimation,
-//   UIManager,
-//   Dimensions,
-// } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
-// // CHANGED: Using Ionicons for a cleaner, more "iOS-style" premium look
-// import Icon from 'react-native-vector-icons/Ionicons'; 
-
-// // Enable LayoutAnimation for Android
-// if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-//   UIManager.setLayoutAnimationEnabledExperimental(true);
-// }
-
-// const { width } = Dimensions.get('window');
-
-// const LoginScreen = () => {
-//   const navigation = useNavigation<any>();
-
-//   // State Management
-//   const [phoneNumber, setPhoneNumber] = useState('');
-//   const [otp, setOtp] = useState('');
-//   const [isOtpSent, setIsOtpSent] = useState(false);
-//   const [role, setRole] = useState<'ADMIN' | 'EMPLOYEE'>('EMPLOYEE');
-  
-//   // UI States for Focus Animation
-//   const [focusedInput, setFocusedInput] = useState<string | null>(null);
-
-//   // Mock: Handle Sending OTP
-//   const handleSendOtp = () => {
-//     if (phoneNumber.length < 10) {
-//       Alert.alert('Invalid Number', 'Please enter a valid 10-digit phone number.');
-//       return;
-//     }
-//     // Animate the layout change
-//     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-//     setIsOtpSent(true);
-//   };
-
-//   // Mock: Handle Verifying OTP & Navigation
-//   const handleVerifyOtp = () => {
-//     if (otp.length !== 4) {
-//       Alert.alert('Invalid OTP', 'Please enter the 4-digit code.');
-//       return;
-//     }
-//     if (role === 'ADMIN') {
-//       navigation.replace('Admin');
-//     } else {
-//       navigation.replace('Employee');
-//     }
-//   };
-
-//   const handleEditNumber = () => {
-//     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-//     setIsOtpSent(false);
-//     setOtp('');
-//   };
-
-//   return (
-//     <View style={styles.mainContainer}>
-//       <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
-      
-//       {/* Decorative Background Shapes */}
-//       <View style={styles.bgHeader} />
-//       <View style={styles.bgCircle} />
-
-//       <SafeAreaView style={styles.safeArea}>
-//         <KeyboardAvoidingView 
-//           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-//           style={styles.keyboardView}
-//         >
-          
-//           {/* Header Section */}
-//           <View style={styles.headerContainer}>
-//             <View style={styles.logoPlaceholder}>
-//                 {/* CHANGED: Modern abstract icon */}
-//                 <Icon name="layers-outline" size={40} color="#FFF" />
-//             </View>
-//             <Text style={styles.welcomeText}>Welcome Back</Text>
-//             <Text style={styles.subText}>Sign in to manage your workspace</Text>
-//           </View>
-
-//           {/* Main Card */}
-//           <View style={styles.card}>
-            
-//             {/* Role Selector */}
-//             <View style={styles.roleSelectorContainer}>
-//               {['EMPLOYEE', 'ADMIN'].map((item) => (
-//                 <TouchableOpacity
-//                   key={item}
-//                   style={[styles.roleButton, role === item && styles.activeRoleButton]}
-//                   onPress={() => {
-//                     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-//                     setRole(item as any);
-//                   }}
-//                   activeOpacity={0.9}
-//                 >
-//                   {/* CHANGED: Dynamic Outline/Filled icons based on selection */}
-//                   <Icon 
-//                     name={
-//                         item === 'EMPLOYEE' 
-//                         ? (role === 'EMPLOYEE' ? "person" : "person-outline")
-//                         : (role === 'ADMIN' ? "shield-checkmark" : "shield-checkmark-outline")
-//                     } 
-//                     size={20} 
-//                     color={role === item ? '#2563EB' : '#9CA3AF'} 
-//                   />
-//                   <Text style={[styles.roleText, role === item && styles.activeRoleText]}>
-//                     {item === 'EMPLOYEE' ? 'Employee' : 'Administrator'}
-//                   </Text>
-//                 </TouchableOpacity>
-//               ))}
-//             </View>
-
-//             {/* Form Content */}
-//             {!isOtpSent ? (
-//               // STATE 1: PHONE INPUT
-//               <View>
-//                 <Text style={styles.label}>Mobile Number</Text>
-//                 <View style={[
-//                   styles.inputContainer, 
-//                   focusedInput === 'phone' && styles.inputFocused
-//                 ]}>
-//                   {/* CHANGED: Phone Icon */}
-//                   <Icon name="call-outline" size={20} color={focusedInput === 'phone' ? "#2563EB" : "#9CA3AF"} style={styles.inputIcon} />
-//                   <TextInput
-//                     placeholder="Enter 10 digit number"
-//                     value={phoneNumber}
-//                     onChangeText={setPhoneNumber}
-//                     onFocus={() => setFocusedInput('phone')}
-//                     onBlur={() => setFocusedInput(null)}
-//                     style={styles.input}
-//                     keyboardType="phone-pad"
-//                     maxLength={10}
-//                     placeholderTextColor="#9CA3AF"
-//                   />
-//                 </View>
-
-//                 <TouchableOpacity 
-//                   style={styles.primaryButton} 
-//                   onPress={handleSendOtp}
-//                   activeOpacity={0.8}
-//                 >
-//                   <Text style={styles.primaryButtonText}>Get OTP</Text>
-//                   {/* CHANGED: Arrow Icon */}
-//                   <Icon name="arrow-forward" size={20} color="#FFF" />
-//                 </TouchableOpacity>
-//               </View>
-//             ) : (
-//               // STATE 2: OTP INPUT
-//               <View>
-//                  <View style={styles.otpHeader}>
-//                     <Text style={styles.label}>Enter Verification Code</Text>
-//                  </View>
-                 
-//                 <Text style={styles.sentToText}>
-//                     We sent a code to <Text style={{fontWeight: '700', color: '#1F2937'}}>+91 {phoneNumber}</Text>
-//                 </Text>
-
-//                 <View style={[
-//                   styles.inputContainer,
-//                   focusedInput === 'otp' && styles.inputFocused
-//                 ]}>
-//                   {/* CHANGED: Keypad Icon */}
-//                   <Icon name="keypad-outline" size={20} color={focusedInput === 'otp' ? "#2563EB" : "#9CA3AF"} style={styles.inputIcon} />
-//                   <TextInput
-//                     placeholder="• • • •"
-//                     value={otp}
-//                     onChangeText={setOtp}
-//                     onFocus={() => setFocusedInput('otp')}
-//                     onBlur={() => setFocusedInput(null)}
-//                     style={[styles.input, styles.otpInput]}
-//                     keyboardType="number-pad"
-//                     maxLength={4}
-//                     autoFocus
-//                     placeholderTextColor="#9CA3AF"
-//                   />
-//                 </View>
-
-//                 <TouchableOpacity 
-//                   style={styles.primaryButton} 
-//                   onPress={handleVerifyOtp}
-//                   activeOpacity={0.8}
-//                 >
-//                   <Text style={styles.primaryButtonText}>Verify & Login</Text>
-//                 </TouchableOpacity>
-                
-//                 <View style={styles.footerActions}>
-//                     <TouchableOpacity onPress={handleEditNumber}>
-//                         <Text style={styles.linkText}>Change Number</Text>
-//                     </TouchableOpacity>
-//                     <TouchableOpacity>
-//                          <Text style={styles.linkText}>Resend Code</Text>
-//                     </TouchableOpacity>
-//                 </View>
-//               </View>
-//             )}
-//           </View>
-
-//           {/* Simple Footer */}
-//           <Text style={styles.footerText}>
-//             Protected by reCAPTCHA and subject to the Privacy Policy.
-//           </Text>
-
-//         </KeyboardAvoidingView>
-//       </SafeAreaView>
-//     </View>
-//   );
-// };
-
-// export default LoginScreen;
-
-// const styles = StyleSheet.create({
-//   mainContainer: {
-//     flex: 1,
-//     backgroundColor: '#F8FAFC',
-//   },
-//   /* Background Decor */
-//   bgHeader: {
-//     position: 'absolute',
-//     top: 0,
-//     left: 0,
-//     right: 0,
-//     height: 250,
-//     backgroundColor: '#2563EB',
-//     borderBottomLeftRadius: 40,
-//     borderBottomRightRadius: 40,
-//   },
-//   bgCircle: {
-//     position: 'absolute',
-//     top: -50,
-//     right: -50,
-//     width: 200,
-//     height: 200,
-//     borderRadius: 100,
-//     backgroundColor: '#FFFFFF',
-//     opacity: 0.1,
-//   },
-//   safeArea: {
-//     flex: 1,
-//   },
-//   keyboardView: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     paddingHorizontal: 24,
-//   },
-  
-//   /* Header */
-//   headerContainer: {
-//     alignItems: 'center',
-//     marginBottom: 32,
-//   },
-//   logoPlaceholder: {
-//     width: 80,
-//     height: 80,
-//     backgroundColor: 'rgba(255,255,255,0.2)',
-//     borderRadius: 25,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     marginBottom: 16,
-//     borderWidth: 1,
-//     borderColor: 'rgba(255,255,255,0.3)',
-//   },
-//   welcomeText: {
-//     fontSize: 32,
-//     fontWeight: '800',
-//     color: '#FFFFFF',
-//     marginBottom: 8,
-//     letterSpacing: 0.5,
-//   },
-//   subText: {
-//     fontSize: 16,
-//     color: '#DBEAFE',
-//     textAlign: 'center',
-//   },
-
-//   /* Card */
-//   card: {
-//     backgroundColor: '#FFFFFF',
-//     borderRadius: 24,
-//     padding: 32,
-//     shadowColor: '#64748B',
-//     shadowOffset: { width: 0, height: 12 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 20,
-//     elevation: 10,
-//   },
-
-//   /* Role Selector */
-//   roleSelectorContainer: {
-//     flexDirection: 'row',
-//     backgroundColor: '#F1F5F9',
-//     borderRadius: 16,
-//     padding: 4,
-//     marginBottom: 28,
-//   },
-//   roleButton: {
-//     flex: 1,
-//     flexDirection: 'row',
-//     paddingVertical: 12,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     borderRadius: 12,
-//     gap: 8,
-//   },
-//   activeRoleButton: {
-//     backgroundColor: '#FFFFFF',
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.05,
-//     shadowRadius: 4,
-//     elevation: 2,
-//   },
-//   roleText: {
-//     fontSize: 14,
-//     fontWeight: '600',
-//     color: '#64748B',
-//   },
-//   activeRoleText: {
-//     color: '#2563EB',
-//   },
-
-//   /* Inputs */
-//   label: {
-//     fontSize: 14,
-//     fontWeight: '600',
-//     color: '#334155',
-//     marginBottom: 8,
-//     marginLeft: 4,
-//   },
-//   inputContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     borderWidth: 1.5,
-//     borderColor: '#E2E8F0',
-//     borderRadius: 16,
-//     paddingHorizontal: 16,
-//     marginBottom: 24,
-//     backgroundColor: '#F8FAFC',
-//     height: 58,
-//   },
-//   inputFocused: {
-//     borderColor: '#2563EB',
-//     backgroundColor: '#FFFFFF',
-//   },
-//   inputIcon: {
-//     marginRight: 12,
-//   },
-//   input: {
-//     flex: 1,
-//     fontSize: 16,
-//     color: '#1E293B',
-//     fontWeight: '500',
-//   },
-//   otpInput: {
-//     fontSize: 22,
-//     letterSpacing: 6,
-//     fontWeight: '700',
-//   },
-
-//   /* Buttons */
-//   primaryButton: {
-//     backgroundColor: '#2563EB',
-//     borderRadius: 16,
-//     height: 56,
-//     flexDirection: 'row',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     gap: 8,
-//     shadowColor: '#2563EB',
-//     shadowOffset: { width: 0, height: 8 },
-//     shadowOpacity: 0.3,
-//     shadowRadius: 12,
-//     elevation: 8,
-//   },
-//   primaryButtonText: {
-//     color: '#FFFFFF',
-//     fontSize: 16,
-//     fontWeight: '700',
-//   },
-
-//   /* OTP & Footer Specific */
-//   otpHeader: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//   },
-//   sentToText: {
-//     fontSize: 14,
-//     color: '#64748B',
-//     marginBottom: 20,
-//     marginLeft: 4,
-//   },
-//   footerActions: {
-//       flexDirection: 'row',
-//       justifyContent: 'space-between',
-//       marginTop: 20,
-//       paddingHorizontal: 8
-//   },
-//   linkText: {
-//     color: '#2563EB',
-//     fontSize: 14,
-//     fontWeight: '600',
-//   },
-//   footerText: {
-//     textAlign: 'center',
-//     marginTop: 40,
-//     color: '#94A3B8',
-//     fontSize: 12,
-//   },
-// });
 
 
-
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Fingerprint, RefreshCw } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Dimensions,
+  PermissionsAndroid,
+  Platform,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import ReactNativeBiometrics from "react-native-biometrics";
-import { RefreshCw, Fingerprint } from "lucide-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useCheckIn, useCheckOut } from "../src/employee/hook/useAttendance";
 
 const { width } = Dimensions.get("window");
 
@@ -450,36 +32,132 @@ const PunchScreen = () => {
 };
 
 const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
-  // Fingerprint + PIN/Password enabled
+  const [employee, setEmployee] = useState<{ id: string; firstname: string; lastname: string } | null>(null);
+  const [punchType, setPunchType] = useState<"IN" | "OUT">("IN");
+  const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number }>({
+    latitude: 28.6139,
+    longitude: 77.2090,
+  });
+
+  // TanStack Query Hooks
+  const { mutate: checkIn, isPending: isCheckingIn } = useCheckIn();
+  const { mutate: checkOut, isPending: isCheckingOut } = useCheckOut();
+
   const rnBiometrics = new ReactNativeBiometrics({
     allowDeviceCredentials: true,
   });
 
-  const [punchType, setPunchType] = useState<"IN" | "OUT">("IN");
+  useEffect(() => {
+    const loadEmployeeData = async () => {
+      try {
+        const storedData = await AsyncStorage.getItem("employeeData");
+        if (storedData) {
+          setEmployee(JSON.parse(storedData));
+        }
+      } catch (error) {
+        console.error("Error loading employee data:", error);
+      }
+    };
+    loadEmployeeData();
+  }, []);
+
+  // Attempt to get real location on mount or refresh
+  useEffect(() => {
+    const getRealLocation = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+          );
+          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            return;
+          }
+        } catch (err) {
+          console.warn(err);
+        }
+      }
+      
+      // @ts-ignore
+      navigator?.geolocation?.getCurrentPosition(
+        (pos: any) => {
+          setCurrentLocation({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        },
+        (err: any) => console.log("Location Error:", err),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+    };
+    getRealLocation();
+  }, [onRefresh]);
 
   const activeColor = punchType === "IN" ? "#10B981" : "#EF4444";
+  const isPending = isCheckingIn || isCheckingOut;
+
+  const handlePunch = async () => {
+    if (!employee) {
+      Alert.alert("Error", "User details not found. Please log in again.");
+      return;
+    }
+
+    const payload = {
+      employeeId: employee.id,
+      latitude: currentLocation.latitude,
+      longitude: currentLocation.longitude,
+      remarks: punchType === "IN" ? "Reached office on time" : "Leaving for the day",
+    };
+
+    if (punchType === "IN") {
+      checkIn(payload, {
+        onSuccess: (res) => {
+          Alert.alert("Success", res.message || "Checked-in successfully");
+          onRefresh();
+        },
+        onError: (err: any) => {
+          Alert.alert("Unauthorized", err?.response?.data?.message || "Outside Geofence or Check-in failed");
+        },
+      });
+    } else {
+      checkOut(payload, {
+        onSuccess: (res) => {
+          Alert.alert("Success", res.message || "Checked-out successfully");
+          onRefresh();
+        },
+        onError: (err: any) => {
+          Alert.alert("Unauthorized", err?.response?.data?.message || "Outside Geofence or Check-out failed");
+        },
+      });
+    }
+  };
 
   const handleDeviceAuth = async () => {
     try {
       const { available } = await rnBiometrics.isSensorAvailable();
 
       if (!available) {
-        Alert.alert("Error", "Device authentication not available");
+        Alert.alert(
+          "Biometrics Not Found",
+          "Fingerprint sensor is not available. For testing, would you like to skip biometric verification?",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Skip & Punch", onPress: () => handlePunch() }
+          ]
+        );
         return;
       }
 
       const result = await rnBiometrics.simplePrompt({
-        promptMessage: `Verify Fingerprint or Enter PIN to Punch ${punchType}`,
+        promptMessage: `Authorize ${punchType === "IN" ? "Check-In" : "Check-Out"}`,
       });
 
       if (result.success) {
-        Alert.alert(
-          "Punch Success",
-          `Punch ${punchType} recorded successfully`
-        );
+        handlePunch();
+      } else {
+        Alert.alert("Verification Failed", "Biometric verification is required to proceed.");
       }
     } catch (error) {
-      Alert.alert("Authentication Failed", "Authentication failed");
+      Alert.alert("Auth Error", "Could not verify identity. Please try again.");
       console.log("Auth Error:", error);
     }
   };
@@ -491,7 +169,9 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greetingText}>Hello, Md. Saif</Text>
+          <Text style={styles.greetingText}>
+            Hello, {employee ? `${employee.firstname} ${employee.lastname}` : "Employee"}
+          </Text>
           <Text style={styles.subText}>Mark your attendance</Text>
         </View>
         <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
@@ -558,18 +238,27 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
       {/* Action Button */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: activeColor }]}
+          style={[styles.actionButton, { backgroundColor: activeColor }, isPending && { opacity: 0.7 }]}
           onPress={handleDeviceAuth}
           activeOpacity={0.8}
+          disabled={isPending}
         >
           <View style={styles.btnContent}>
-            <Fingerprint size={24} color="#fff" />
-            <Text style={styles.actionBtnText}>VERIFY IDENTITY</Text>
+            {isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Fingerprint size={24} color="#fff" />
+                <Text style={styles.actionBtnText}>
+                  {punchType === "IN" ? "PUNCH IN" : "PUNCH OUT"}
+                </Text>
+              </>
+            )}
           </View>
         </TouchableOpacity>
 
         <Text style={styles.footerNote}>
-          Current Shift: 09:00 AM - 06:00 PM
+          Current Location: {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}
         </Text>
       </View>
     </SafeAreaView>
@@ -578,7 +267,6 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
 
 export default PunchScreen;
 
-/* ✅ STYLES (THIS FIXES THE ERROR) */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },
 
@@ -656,6 +344,7 @@ const styles = StyleSheet.create({
   btnContent: {
     flexDirection: "row",
     gap: 10,
+    alignItems: "center",
   },
   actionBtnText: {
     color: "#fff",

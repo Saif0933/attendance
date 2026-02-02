@@ -1,149 +1,97 @@
-
-import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import LottieView from 'lottie-react-native';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   View,
-  StatusBar,
-  FlatList,
-  Dimensions,
 } from 'react-native';
-import LottieView from 'lottie-react-native'; // Make sure to install lottie-react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useGetAttendance } from '../src/employee/hook/useAttendance';
+import { Attendance } from '../src/employee/type/attendance.type';
 
 const { width } = Dimensions.get('window');
 
 const AttendanceDashboardScreen: React.FC = () => {
-  // --- Data Matching the Video with Animation Placeholders ---
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadEmployeeData = async () => {
+      try {
+        const storedData = await AsyncStorage.getItem('employeeData');
+        if (storedData) {
+          const employee = JSON.parse(storedData);
+          setEmployeeId(employee.id);
+        }
+      } catch (error) {
+        console.error('Error loading employee data:', error);
+      }
+    };
+    loadEmployeeData();
+  }, []);
+
+  const { data: attendanceHistory, isLoading, error } = useGetAttendance({
+    employeeId: employeeId || '',
+  });
+
   const previousMonths = [
     {
       id: '1',
       month: 'December',
       year: '2025',
-      // Replace with your local Lottie file: require('../assets/christmas.json')
-      // Using a remote URI for demonstration purposes if you don't have local files yet
       animation: require('../src/assets/Fun Christmas tree.json'), 
-      color: '#81C784', // Greenish
+      color: '#81C784', 
       bg: '#E8F5E9',
     },
     {
       id: '2',
       month: 'November',
       year: '2025',
-      // Replace with: require('../assets/autumn_fruit.json')
       animation: require('../src/assets/fall.json'),
-      color: '#FFAB91', // Peach/Pink
+      color: '#FFAB91', 
       bg: '#FBE9E7',
     },
     {
       id: '3',
       month: 'October',
       year: '2025',
-      // Replace with: require('../assets/halloween.json')
       animation: require('../src/assets/Halloween.json'),
-      color: '#B39DDB', // Purple
+      color: '#B39DDB', 
       bg: '#EDE7F6',
     },
   ];
 
-  const attendanceData = [
-    {
-      day: 'Wednesday',
-      date: 'Jan 14, 2026',
-      type: 'present',
-      inTime: '9:06 AM',
-      outTime: null,
-      isLate: true,
-    },
-    {
-      day: 'Tuesday',
-      date: 'Jan 13, 2026',
-      type: 'present',
-      inTime: '8:56 AM',
-      outTime: '11:59 PM',
-    },
-    {
-      day: 'Monday',
-      date: 'Jan 12, 2026',
-      type: 'present',
-      inTime: '9:05 AM',
-      outTime: '5:49 PM',
-    },
-    {
-      day: 'Sunday',
-      date: 'Jan 11, 2026',
-      type: 'holiday',
-    },
-    {
-      day: 'Saturday',
-      date: 'Jan 10, 2026',
-      type: 'present',
-      inTime: '9:04 AM',
-      outTime: '5:08 PM',
-    },
-    {
-      day: 'Friday',
-      date: 'Jan 9, 2026',
-      type: 'present',
-      inTime: '9:01 AM',
-      outTime: '5:09 PM',
-    },
-    {
-      day: 'Thursday',
-      date: 'Jan 8, 2026',
-      type: 'present',
-      inTime: '9:01 AM',
-      outTime: '5:35 PM',
-    },
-    {
-      day: 'Wednesday',
-      date: 'Jan 7, 2026',
-      type: 'present',
-      inTime: '9:00 AM',
-      outTime: '5:01 PM',
-    },
-    {
-      day: 'Tuesday',
-      date: 'Jan 6, 2026',
-      type: 'present',
-      inTime: '9:04 AM',
-      outTime: '5:03 PM',
-    },
-    {
-      day: 'Monday',
-      date: 'Jan 5, 2026',
-      type: 'present',
-      inTime: '9:00 AM',
-      outTime: '11:59 PM',
-    },
-    {
-      day: 'Sunday',
-      date: 'Jan 4, 2026',
-      type: 'holiday',
-    },
-    {
-      day: 'Saturday',
-      date: 'Jan 3, 2026',
-      type: 'absent',
-    },
-    {
-      day: 'Friday',
-      date: 'Jan 2, 2026',
-      type: 'absent',
-    },
-    {
-      day: 'Thursday',
-      date: 'Jan 1, 2026',
-      type: 'absent',
-    },
-  ];
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
 
-  // --- Render Functions ---
+  const formatDay = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
+  };
+
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return '-';
+    const date = new Date(timeString);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
 
   const renderBanner = ({ item }: { item: any }) => (
     <View style={styles.bannerWrapper}>
-      {/* The Animated Card */}
       <View style={[styles.bannerCard, { backgroundColor: item.color }]}>
          <LottieView 
             source={item.animation} 
@@ -153,8 +101,6 @@ const AttendanceDashboardScreen: React.FC = () => {
             resizeMode="cover"
          />
       </View>
-      
-      {/* Month Text Below Card */}
       <View style={styles.bannerTextContainer}>
         <Text style={styles.bannerMonth}>
           {item.month} <Text style={styles.bannerYear}>• {item.year}</Text>
@@ -163,46 +109,40 @@ const AttendanceDashboardScreen: React.FC = () => {
     </View>
   );
 
-  const renderAttendanceItem = (item: any, index: number) => {
+  const renderAttendanceItem = (item: Attendance, index: number) => {
+    const isLate = item.status === 'LATE';
+    const isAbsent = item.status === 'ABSENT';
+    const isLeave = item.status === 'ON_LEAVE';
+
     return (
-      <View key={index} style={styles.rowContainer}>
-        {/* Left: Date Info */}
+      <View key={item.id || index} style={styles.rowContainer}>
         <View style={styles.dateColumn}>
-          <Text style={styles.dayText}>{item.day}</Text>
-          <Text style={styles.dateText}>{item.date}</Text>
+          <Text style={styles.dayText}>{formatDay(item.date)}</Text>
+          <Text style={styles.dateText}>{formatDate(item.date)}</Text>
         </View>
 
-        {/* Right: Status Info */}
         <View style={styles.statusContainer}>
-          {item.type === 'present' ? (
+          {!isAbsent && !isLeave ? (
             <>
-              {/* IN Column */}
               <View style={styles.timeColumn}>
                 <Text style={styles.labelIn}>IN</Text>
                 <View style={styles.timeRow}>
-                  <Text style={styles.timeText}>{item.inTime}</Text>
-                  {item.isLate && <Text style={styles.lateTag}> L</Text>}
+                  <Text style={styles.timeText}>{formatTime(item.checkIn)}</Text>
+                  {isLate && <Text style={styles.lateTag}> L</Text>}
                 </View>
               </View>
 
-              {/* OUT Column */}
               <View style={styles.timeColumn}>
                 <Text style={styles.labelOut}>OUT</Text>
-                <Text style={styles.timeText}>
-                    {item.outTime ? item.outTime : '-'}
-                </Text>
+                <Text style={styles.timeText}>{formatTime(item.checkOut)}</Text>
               </View>
             </>
-          ) : item.type === 'absent' ? (
-            <View style={styles.absentContainer}>
-                <Text style={styles.absentText}>ABSENT</Text>
-            </View>
           ) : (
-            // Holiday / Empty
-             <View style={styles.holidayContainer}>
-                <Text style={styles.dashText}>—</Text>
-                <Text style={styles.dashText}>—</Text>
-             </View>
+            <View style={styles.absentContainer}>
+                <Text style={[styles.absentText, isLeave && { color: '#FFA726' }]}>
+                    {item.status}
+                </Text>
+            </View>
           )}
         </View>
       </View>
@@ -214,13 +154,10 @@ const AttendanceDashboardScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* --- Header --- */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Attendance Dashboard</Text>
         </View>
 
-        {/* --- Previous Reports Section --- */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Previous Reports</Text>
           <Text style={styles.sectionSubtitle}>View your last 3 sessions</Text>
@@ -232,18 +169,25 @@ const AttendanceDashboardScreen: React.FC = () => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.bannerList}
-            snapToInterval={335} // card width + margin
+            snapToInterval={335}
             decelerationRate="fast"
           />
         </View>
 
-        {/* --- Current Analytics Section --- */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your current analytics</Text>
           <Text style={styles.sectionSubtitle}>Based on your current monthly data</Text>
           
           <View style={styles.listContainer}>
-            {attendanceData.map((item, index) => renderAttendanceItem(item, index))}
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#2D9CDB" style={{ marginTop: 20 }} />
+            ) : error ? (
+              <Text style={styles.errorText}>Failed to load attendance history</Text>
+            ) : attendanceHistory?.data?.length > 0 ? (
+              attendanceHistory.data.map((item: Attendance, index: number) => renderAttendanceItem(item, index))
+            ) : (
+              <Text style={styles.emptyText}>No attendance records found</Text>
+            )}
           </View>
         </View>
 
@@ -262,8 +206,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  
-  // --- Header ---
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -274,8 +216,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
-
-  // --- Section Styles ---
   section: {
     marginTop: 25,
   },
@@ -292,8 +232,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 15,
   },
-
-  // --- Banners ---
   bannerList: {
     paddingHorizontal: 20,
     paddingBottom: 10,
@@ -302,8 +240,8 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   bannerCard: {
-    width: 320,  // Increased Width
-    height: 200, // Increased Height
+    width: 320,
+    height: 200,
     borderRadius: 20,
     overflow: 'hidden',
     justifyContent: 'center',
@@ -325,15 +263,13 @@ const styles = StyleSheet.create({
   bannerMonth: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#000', // Black text below card
+    color: '#000',
   },
   bannerYear: {
     fontSize: 16,
     fontWeight: 'normal',
-    color: '#FFA726', // Orange highlight for year
+    color: '#FFA726',
   },
-
-  // --- List Row Styles ---
   listContainer: {
     marginTop: 5,
   },
@@ -346,8 +282,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F5F5F5', 
   },
-  
-  // Left Side
   dateColumn: {
     flex: 1,
   },
@@ -361,31 +295,27 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#9E9E9E',
   },
-
-  // Right Side
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     minWidth: 140, 
     justifyContent: 'flex-end',
   },
-  
-  // Time Columns
   timeColumn: {
     alignItems: 'center', 
     marginLeft: 20,
-    minWidth: 55,
+    minWidth: 60,
   },
   labelIn: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#4CAF50', // Green
+    color: '#4CAF50',
     marginBottom: 2,
   },
   labelOut: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#FFA726', // Orange
+    color: '#FFA726',
     marginBottom: 2,
   },
   timeRow: {
@@ -400,10 +330,8 @@ const styles = StyleSheet.create({
   lateTag: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#F44336', // Red L
+    color: '#F44336',
   },
-
-  // Special Statuses
   absentContainer: {
     flex: 1,
     alignItems: 'flex-end',
@@ -411,17 +339,18 @@ const styles = StyleSheet.create({
   absentText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#FF5252', // Red
+    color: '#FF5252',
   },
-  holidayContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    width: 130, 
+  errorText: {
+    textAlign: 'center',
+    color: '#F44336',
+    marginTop: 20,
+    fontSize: 14,
   },
-  dashText: {
-    fontSize: 20,
-    color: '#E0E0E0',
-    marginLeft: 30,
-    fontWeight: '300',
+  emptyText: {
+    textAlign: 'center',
+    color: '#9E9E9E',
+    marginTop: 20,
+    fontSize: 14,
   },
 });

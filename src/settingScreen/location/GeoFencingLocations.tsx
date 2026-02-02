@@ -2,20 +2,24 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Dimensions,
-  PermissionsAndroid, // Import for permissions
+  FlatList,
+  PermissionsAndroid,
   Platform,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { useDeleteGeofence, useGetAllGeofences } from '../../../api/hook/company/deofence/useGeofence';
+import { Geofence } from '../../../api/hook/type/geofence';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,19 +27,22 @@ const GeoFencingScreen: React.FC = () => {
   const navigation = useNavigation();
   const mapRef = useRef<MapView>(null);
 
-  // User ki current location store karne ke liye state
+  // Queries & Mutations
+  const { data: geofencesData, isLoading, refetch } = useGetAllGeofences();
+  const { mutate: deleteGeofence } = useDeleteGeofence();
+
+  const geofences: Geofence[] = geofencesData?.data || [];
+
   const [currentLocation, setCurrentLocation] = useState({
-    latitude: 23.3601, // Default fallback
+    latitude: 23.3601,
     longitude: 85.3250,
   });
 
-  // Zoom level maintain karne ke liye
   const [deltas, setDeltas] = useState({
     latitudeDelta: 0.012,
     longitudeDelta: 0.012,
   });
 
-  // 1. App start hote hi Permission maangna zaroori hai
   useEffect(() => {
     const requestLocationPermission = async () => {
       if (Platform.OS === 'android') {
@@ -62,7 +69,6 @@ const GeoFencingScreen: React.FC = () => {
     requestLocationPermission();
   }, []);
 
-  // 2. Zoom In Function
   const handleZoomIn = () => {
     const newDeltas = {
       latitudeDelta: deltas.latitudeDelta / 2,
@@ -75,7 +81,6 @@ const GeoFencingScreen: React.FC = () => {
     });
   };
 
-  // 3. Zoom Out Function
   const handleZoomOut = () => {
     const newDeltas = {
       latitudeDelta: deltas.latitudeDelta * 2,
@@ -88,7 +93,6 @@ const GeoFencingScreen: React.FC = () => {
     });
   };
 
-  // 4. Jab user ki location change ho (sabse important function)
   const onUserLocationChange = (e: any) => {
     const { coordinate } = e.nativeEvent;
     if (coordinate) {
@@ -96,16 +100,57 @@ const GeoFencingScreen: React.FC = () => {
         latitude: coordinate.latitude,
         longitude: coordinate.longitude,
       });
-
-      // Map ko smoothly wahan le jao (Lock effect)
-      mapRef.current?.animateToRegion({
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-        latitudeDelta: deltas.latitudeDelta,
-        longitudeDelta: deltas.longitudeDelta,
-      }, 500); // 500ms animation speed
     }
   };
+
+  const handleDelete = (id: string) => {
+    Alert.alert(
+      "Delete Geofence",
+      "Are you sure you want to delete this geofence?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: () => {
+            deleteGeofence(id, {
+              onSuccess: (res) => {
+                Alert.alert("Success", res.message || "Geofence deleted");
+              },
+              onError: (err: any) => {
+                Alert.alert("Error", err?.response?.data?.message || "Delete failed");
+              }
+            });
+          }
+        }
+      ]
+    );
+  };
+
+  const renderGeofenceItem = ({ item }: { item: Geofence }) => (
+    <View style={styles.listItem}>
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemTitle}>{item.name}</Text>
+        <Text style={styles.itemSubtitle}>
+          Radius: {item.radius}m | Lat: {item.latitude.toFixed(4)}, Lng: {item.longitude.toFixed(4)}
+        </Text>
+      </View>
+      <View style={styles.actionButtons}>
+        <TouchableOpacity 
+          style={styles.actionBtn} 
+          onPress={() => (navigation.navigate as any)('AddGeofenceScreen', { geofence: item })}
+        >
+          <MaterialIcons name="edit" size={22} color="#555" />
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.actionBtn, styles.deleteBtn]}
+          onPress={() => handleDelete(item.id)}
+        >
+          <MaterialIcons name="delete" size={22} color="#D32F2F" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -132,28 +177,28 @@ const GeoFencingScreen: React.FC = () => {
           ref={mapRef}
           provider={PROVIDER_GOOGLE}
           style={styles.map}
-          
-          // User Location Settings
-          showsUserLocation={true} // Blue dot dikhata hai
-          showsMyLocationButton={true} // My Location button wapas laya hu debug ke liye
-          followsUserLocation={true} // iOS ke liye helper
-          
-          // Event Listener: Jab user move karega
+          showsUserLocation={true}
           onUserLocationChange={onUserLocationChange}
-          
-          // Initial Region (Bas shuruat ke liye)
           initialRegion={{
             ...currentLocation,
             ...deltas
           }}
         >
-          {/* MARKER: Ab yeh "currentLocation" state se juda hai.
-             Jaise hi onUserLocationChange chalega, state badlegi aur marker move karega.
-          */}
-          <Marker 
-            coordinate={currentLocation} 
-            title={"You are here"}
-          />
+          {geofences.map((gf) => (
+            <React.Fragment key={gf.id}>
+              <Marker 
+                coordinate={{ latitude: gf.latitude, longitude: gf.longitude }}
+                title={gf.name}
+              />
+              <Circle 
+                center={{ latitude: gf.latitude, longitude: gf.longitude }}
+                radius={gf.radius}
+                strokeColor="rgba(255, 127, 80, 0.8)"
+                fillColor="rgba(255, 127, 80, 0.2)"
+                strokeWidth={2}
+              />
+            </React.Fragment>
+          ))}
         </MapView>
 
         {/* Zoom Controls */}
@@ -170,22 +215,22 @@ const GeoFencingScreen: React.FC = () => {
 
       {/* LIST ITEM SECTION */}
       <View style={styles.listContainer}>
-        <View style={styles.listItem}>
-          <View style={styles.itemInfo}>
-            <Text style={styles.itemTitle}>Current Location</Text>
-            <Text style={styles.itemSubtitle}>
-              Lat: {currentLocation.latitude.toFixed(4)}, Lng: {currentLocation.longitude.toFixed(4)}
-            </Text>
-          </View>
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('AddGeofenceScreen' as never)}>
-              <MaterialIcons name="edit" size={22} color="#555" />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]}>
-              <MaterialIcons name="delete" size={22} color="#D32F2F" />
-            </TouchableOpacity>
-          </View>
-        </View>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#FF7F50" style={{ marginTop: 20 }} />
+        ) : (
+          <FlatList
+            data={geofences}
+            keyExtractor={(item) => item.id}
+            renderItem={renderGeofenceItem}
+            ListEmptyComponent={
+              <Text style={{ textAlign: 'center', marginTop: 20, color: '#999' }}>
+                No geofences found.
+              </Text>
+            }
+            refreshing={isLoading}
+            onRefresh={refetch}
+          />
+        )}
       </View>
 
     </SafeAreaView>

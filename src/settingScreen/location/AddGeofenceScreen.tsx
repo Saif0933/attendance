@@ -1,56 +1,66 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Animated,
   Dimensions,
-  StatusBar,
+  KeyboardAvoidingView,
+  PermissionsAndroid,
   Platform,
   RefreshControl,
-  Animated,
-  KeyboardAvoidingView,
-  Alert,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Circle, Marker } from 'react-native-maps';
+import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native'; // Added Import
+import { useCreateGeofence, useUpdateGeofence } from '../../../api/hook/company/deofence/useGeofence';
+import { Geofence } from '../../../api/hook/type/geofence';
 
 const { width, height } = Dimensions.get('window');
 
 const AddGeofenceScreen: React.FC = () => {
-  const navigation = useNavigation(); // Added Hook
+  const navigation = useNavigation();
+  const route = useRoute();
+  
+  const editingGeofence = (route.params as { geofence?: Geofence })?.geofence;
+  
   const mapRef = useRef<MapView>(null);
-  // Animation Value for Bottom Sheet (Slide Up)
   const slideAnim = useRef(new Animated.Value(300)).current;
 
+  // Mutations
+  const { mutate: createGeofence, isPending: isCreating } = useCreateGeofence();
+  const { mutate: updateGeofence, isPending: isUpdating } = useUpdateGeofence();
+
   // State for Radius (in meters)
-  const [radius, setRadius] = useState(100);
+  const [radius, setRadius] = useState(editingGeofence?.radius || 100);
   
-  // State for Map Region (Focus on Ranchi)
+  // State for Map Region
   const [region, setRegion] = useState({
-    latitude: 23.357389,
-    longitude: 85.311457,
+    latitude: editingGeofence?.latitude || 23.3441,
+    longitude: editingGeofence?.longitude || 85.3096,
     latitudeDelta: 0.005,
     longitudeDelta: 0.005,
   });
 
-  // State for Form Inputs
-  const [category, setCategory] = useState('');
-  const [employee, setEmployee] = useState('');
-  const [address, setAddress] = useState('');
-  
-  // State for Refreshing
-  const [refreshing, setRefreshing] = useState(false);
+  // State for User's live location (Blue dot)
+  const [userLocation, setUserLocation] = useState<any>(null);
 
-  // 1. Bottom Sheet Entrance Animation
+  // State for Form Inputs (Aligned with Prisma Schema: Name, Lat, Lng, Radius)
+  const [address, setAddress] = useState(editingGeofence?.name || '');
+  
+  const [refreshing, setRefreshing] = useState(false);
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
+
   useEffect(() => {
+    requestPermission();
     Animated.timing(slideAnim, {
       toValue: 0,
       duration: 600,
@@ -58,60 +68,124 @@ const AddGeofenceScreen: React.FC = () => {
     }).start();
   }, []);
 
-  // Radius Handlers
+  const requestPermission = async () => {
+    if (Platform.OS === 'android') {
+      await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
+    }
+  };
+
   const increaseRadius = () => setRadius(prev => prev + 10);
   const decreaseRadius = () => setRadius(prev => (prev > 10 ? prev - 10 : prev));
 
-  // Handle Region Change
   const onRegionChangeComplete = (newRegion: any) => {
     setRegion(newRegion);
   };
 
-  // 2. Handle "Use Current Location" & Refresh
+  const onUserLocationChange = (e: any) => {
+    setUserLocation(e.nativeEvent.coordinate);
+  };
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    setIsReverseGeocoding(true);
+    try {
+      // Using Nominatim (OpenStreetMap) - Free reverse geocoding
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
+        {
+          headers: {
+            'User-Agent': 'AttendanceApp/1.0',
+          },
+        }
+      );
+      const data = await response.json();
+      if (data && data.display_name) {
+        setAddress(data.display_name);
+      }
+    } catch (error) {
+      console.log('Reverse geocoding error:', error);
+      Alert.alert("Geocoding Error", "Could not get address for this location.");
+      setAddress(`Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+    } finally {
+      setIsReverseGeocoding(false);
+    }
+  };
+
   const handleCurrentLocation = () => {
-    setRefreshing(true);
-    
-    // Simulate fetching location (In real app, use Geolocation.getCurrentPosition)
-    setTimeout(() => {
-      const currentLat = 23.3441; // Example: New Ranchi Coords
-      const currentLong = 85.3096;
-      
+    if (userLocation) {
       const newRegion = {
         ...region,
-        latitude: currentLat,
-        longitude: currentLong,
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
       };
-
       setRegion(newRegion);
-      
-      // Animate Map to new location
       mapRef.current?.animateToRegion(newRegion, 1000);
-      
-      setRefreshing(false);
-      Alert.alert("Location Updated", "Map moved to current location.");
-    }, 1500);
+      reverseGeocode(userLocation.latitude, userLocation.longitude);
+    } else {
+      Alert.alert("Error", "Unable to get current location. Please ensure location services are on.");
+    }
   };
 
-  // Pull-to-Refresh Handler
+  const handleConfirm = () => {
+    if (!address.trim()) {
+      Alert.alert("Error", "Please provide a geofence name/address.");
+      return;
+    }
+
+    const payload = {
+      name: address,
+      latitude: region.latitude,
+      longitude: region.longitude,
+      radius: radius,
+    };
+
+    if (editingGeofence) {
+      updateGeofence(
+        { id: editingGeofence.id, payload },
+        {
+          onSuccess: (response) => {
+            Alert.alert("Success", response.message || "Geofence updated successfully");
+            navigation.goBack();
+          },
+          onError: (error: any) => {
+            Alert.alert("Error", error?.response?.data?.message || "Failed to update geofence");
+          },
+        }
+      );
+    } else {
+      createGeofence(payload, {
+        onSuccess: (response) => {
+          Alert.alert("Success", response.message || "Geofence created successfully");
+          navigation.goBack();
+        },
+        onError: (error: any) => {
+          Alert.alert("Error", error?.response?.data?.message || "Failed to create geofence");
+        },
+      });
+    }
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
-    // Simulate reloading data
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
+    setTimeout(() => setRefreshing(false), 2000);
   };
+
+  const isLoading = isCreating || isUpdating;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
-      {/* 1. MAP SECTION (Top Half) */}
+      {/* 1. MAP SECTION */}
       <View style={styles.mapContainer}>
         <MapView
           ref={mapRef}
           provider={PROVIDER_GOOGLE}
           style={styles.map}
           region={region}
+          showsUserLocation={true}
+          onUserLocationChange={onUserLocationChange}
           onRegionChangeComplete={onRegionChangeComplete}
         >
           <Marker coordinate={region} />
@@ -124,11 +198,10 @@ const AddGeofenceScreen: React.FC = () => {
           />
         </MapView>
 
-        {/* Floating Search Bar */}
         <View style={styles.searchBar}>
           <TouchableOpacity 
             style={styles.backBtn} 
-            onPress={() => navigation.goBack()} // Added onPress handler
+            onPress={() => navigation.goBack()}
           >
             <Icon name="arrow-back" size={24} color="#555" />
           </TouchableOpacity>
@@ -136,7 +209,6 @@ const AddGeofenceScreen: React.FC = () => {
           <Icon name="location-sharp" size={24} color="#999" />
         </View>
 
-        {/* Floating "Use current location" Button */}
         <TouchableOpacity 
           style={styles.currentLocationBtn} 
           onPress={handleCurrentLocation}
@@ -146,13 +218,11 @@ const AddGeofenceScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* 2. FORM SECTION (Bottom Sheet) */}
-      {/* 3. KeyboardAvoidingView added to fix typing issue */}
+      {/* 2. FORM SECTION */}
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoidingContainer}
       >
-        {/* 4. Animated.View for Slide Up Animation */}
         <Animated.View 
           style={[
             styles.bottomSheetContainer,
@@ -167,7 +237,6 @@ const AddGeofenceScreen: React.FC = () => {
             }
           >
             
-            {/* Selected Location Info */}
             <View style={styles.infoRow}>
               <Icon name="location-sharp" size={24} color="#FF7F50" style={styles.iconWidth} />
               <View>
@@ -178,37 +247,10 @@ const AddGeofenceScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* Employee Category */}
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <MaterialIcons name="category" size={20} color="#FF7F50" style={styles.iconWidth} />
-                <Text style={styles.labelTitle}>Employee Category</Text>
-              </View>
-              <TouchableOpacity style={styles.inputBox}>
-                <Text style={category ? styles.inputText : styles.placeholderText}>
-                  {category || 'Select Category'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Select Employees */}
-            <View style={styles.inputGroup}>
-              <View style={styles.labelRow}>
-                <FontAwesome5 name="users" size={18} color="#FF7F50" style={styles.iconWidth} />
-                <Text style={styles.labelTitle}>Select Employees</Text>
-              </View>
-              <TouchableOpacity style={styles.inputBox}>
-                <Text style={employee ? styles.inputText : styles.placeholderText}>
-                  {employee || 'Select Employees'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Geo-fence Radius Control */}
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <MaterialIcons name="radio-button-checked" size={20} color="#FF7F50" style={styles.iconWidth} />
-                <Text style={styles.labelTitle}>Geo-fence Radius</Text>
+                <Text style={styles.labelTitle}>Geo-fence Radius (meters)</Text>
               </View>
               
               <View style={styles.radiusControlContainer}>
@@ -221,7 +263,7 @@ const AddGeofenceScreen: React.FC = () => {
                     style={styles.radiusInput} 
                     value={radius.toString()} 
                     keyboardType="numeric"
-                    editable={false} 
+                    onChangeText={(text) => setRadius(Number(text) || 0)}
                   />
                 </View>
 
@@ -232,25 +274,41 @@ const AddGeofenceScreen: React.FC = () => {
               <Text style={styles.radiusUnitText}>{radius} meters</Text>
             </View>
 
-            {/* Geofence Address Input - Fixed visibility */}
-            <View style={styles.addressContainer}>
-              <TextInput
-                style={styles.addressInput}
-                placeholder="Geofence Address"
-                placeholderTextColor="#999"
-                multiline
-                value={address}
-                onChangeText={setAddress}
-                textAlignVertical="top" // Android fix for multiline
-              />
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <MaterialIcons name="edit-location" size={20} color="#FF7F50" style={styles.iconWidth} />
+                <Text style={styles.labelTitle}>Geofence Name / Address</Text>
+              </View>
+              <View style={[styles.addressContainer, isReverseGeocoding && { opacity: 0.6 }]}>
+                <TextInput
+                  style={styles.addressInput}
+                  placeholder="Enter geofence name or address"
+                  placeholderTextColor="#999"
+                  multiline
+                  value={address}
+                  onChangeText={setAddress}
+                  textAlignVertical="top"
+                />
+                {isReverseGeocoding && (
+                  <ActivityIndicator size="small" color="#FF7F50" style={styles.loaderInside} />
+                )}
+              </View>
             </View>
 
-            {/* Confirm Button */}
-            <TouchableOpacity style={styles.confirmButton}>
-              <Text style={styles.confirmButtonText}>Confirm Location</Text>
+            <TouchableOpacity 
+              style={[styles.confirmButton, isLoading && { opacity: 0.7 }]}
+              onPress={handleConfirm}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.confirmButtonText}>
+                  {editingGeofence ? "Update Geofence" : "Save Geofence"}
+                </Text>
+              )}
             </TouchableOpacity>
 
-            {/* Extra padding for scrolling when keyboard is open */}
             <View style={{ height: 20 }} /> 
           </ScrollView>
         </Animated.View>
@@ -379,22 +437,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  inputBox: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    backgroundColor: '#F9F9F9',
-  },
-  inputText: {
-    fontSize: 14,
-    color: '#000',
-  },
-  placeholderText: {
-    fontSize: 14,
-    color: '#999',
-  },
 
   // Radius Control
   radiusControlContainer: {
@@ -446,16 +488,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 15,
     paddingVertical: 5,
-    minHeight: 80, // Changed to minHeight for better expansion
+    minHeight: 80,
     marginBottom: 25,
     backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   addressInput: {
     flex: 1,
     fontSize: 14,
     color: '#000',
-    textAlignVertical: 'top', // Crucial for Android text area
+    textAlignVertical: 'top',
     minHeight: 60,
+    paddingTop: 10,
+  },
+  loaderInside: {
+    marginTop: 15,
+    marginLeft: 10,
   },
 
   // Confirm Button

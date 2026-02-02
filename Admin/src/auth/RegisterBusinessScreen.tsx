@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
@@ -69,6 +70,19 @@ const RegisterBusinessScreen = () => {
   const [pickerOptions, setPickerOptions] = useState<string[]>([]);
   const [currentSelectionHandler, setCurrentSelectionHandler] = useState<(val: string) => void>(() => {});
 
+  React.useEffect(() => {
+    const checkRegistration = async () => {
+      const registered = await AsyncStorage.getItem('adminIsBusinessRegistered');
+      if (registered === 'true') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'AdminBottomTabNavigation' }],
+        });
+      }
+    };
+    checkRegistration();
+  }, []);
+
   // --- FUNCTIONS ---
   const handleImagePick = async () => {
     try {
@@ -137,8 +151,15 @@ const RegisterBusinessScreen = () => {
     }
 
     onboardCompany(payload, {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             console.log('Business Created Successfully', data);
+            
+            try {
+              await AsyncStorage.setItem('adminIsBusinessRegistered', 'true');
+            } catch (error) {
+              console.error('Error saving business registration state', error);
+            }
+
             Alert.alert("Success", "Business Profile Created!", [
                 { 
                     text: "OK", 

@@ -1,6 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   ListRenderItem,
   RefreshControl,
@@ -12,38 +14,52 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useDeleteShift, useGetAllShifts } from '../../api/hook/company/shift/useShift';
+import { Shift } from '../../api/hook/type/shift';
 
-// 1. Define the structure of your data object
-interface ShiftData {
-  id: string;
-  name: string;
-  time: string;
-}
-
-const App = () => {
+const CompanyShifts = () => {
   const navigation = useNavigation();
   
-  // 2. Apply the interface to useState
-  const [shifts, setShifts] = useState<ShiftData[]>([
-    { id: '1', name: 'Day Shift', time: '9:00 AM - 5:00 PM' },
-  ]);
+  // Backend Hooks
+  const { data: shiftsResponse, isLoading, refetch } = useGetAllShifts();
+  const { mutate: deleteShift } = useDeleteShift();
 
-  // Refresh Control State
+  const shifts = shiftsResponse?.data || [];
+
   const [refreshing, setRefreshing] = useState(false);
 
-  // Refresh Logic
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate fetching data
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
-  // Header Component
+  const handleDelete = (id: string) => {
+    Alert.alert(
+      "Delete Shift",
+      "Are you sure you want to delete this shift?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: () => {
+            deleteShift(id, {
+              onSuccess: (res) => {
+                Alert.alert("Success", res.message || "Shift deleted successfully");
+              },
+              onError: (err: any) => {
+                Alert.alert("Error", err?.response?.data?.message || "Failed to delete shift");
+              }
+            });
+          }
+        }
+      ]
+    );
+  };
+
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      {/* Top Bar: Back Button and Title */}
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#FFFFFF" />
@@ -52,7 +68,6 @@ const App = () => {
         <View style={{ width: 24 }} /> 
       </View>
 
-      {/* Column Headers */}
       <View style={styles.columnHeaderContainer}>
         <View style={styles.columnLeft}>
           <Text style={styles.columnTitle}>Shift Name</Text>
@@ -68,11 +83,28 @@ const App = () => {
     </View>
   );
 
-  // 3. Explicitly type the renderItem function using ListRenderItem
-  const renderItem: ListRenderItem<ShiftData> = ({ item }) => (
+  const renderItem: ListRenderItem<Shift> = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Text style={styles.itemTextLeft}>{item.name}</Text>
-      <Text style={styles.itemTextRight}>{item.time}</Text>
+      <View style={styles.itemLeft}>
+        <Text style={styles.itemTextLeft}>{item.name}</Text>
+      </View>
+      <View style={styles.itemRight}>
+        <Text style={styles.itemTextRight}>{item.startTime} - {item.endTime}</Text>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity 
+            onPress={() => (navigation.navigate as any)('AddShift', { shift: item })}
+            style={styles.actionIcon}
+          >
+            <Icon name="edit" size={20} color="#FF914D" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={() => handleDelete(item.id)}
+            style={styles.actionIcon}
+          >
+            <Icon name="delete" size={20} color="#FF5252" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 
@@ -82,20 +114,31 @@ const App = () => {
       
       {renderHeader()}
 
-      <FlatList
-        data={shifts}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#FF914D']}
-            tintColor="#FF914D"
-          />
-        }
-      />
+      {isLoading ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#FF914D" />
+        </View>
+      ) : (
+        <FlatList
+          data={shifts}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No shifts found</Text>
+            </View>
+          }
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#FF914D']}
+              tintColor="#FF914D"
+            />
+          }
+        />
+      )}
 
       <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={() => navigation.navigate('AddShift' as never)}>
         <Icon name="add" size={30} color="#FFFFFF" />
@@ -164,6 +207,38 @@ const styles = StyleSheet.create({
   listContent: {
     paddingTop: 0,
   },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+  },
+  itemLeft: {
+    flex: 1,
+  },
+  itemRight: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    marginLeft: 10,
+  },
+  actionIcon: {
+    padding: 5,
+    marginLeft: 5,
+  },
   itemContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -205,4 +280,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default CompanyShifts;

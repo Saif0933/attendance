@@ -1,5 +1,7 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
 // import AuthNavigator from './AuthNavigator';
 // import AdminNavigator from './AdminNavigator';
@@ -28,7 +30,7 @@ import PersonalDetails from '../settingScreen/PersonalDetails';
 import PopUpDesignationScreen from '../settingScreen/PopUpDesignationScreen';
 import ReportsScreen from '../settingScreen/ReportsScreen';
 
-import SelectRoleScreen from '../auth/SelectRoleScreen';
+import SelectRoleScreen from '../roleScreen/SelectRoleScreen';
 import EmployeeLoginScreen from '../employee/employeeAuth/EmployeeLoginScreen';
 import EmployeeVerificationScreen from '../employee/employeeAuth/VerificationScreen';
 import BottomTabNavigator from './BottomTabNavigator';
@@ -110,14 +112,49 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const RootNavigator = () => {
-  const user = {
-    isLoggedIn: false, // change true to test
-    role: 'ADMIN', // ADMIN | EMPLOYEE
-  };
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList>('SelectRoleScreen');
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const employeeToken = await AsyncStorage.getItem('employeeToken');
+        const adminIsLoggedIn = await AsyncStorage.getItem('adminIsLoggedIn');
+        const adminIsBusinessRegistered = await AsyncStorage.getItem('adminIsBusinessRegistered');
+
+        if (employeeToken) {
+          setInitialRoute('EmployeeBottomTab');
+        } else if (adminIsLoggedIn === 'true') {
+          if (adminIsBusinessRegistered === 'true') {
+            setInitialRoute('AdminBottomTabNavigation');
+          } else {
+            setInitialRoute('RegisterBusinessScreen');
+          }
+        } else {
+          setInitialRoute('SelectRoleScreen');
+        }
+      } catch (error) {
+        console.error('Error checking login status:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#2FAED7" />
+      </View>
+    );
+  }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}
-    initialRouteName='SelectRoleScreen'
+    <Stack.Navigator 
+      screenOptions={{ headerShown: false }}
+      initialRouteName={initialRoute}
     >
 
       {/* Role Selection Screen */}

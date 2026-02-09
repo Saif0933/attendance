@@ -1,441 +1,9 @@
 
-// import { useNavigation } from '@react-navigation/native';
-// import React, { useEffect, useRef, useState } from 'react';
-// import {
-//   Animated,
-//   Dimensions,
-//   FlatList,
-//   Image,
-//   Modal,
-//   ScrollView,
-//   StyleSheet,
-//   Text,
-//   TouchableOpacity,
-//   TouchableWithoutFeedback,
-//   View,
-// } from 'react-native';
-// import { SafeAreaView } from 'react-native-safe-area-context';
-// import Icon from 'react-native-vector-icons/Ionicons';
-// import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
-// const { height } = Dimensions.get('window');
-
-// const SalaryScreen: React.FC = () => {
-//   const navigation = useNavigation();
-  
-//   // Animation Value: Starts from bottom
-//   const slideAnim = useRef(new Animated.Value(300)).current;
-  
-//   // State for Date Picker Modal
-//   const [showDatePicker, setShowDatePicker] = useState(false);
-//   const [selectedDate, setSelectedDate] = useState('Oct 2025');
-//   const [availableDates, setAvailableDates] = useState<string[]>([]);
-
-//   // Logic to generate dates from Joining Date to Current Date
-//   useEffect(() => {
-//     const generateDates = () => {
-//       const dates = [];
-//       const currentDate = new Date();
-//       // Example Joining Date: Jan 1, 2023
-//       const joiningDate = new Date('2023-01-01'); 
-
-//       let tempDate = new Date(joiningDate);
-
-//       // Loop while tempDate is less than or equal to current date
-//       while (tempDate <= currentDate) {
-//         const monthStr = tempDate.toLocaleString('default', { month: 'short' });
-//         const yearStr = tempDate.getFullYear();
-//         dates.push(`${monthStr} ${yearStr}`);
-//         tempDate.setMonth(tempDate.getMonth() + 1);
-//       }
-      
-//       setAvailableDates(dates.reverse());
-//     };
-
-//     generateDates();
-
-//     // Run animation on mount
-//     Animated.timing(slideAnim, {
-//       toValue: 0,
-//       duration: 600,
-//       useNativeDriver: true,
-//     }).start();
-//   }, []);
-
-//   const handleSelectDate = (date: string) => {
-//     setSelectedDate(date);
-//     setShowDatePicker(false);
-//   };
-
-//   return (
-//     <SafeAreaView style={styles.container} edges={['top']}>
-      
-//       {/* Blue Header Background */}
-//       <View style={styles.headerBackground} />
-      
-//       <ScrollView 
-//         contentContainerStyle={styles.scrollContent}
-//         showsVerticalScrollIndicator={false}
-//       >
-//         {/* Header Section */}
-//         <View style={styles.headerContent}>
-//           <Image
-//             source={require('../src/assets/profile.jpg')} 
-//             style={styles.profileImage}
-//           />
-//           <Text style={styles.name}>Md. Saif</Text>
-//           <Text style={styles.role}>Employee</Text>
-//           <View style={styles.badge}>
-//             <Text style={styles.badgeText}>Full Stack Developer</Text>
-//           </View>
-//         </View>
-
-//         {/* Salary Period Selector */}
-//         <View style={styles.salaryForContainer}>
-//           <Text style={styles.salaryForText}>Salary For</Text>
-          
-//           <TouchableOpacity 
-//             style={styles.datePicker} 
-//             onPress={() => setShowDatePicker(true)}
-//           >
-//             <Icon name="calendar-outline" size={18} color="#000" />
-//             <Text style={styles.dateText}>{selectedDate}</Text>
-//           </TouchableOpacity>
-//         </View>
-
-//         {/* ANIMATED SHEET CARD */}
-//         <Animated.View
-//           style={[
-//             styles.sheetContainer,
-//             { transform: [{ translateY: slideAnim }] },
-//           ]}
-//         >
-//           {/* EARNINGS SECTION */}
-//           <Text style={styles.sectionTitle}>EARNINGS</Text>
-//           <View style={styles.row}>
-//             <Text style={styles.label}>CTC</Text>
-//             <Text style={styles.value}>₹ 10,000.00</Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={styles.label}>Daily Rate</Text>
-//             <Text style={styles.value}>₹ 322.58</Text>
-//           </View>
-
-//           <View style={styles.divider} />
-
-//           {/* ATTENDANCE SECTION */}
-//           <Text style={styles.sectionTitle}>ATTENDANCE</Text>
-//           <View style={styles.row}>
-//             <Text style={styles.label}>Total Days</Text>
-//             <Text style={styles.value}>26 days</Text>
-//           </View>
-//           <View style={styles.row}>
-//             <Text style={styles.label}>Payable Days</Text>
-//             <Text style={styles.value}>20 days</Text>
-//           </View>
-
-//           <View style={styles.divider} />
-
-//           {/* DEDUCTIONS SECTION */}
-//           <Text style={styles.sectionTitle}>DEDUCTIONS</Text>
-//           <View style={styles.row}>
-//             <Text style={[styles.label, styles.redText]}>Absent Days Deduction</Text>
-//             <Text style={[styles.value, styles.redText]}>₹ 1,935.48</Text>
-//           </View>
-
-//           <View style={styles.divider} />
-
-//           {/* SALARY PAYMENTS MADE SECTION */}
-//           <Text style={styles.sectionTitle}>SALARY PAYMENTS MADE</Text>
-//           <View style={styles.rowColumn}>
-//             <View>
-//               <Text style={styles.label}>Regular Earnings</Text>
-//               <Text style={styles.subText}>15.5 days × ₹ 322.58/day</Text>
-//               <Text style={styles.subText}>6 absent days, 9 half days</Text>
-//             </View>
-//             <Text style={styles.value}>₹ 5,000.00</Text>
-//           </View>
-
-//           <View style={styles.row}>
-//             <Text style={styles.label}>Payments Made</Text>
-//             <Text style={styles.value}>₹ 0.00</Text>
-//           </View>
-
-//           <View style={[styles.row, styles.rowMarginTop]}>
-//             <Text style={styles.label}>Remaining Balance</Text>
-//             <Text style={[styles.value, styles.yellowText]}>₹ 5,000.00</Text>
-//           </View>
-//           <Text style={styles.subText}>Outstanding amount</Text>
-
-//           {/* Generate Payslip Button */}
-//           <TouchableOpacity style={styles.generateBtn} onPress={() => navigation.navigate('PayslipScreen' as never)}>
-//             <MaterialIcons name="receipt-long" size={20} color="#000" />
-//             <Text style={styles.generateBtnText}>Generate Payslip</Text>
-//           </TouchableOpacity>
-//         </Animated.View>
-//       </ScrollView>
-
-//       {/* DATE PICKER MODAL */}
-//       <Modal
-//         animationType="fade"
-//         transparent={true}
-//         visible={showDatePicker}
-//         onRequestClose={() => setShowDatePicker(false)}
-//       >
-//         <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
-//           <View style={styles.modalOverlay}>
-//             <View style={styles.modalContent}>
-//               <Text style={styles.modalTitle}>Select Salary Month</Text>
-//               <View style={styles.modalListContainer}>
-//                 <FlatList
-//                   data={availableDates}
-//                   keyExtractor={(item) => item}
-//                   showsVerticalScrollIndicator={false}
-//                   renderItem={({ item }) => (
-//                     <TouchableOpacity 
-//                       style={[
-//                         styles.modalItem, 
-//                         item === selectedDate && styles.modalItemSelected
-//                       ]}
-//                       onPress={() => handleSelectDate(item)}
-//                     >
-//                       <Text style={[
-//                         styles.modalItemText,
-//                         item === selectedDate && styles.modalItemTextSelected
-//                       ]}>{item}</Text>
-//                       {item === selectedDate && (
-//                         <Icon name="checkmark-circle" size={20} color="#2a568f" />
-//                       )}
-//                     </TouchableOpacity>
-//                   )}
-//                 />
-//               </View>
-//               <TouchableOpacity 
-//                 style={styles.closeButton} 
-//                 onPress={() => setShowDatePicker(false)}
-//               >
-//                 <Text style={styles.closeButtonText}>Cancel</Text>
-//               </TouchableOpacity>
-//             </View>
-//           </View>
-//         </TouchableWithoutFeedback>
-//       </Modal>
-
-//     </SafeAreaView>
-//   );
-// };
-
-// export default SalaryScreen;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#fff', 
-//   },
-//   headerBackground: {
-//     position: 'absolute',
-//     top: 0,
-//     left: 0,
-//     right: 0,
-//     height: 420, // INCREASED: changed from 300 to 420
-//     backgroundColor: '#2a568f',
-//   },
-//   scrollContent: {
-//     paddingBottom: 40,
-//   },
-//   headerContent: {
-//     alignItems: 'center',
-//     paddingVertical: 25,
-//   },
-//   profileImage: {
-//     width: 90,
-//     height: 90,
-//     borderRadius: 45,
-//     borderWidth: 2,
-//     borderColor: '#fff',
-//     marginBottom: 10,
-//     marginTop: 20,
-//   },
-//   name: {
-//     color: '#fff',
-//     fontSize: 20,
-//     fontWeight: '700',
-//   },
-//   role: {
-//     color: '#fff',
-//     opacity: 0.8,
-//   },
-//   badge: {
-//     backgroundColor: '#000',
-//     borderRadius: 20,
-//     paddingHorizontal: 15,
-//     paddingVertical: 5,
-//     marginTop: 8,
-//   },
-//   badgeText: {
-//     color: '#fff',
-//     fontSize: 12,
-//   },
-//   salaryForContainer: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     paddingHorizontal: 20,
-//     marginBottom: 15,
-//   },
-//   salaryForText: {
-//     fontSize: 16,
-//     fontWeight: '600',
-//     color: '#fff',
-//   },
-//   datePicker: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: '#fff',
-//     paddingHorizontal: 10,
-//     paddingVertical: 6,
-//     borderRadius: 8,
-//   },
-//   dateText: {
-//     marginLeft: 6,
-//     fontSize: 14,
-//     fontWeight: '500',
-//   },
-//   sheetContainer: {
-//     backgroundColor: '#fff',
-//     paddingHorizontal: 20,
-//     paddingTop: 25,
-//     paddingBottom: 40,
-//     minHeight: height * 0.7,
-//     borderTopLeftRadius: 24, 
-//     borderTopRightRadius: 24, 
-//   },
-//   divider: {
-//     height: 1,
-//     backgroundColor: '#eee',
-//     marginVertical: 15,
-//   },
-//   sectionTitle: {
-//     fontSize: 12,
-//     color: '#888',
-//     fontWeight: '700',
-//     marginBottom: 10,
-//     marginTop: 5,
-//     letterSpacing: 0.5,
-//   },
-//   row: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginBottom: 8,
-//   },
-//   rowColumn: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     marginBottom: 12,
-//   },
-//   label: {
-//     fontSize: 14,
-//     color: '#333',
-//   },
-//   value: {
-//     fontSize: 14,
-//     color: '#000',
-//     fontWeight: '600',
-//   },
-//   subText: {
-//     fontSize: 12,
-//     color: '#777',
-//     marginTop: 2,
-//   },
-//   redText: {
-//     color: '#D32F2F',
-//   },
-//   yellowText: {
-//     color: '#F9A825',
-//   },
-//   rowMarginTop: {
-//     marginTop: 10,
-//   },
-//   generateBtn: {
-//     backgroundColor: '#FFD54F',
-//     marginTop: 30,
-//     flexDirection: 'row',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     paddingVertical: 15,
-//     borderRadius: 12,
-//   },
-//   generateBtnText: {
-//     fontSize: 16,
-//     fontWeight: '600',
-//     marginLeft: 8,
-//     color: '#000',
-//   },
-  
-//   // MODAL STYLES
-//   modalOverlay: {
-//     flex: 1,
-//     backgroundColor: 'rgba(0,0,0,0.5)',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   modalContent: {
-//     width: '85%',
-//     backgroundColor: '#fff',
-//     borderRadius: 15,
-//     padding: 20,
-//     maxHeight: height * 0.6,
-//     elevation: 5,
-//   },
-//   modalTitle: {
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//     marginBottom: 15,
-//     textAlign: 'center',
-//     color: '#333',
-//   },
-//   modalListContainer: {
-//     maxHeight: 300,
-//   },
-//   modalItem: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     paddingVertical: 15,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#f0f0f0',
-//   },
-//   modalItemSelected: {
-//     backgroundColor: '#f5f9ff',
-//     paddingHorizontal: 10,
-//     borderRadius: 8,
-//     borderBottomWidth: 0,
-//   },
-//   modalItemText: {
-//     fontSize: 16,
-//     color: '#333',
-//   },
-//   modalItemTextSelected: {
-//     color: '#2a568f',
-//     fontWeight: '600',
-//   },
-//   closeButton: {
-//     marginTop: 15,
-//     alignItems: 'center',
-//     paddingVertical: 10,
-//   },
-//   closeButtonText: {
-//     color: '#D32F2F',
-//     fontSize: 16,
-//     fontWeight: '500',
-//   },
-// });
-
-
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -449,27 +17,69 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { IMAGE_BASE_URL } from '../api/api';
+import { useGetAttendance } from '../src/employee/hook/useAttendance';
+import { useGetEmployeeById } from '../src/employee/hook/useEmployee';
 
 const { height, width } = Dimensions.get('window');
 
 const SalaryScreen: React.FC = () => {
   const navigation = useNavigation();
   
+  // State for Employee ID
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
+
   // State for Date Picker Modal
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('October 2023'); // Default matching image
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [availableDates, setAvailableDates] = useState<string[]>([]);
 
-  // Logic to generate dates
+  // Fetch Employee ID from AsyncStorage
+  useEffect(() => {
+    const getEmployeeId = async () => {
+      try {
+        const storedData = await AsyncStorage.getItem('employeeData');
+        if (storedData) {
+          const employee = JSON.parse(storedData);
+          setEmployeeId(employee.id);
+        }
+      } catch (error) {
+        console.error('Error fetching employee ID:', error);
+      }
+    };
+    getEmployeeId();
+  }, []);
+
+  // Fetch Employee Details
+  const { data: employeeDetails, isLoading: isLoadingEmployee } = useGetEmployeeById(employeeId || '');
+
+  // Calculate date range for selected month
+  const dateRange = useMemo(() => {
+    const startDate = new Date(selectedYear, selectedMonth, 1);
+    const endDate = new Date(selectedYear, selectedMonth + 1, 0); // Last day of month
+    return {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+    };
+  }, [selectedYear, selectedMonth]);
+
+  // Fetch Attendance for selected month
+  const { data: attendanceData, isLoading: isLoadingAttendance } = useGetAttendance({
+    employeeId: employeeId || '',
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
+  });
+
+  // Generate dates from Joining Date to Current Date
   useEffect(() => {
     const generateDates = () => {
       const dates = [];
       const currentDate = new Date();
-      const joiningDate = new Date('2023-01-01'); 
+      const joiningDate = new Date('2023-01-01'); // You can fetch this from employee data
       let tempDate = new Date(joiningDate);
       while (tempDate <= currentDate) {
-        const monthStr = tempDate.toLocaleString('default', { month: 'short' });
+        const monthStr = tempDate.toLocaleString('default', { month: 'long' });
         const yearStr = tempDate.getFullYear();
         dates.push(`${monthStr} ${yearStr}`);
         tempDate.setMonth(tempDate.getMonth() + 1);
@@ -480,9 +90,101 @@ const SalaryScreen: React.FC = () => {
   }, []);
 
   const handleSelectDate = (date: string) => {
-    setSelectedDate(date);
+    const [monthName, year] = date.split(' ');
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    setSelectedMonth(months.indexOf(monthName));
+    setSelectedYear(parseInt(year, 10));
     setShowDatePicker(false);
   };
+
+  // Extract employee info
+  const emp = employeeDetails?.data?.employee || employeeDetails?.data || employeeDetails?.employee || employeeDetails;
+  const fullName = emp ? `${emp.firstname || ''} ${emp.lastname || ''}`.trim() || 'Employee' : 'Loading...';
+  const designation = emp?.designation || 'N/A';
+  const empIdDisplay = emp?.employeeCode || emp?.id?.slice(0, 8).toUpperCase() || 'N/A';
+  const salary = emp?.salary || 0;
+  const salaryType = emp?.salaryType || 'Monthly';
+
+  // Profile Image URL
+  const getProfileImageUrl = () => {
+    if (!emp) return null;
+    const pp = emp.profilePicture || emp.avatar || emp.image;
+    if (!pp) return null;
+    let finalUrl = typeof pp === 'string' ? pp : pp.url || pp.secure_url || pp.uri;
+    if (!finalUrl) return null;
+    if (finalUrl.startsWith('http')) return finalUrl;
+    const normalizedPath = finalUrl.replace(/\\/g, '/');
+    const baseUrl = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+    const path = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+    return `${baseUrl}${path}`;
+  };
+  const profileImageUrl = getProfileImageUrl();
+
+  // Calculate salary details
+  const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+  const dailyRate = salaryType === 'Monthly' ? (salary / daysInMonth) : salary;
+
+  // Attendance summary calculations
+  const attendanceRecords = attendanceData?.data?.records || attendanceData?.records || [];
+  const attendanceSummary = useMemo(() => {
+    let present = 0;
+    let absent = 0;
+    let halfDay = 0;
+    let late = 0;
+    let onLeave = 0;
+
+    attendanceRecords.forEach((record: any) => {
+      switch (record.status) {
+        case 'PRESENT':
+          present++;
+          break;
+        case 'ABSENT':
+          absent++;
+          break;
+        case 'HALF_DAY':
+          halfDay++;
+          break;
+        case 'LATE':
+          late++;
+          present++; // Late still counts as present
+          break;
+        case 'ON_LEAVE':
+          onLeave++;
+          break;
+      }
+    });
+
+    const payableDays = present + (halfDay * 0.5);
+    const totalWorkingDays = attendanceRecords.length;
+    const absentDays = absent;
+    
+    return {
+      totalDays: totalWorkingDays || daysInMonth,
+      payableDays,
+      absentDays,
+      halfDays: halfDay,
+      lateDays: late,
+      leaveDays: onLeave,
+    };
+  }, [attendanceRecords, daysInMonth]);
+
+  // Salary calculations
+  const regularEarnings = dailyRate * attendanceSummary.payableDays;
+  const absentDeduction = dailyRate * attendanceSummary.absentDays;
+  const netPayable = regularEarnings;
+  const salaryPaid = 0; // This would come from a payments API
+  const remainingBalance = netPayable - salaryPaid;
+
+  const selectedDateDisplay = `${new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long' })} ${selectedYear}`;
+
+  if (isLoadingEmployee) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#2089dc" />
+        <Text style={{ marginTop: 10, color: '#666' }}>Loading salary details...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -506,14 +208,19 @@ const SalaryScreen: React.FC = () => {
         {/* --- PROFILE CARD --- */}
         <View style={styles.card}>
             <View style={styles.profileRow}>
-                <Image
-                    source={require('../src/assets/profile.jpg')} 
-                    style={styles.profileImage}
-                />
+                {profileImageUrl ? (
+                  <Image source={{ uri: profileImageUrl }} style={styles.profileImage} />
+                ) : (
+                  <View style={[styles.profileImage, { backgroundColor: '#E1E1E1', justifyContent: 'center', alignItems: 'center' }]}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#888' }}>
+                      {emp?.firstname ? emp.firstname.charAt(0).toUpperCase() : 'U'}
+                    </Text>
+                  </View>
+                )}
                 <View style={styles.profileInfo}>
-                    <Text style={styles.profileName}>Md. Saif</Text>
-                    <Text style={styles.profileRole}>Senior Software Engineer</Text>
-                    <Text style={styles.profileId}>EMP-ID: 10293</Text>
+                    <Text style={styles.profileName}>{fullName}</Text>
+                    <Text style={styles.profileRole}>{designation}</Text>
+                    <Text style={styles.profileId}>EMP-ID: {empIdDisplay}</Text>
                 </View>
             </View>
         </View>
@@ -524,7 +231,7 @@ const SalaryScreen: React.FC = () => {
           style={styles.dateSelector} 
           onPress={() => setShowDatePicker(true)}
         >
-          <Text style={styles.dateSelectorText}>{selectedDate}</Text>
+          <Text style={styles.dateSelectorText}>{selectedDateDisplay}</Text>
           <Icon name="chevron-down" size={20} color="#2a568f" />
         </TouchableOpacity>
 
@@ -536,12 +243,16 @@ const SalaryScreen: React.FC = () => {
             </View>
             
             <View style={styles.row}>
+                <Text style={styles.labelBlue}>Monthly CTC</Text>
+                <Text style={styles.value}>₹{salary.toLocaleString()}</Text>
+            </View>
+            <View style={[styles.row, { marginTop: 10 }]}>
                 <Text style={styles.labelBlue}>Daily Rate</Text>
-                <Text style={styles.value}>$250.00</Text>
+                <Text style={styles.value}>₹{dailyRate.toFixed(2)}</Text>
             </View>
             <View style={[styles.row, { marginTop: 10 }]}>
                 <Text style={styles.labelBlue}>Regular Earnings</Text>
-                <Text style={styles.value}>$5,000.00</Text>
+                <Text style={styles.value}>₹{regularEarnings.toFixed(2)}</Text>
             </View>
         </View>
 
@@ -550,25 +261,26 @@ const SalaryScreen: React.FC = () => {
             <View style={styles.cardHeader}>
                 <Icon name="calendar-outline" size={20} color="#2089dc" />
                 <Text style={styles.cardTitle}>Attendance Summary</Text>
+                {isLoadingAttendance && <ActivityIndicator size="small" color="#2089dc" style={{ marginLeft: 10 }} />}
             </View>
 
             <View style={styles.attendanceContainer}>
                 {/* Total Box */}
                 <View style={styles.attendBox}>
                     <Text style={styles.boxLabel}>TOTAL</Text>
-                    <Text style={styles.boxValue}>22</Text>
+                    <Text style={styles.boxValue}>{attendanceSummary.totalDays}</Text>
                 </View>
 
                 {/* Payable Box */}
                 <View style={[styles.attendBox, styles.boxPayable]}>
                     <Text style={[styles.boxLabel, {color: '#2089dc'}]}>PAYABLE</Text>
-                    <Text style={[styles.boxValue, {color: '#2089dc'}]}>20</Text>
+                    <Text style={[styles.boxValue, {color: '#2089dc'}]}>{attendanceSummary.payableDays}</Text>
                 </View>
 
                 {/* Absent Box */}
                 <View style={[styles.attendBox, styles.boxAbsent]}>
                     <Text style={[styles.boxLabel, {color: '#d32f2f'}]}>ABSENT</Text>
-                    <Text style={[styles.boxValue, {color: '#d32f2f'}]}>2</Text>
+                    <Text style={[styles.boxValue, {color: '#d32f2f'}]}>{attendanceSummary.absentDays}</Text>
                 </View>
             </View>
         </View>
@@ -581,7 +293,7 @@ const SalaryScreen: React.FC = () => {
             </View>
             <View style={styles.row}>
                 <Text style={styles.labelBlue}>Absent Day Deductions</Text>
-                <Text style={[styles.value, {color: '#d32f2f'}]}>-$500.00</Text>
+                <Text style={[styles.value, {color: '#d32f2f'}]}>-₹{absentDeduction.toFixed(2)}</Text>
             </View>
         </View>
 
@@ -596,7 +308,7 @@ const SalaryScreen: React.FC = () => {
              {/* Note: Blurred effect simulation or just grey text */}
              <View style={styles.row}>
                 <Text style={styles.footerLabel}>Salary Paid</Text>
-                <Text style={styles.footerValueFaded}>$4,500.00</Text>
+                <Text style={styles.footerValueFaded}>₹{salaryPaid.toFixed(2)}</Text>
              </View>
              
              <View style={[styles.divider, { marginVertical: 10 }]} />
@@ -609,10 +321,17 @@ const SalaryScreen: React.FC = () => {
              <View style={[styles.row, { marginTop: 15, alignItems: 'center' }]}>
                 <Text style={styles.bigTotalLabel}>Remaining Balance</Text>
                 <View style={{alignItems: 'flex-end'}}>
-                    <Text style={styles.bigTotalValue}>$0.00</Text>
-                    <View style={styles.settledBadge}>
-                        <Text style={styles.settledText}>SETTLED</Text>
-                    </View>
+                    <Text style={styles.bigTotalValue}>₹{remainingBalance.toFixed(2)}</Text>
+                    {remainingBalance <= 0 && (
+                      <View style={styles.settledBadge}>
+                          <Text style={styles.settledText}>SETTLED</Text>
+                      </View>
+                    )}
+                    {remainingBalance > 0 && (
+                      <View style={[styles.settledBadge, { backgroundColor: '#FFF3E0' }]}>
+                          <Text style={[styles.settledText, { color: '#F57C00' }]}>PENDING</Text>
+                      </View>
+                    )}
                 </View>
              </View>
         </View>
@@ -639,15 +358,15 @@ const SalaryScreen: React.FC = () => {
                     <TouchableOpacity 
                       style={[
                         styles.modalItem, 
-                        item === selectedDate && styles.modalItemSelected
+                        item === selectedDateDisplay && styles.modalItemSelected
                       ]}
                       onPress={() => handleSelectDate(item)}
                     >
                       <Text style={[
                         styles.modalItemText,
-                        item === selectedDate && styles.modalItemTextSelected
+                        item === selectedDateDisplay && styles.modalItemTextSelected
                       ]}>{item}</Text>
-                      {item === selectedDate && (
+                      {item === selectedDateDisplay && (
                         <Icon name="checkmark-circle" size={20} color="#2a568f" />
                       )}
                     </TouchableOpacity>

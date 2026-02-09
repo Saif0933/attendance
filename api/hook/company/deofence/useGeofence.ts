@@ -8,6 +8,7 @@ import {
     getGeofenceByIdApi,
     updateGeofenceApi,
 } from "../deofence/geofence.api";
+import { showError } from "../../../../src/utils/meesage";
 
 /* ---------- CREATE ---------- */
 export const useCreateGeofence = () => {
@@ -21,6 +22,9 @@ export const useCreateGeofence = () => {
         queryKey: ["geofences"],
       });
     },
+    onError(error) {
+        showError(error)
+    }
   });
 };
 
@@ -53,6 +57,9 @@ export const useUpdateGeofence = () => {
         queryKey: ["geofence", variables.id],
       });
     },
+    onError(error) {
+        showError(error)
+    }
   });
 };
 
@@ -67,5 +74,8 @@ export const useDeleteGeofence = () => {
         queryKey: ["geofences"],
       });
     },
+    onError(error) {
+        showError(error)
+    }
   });
 };

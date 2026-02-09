@@ -4,6 +4,7 @@ import {
   Alert,
   Dimensions,
   FlatList,
+  Image,
   KeyboardTypeOptions,
   Modal,
   Platform,
@@ -17,9 +18,12 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useGetAllShifts } from '../../../../api/hook/company/shift/useShift';
 import { useOnboardEmployee } from '../../../../src/employee/hook/useEmployee';
+import { useUploadProfilePicture } from '../../../../src/employee/hook/useProfilePicture';
 import { BloodGroup, EmployeePayload, Gender, PunchFromGeofence } from '../../../../src/employee/validator/employee.validator';
 
 const { width, height } = Dimensions.get('window');
@@ -46,6 +50,12 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
   
   // TanStack Query Hook for employee onboarding
   const { mutate: onboardEmployee, isPending } = useOnboardEmployee();
+  const { mutate: uploadProfilePicture, isPending: isUploadingImage } = useUploadProfilePicture();
+  const { data: shiftsData } = useGetAllShifts();
+  const shifts = (shiftsData as any)?.data || [];
+
+  // Profile Picture State
+  const [profileImage, setProfileImage] = useState<any>(null);
 
   // Toggles
   const [extraPayment, setExtraPayment] = useState(false);
@@ -68,6 +78,7 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
     email: '', pan: '', bankAcc: '', ifsc: '', bankName: '', branch: '', holderName: '',
     bloodGroup: '', maritalStatus: '', birthDate: '',
     emergencyName: '', emergencyPhone: '', geofence: '', address: '',
+    shiftId: '', shiftName: '',
   });
 
   // Modal State
@@ -89,11 +100,21 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
       setCurrentOptions(DROPDOWN_OPTIONS[field as string]);
       setModalTitle(title);
       setModalVisible(true);
+    } else if (field === 'shiftId') {
+      setCurrentSelectionField('shiftId' as any);
+      setCurrentOptions(shifts.map((s: any) => `${s.name} (${s.startTime} - ${s.endTime})`));
+      setModalTitle(title);
+      setModalVisible(true);
     }
   };
 
   const handleSelectOption = (item: string) => {
-    if (currentSelectionField) {
+    if (currentSelectionField === 'shiftId') {
+      const selectedShift = shifts.find((s: any) => `${s.name} (${s.startTime} - ${s.endTime})` === item);
+      if (selectedShift) {
+        setFormData(prev => ({ ...prev, shiftId: selectedShift.id, shiftName: item }));
+      }
+    } else if (currentSelectionField) {
       setFormData(prev => ({ ...prev, [currentSelectionField]: item }));
     }
     setModalVisible(false);
@@ -143,6 +164,22 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
       return new Date(year, month, day);
     }
     return new Date();
+  };
+
+  const handleSelectPhoto = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+    });
+
+    if (result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      setProfileImage({
+        uri: asset.uri,
+        type: asset.type,
+        name: asset.fileName || `profile_${Date.now()}.jpg`,
+      });
+    }
   };
 
   // Validate required fields before saving
@@ -199,11 +236,11 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
       lastname: formData.lastName.trim() || undefined,
       password: formData.password || undefined,
       email: formData.email.trim() || null,
-      employeeCode: formData.empCode ? parseInt(formData.empCode, 10) : undefined,
+      employeeCode: formData.empCode && !isNaN(parseInt(formData.empCode, 10)) ? parseInt(formData.empCode, 10) : undefined,
       designation: formData.designation.trim() || undefined,
       phoneNumber: formData.phone.trim(),
       Country: formData.country || undefined,
-      salary: formData.monthlySalary ? parseFloat(formData.monthlySalary) : undefined,
+      salary: formData.monthlySalary && !isNaN(parseFloat(formData.monthlySalary)) ? parseFloat(formData.monthlySalary) : undefined,
       birthDate: formData.birthDate ? parseDate(formData.birthDate) : undefined,
       emergencyContactPhone: formData.emergencyPhone.trim() || null,
       emergencyContactName: formData.emergencyName.trim() || null,
@@ -216,10 +253,10 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
       applicableToOvertime: overtime,
       shiftwiseAttendance: shiftwise,
       payrollConfiguration: formData.salaryType,
-      numberOfCasualLeaves: formData.casualLeaves ? parseInt(formData.casualLeaves, 10) : 0,
-      numberOfSickLeaves: formData.sickLeaves ? parseInt(formData.sickLeaves, 10) : 0,
-      numberOfPrivilegeLeaves: formData.privilegeLeaves ? parseInt(formData.privilegeLeaves, 10) : 0,
-      numberOfEmergencyLeaves: formData.emergencyLeaves ? parseInt(formData.emergencyLeaves, 10) : 0,
+      numberOfCasualLeaves: formData.casualLeaves && !isNaN(parseInt(formData.casualLeaves, 10)) ? parseInt(formData.casualLeaves, 10) : 0,
+      numberOfSickLeaves: formData.sickLeaves && !isNaN(parseInt(formData.sickLeaves, 10)) ? parseInt(formData.sickLeaves, 10) : 0,
+      numberOfPrivilegeLeaves: formData.privilegeLeaves && !isNaN(parseInt(formData.privilegeLeaves, 10)) ? parseInt(formData.privilegeLeaves, 10) : 0,
+      numberOfEmergencyLeaves: formData.emergencyLeaves && !isNaN(parseInt(formData.emergencyLeaves, 10)) ? parseInt(formData.emergencyLeaves, 10) : 0,
       multipleAttendance: multipleAttendance,
       liveTracking: liveTracking,
       mobileAttendance: mobileAttendance,
@@ -238,6 +275,7 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
       bankBranchName: formData.branch.trim(),
       accountHolderName: formData.holderName.trim(),
       address: formData.address.trim(),
+      shiftId: formData.shiftId || undefined,
     };
 
     console.log('Sending payload:', payload);
@@ -246,11 +284,37 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
     onboardEmployee(payload, {
       onSuccess: (data: any) => {
         console.log('Employee onboarded successfully:', data);
-        Alert.alert(
-          'Success',
-          'Staff member has been added successfully!',
-          [{ text: 'OK', onPress: () => onClose && onClose() }]
-        );
+        const employeeId = data?.data?.id;
+
+        if (employeeId && profileImage) {
+          // Upload profile picture if selected
+          uploadProfilePicture({
+            employeeId,
+            file: profileImage
+          }, {
+            onSuccess: () => {
+              Alert.alert(
+                'Success',
+                'Staff member added and profile picture uploaded successfully!',
+                [{ text: 'OK', onPress: () => onClose && onClose() }]
+              );
+            },
+            onError: (err: any) => {
+              console.error('Error uploading profile picture:', err);
+              Alert.alert(
+                'Partial Success',
+                'Staff member added, but profile picture upload failed.',
+                [{ text: 'OK', onPress: () => onClose && onClose() }]
+              );
+            }
+          });
+        } else {
+          Alert.alert(
+            'Success',
+            'Staff member has been added successfully!',
+            [{ text: 'OK', onPress: () => onClose && onClose() }]
+          );
+        }
       },
       onError: (error: any) => {
         console.error('Error onboarding employee:', error);
@@ -280,13 +344,21 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
         
         {/* Avatar */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatarPlaceholder}>
-            <Ionicons name="person" size={50} color="#64748B" />
+          <TouchableOpacity 
+            style={styles.avatarPlaceholder} 
+            onPress={handleSelectPhoto}
+            activeOpacity={0.8}
+          >
+            {profileImage ? (
+              <Image source={{ uri: profileImage.uri }} style={styles.avatarImagePreview} />
+            ) : (
+              <Ionicons name="person" size={50} color="#64748B" />
+            )}
             <View style={styles.cameraIconBadge}>
               <Ionicons name="camera" size={14} color="#fff" />
             </View>
-          </View>
-          <Text style={styles.uploadText}>Upload Photo</Text>
+          </TouchableOpacity>
+          <Text style={styles.uploadText}>{profileImage ? 'Change Photo' : 'Upload Photo'}</Text>
         </View>
 
         {/* Basic Info */}
@@ -353,6 +425,13 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
 
         {/* Toggles & Shift */}
         <ToggleItem label="Week Off Extra Payment" subLabel="Extra pay for working on off days" value={extraPayment} onValueChange={setExtraPayment} />
+
+        <DropdownItem 
+          label="Assigned Shift" 
+          value={formData.shiftName} 
+          placeholder="Select Shift"
+          onPress={() => openSelector('shiftId' as any, 'Select Shift')} 
+        />
 
         <DropdownItem 
           label="Week Off Day" 
@@ -449,19 +528,36 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
           <FlatList
             data={currentOptions}
             keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.modalItem} onPress={() => handleSelectOption(item)}>
-                <Text style={[
-                    styles.modalItemText, 
-                    currentSelectionField && formData[currentSelectionField] === item ? { color: '#3B82F6', fontWeight: 'bold' } : {}
-                ]}>
-                  {item}
-                </Text>
-                {currentSelectionField && formData[currentSelectionField] === item && (
+            renderItem={({ item }) => {
+              const isShift = currentSelectionField === 'shiftId';
+              const parts = isShift ? item.match(/^(.*)\s\((.*)\)$/) : null;
+              const displayName = parts ? parts[1] : item;
+              const displayTime = parts ? parts[2] : null;
+              const isSelected = isShift 
+                ? formData.shiftName === item 
+                : currentSelectionField && (formData as any)[currentSelectionField] === item;
+
+              return (
+                <TouchableOpacity style={styles.modalItem} onPress={() => handleSelectOption(item)}>
+                  <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginRight: 10 }}>
+                    <Text style={[
+                        styles.modalItemText, 
+                        isSelected ? { color: '#3B82F6', fontWeight: 'bold' } : {}
+                    ]}>
+                      {displayName}
+                    </Text>
+                    {isShift && displayTime && (
+                      <Text style={[styles.modalItemText, { color: '#64748B', fontSize: 13 }]}>
+                        {displayTime}
+                      </Text>
+                    )}
+                  </View>
+                  {isSelected && (
                    <Ionicons name="checkmark" size={20} color="#3B82F6" />
-                )}
-              </TouchableOpacity>
-            )}
+                  )}
+                </TouchableOpacity>
+              );
+            }}
           />
         </View>
       </Modal>
@@ -507,17 +603,30 @@ interface DropdownItemProps {
   isHalf?: boolean;
 }
 
-const DropdownItem: React.FC<DropdownItemProps> = ({ label, isHalf, placeholder, value, onPress }) => (
-  <View style={[styles.inputContainer, isHalf && styles.halfInput]}>
-    <Text style={styles.label}>{label}</Text>
-    <TouchableOpacity style={styles.dropdownBox} onPress={onPress} activeOpacity={0.7}>
-      <Text style={[styles.dropdownText, !value && { color: '#555' }]}>
-        {value || placeholder}
-      </Text>
-      <Ionicons name="chevron-down" size={18} color="#94A3B8" />
-    </TouchableOpacity>
-  </View>
-);
+const DropdownItem: React.FC<DropdownItemProps> = ({ label, isHalf, placeholder, value, onPress }) => {
+  const parts = value ? value.match(/^(.*)\s\((.*)\)$/) : null;
+  const mainValue = parts ? parts[1] : value;
+  const subValue = parts ? parts[2] : null;
+
+  return (
+    <View style={[styles.inputContainer, isHalf && styles.halfInput]}>
+      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity style={styles.dropdownBox} onPress={onPress} activeOpacity={0.7}>
+        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginRight: 10 }}>
+          <Text style={[styles.dropdownText, !value && { color: '#555' }]}>
+            {mainValue || placeholder}
+          </Text>
+          {subValue && (
+            <Text style={[styles.dropdownText, { color: '#94A3B8', fontSize: 13 }]}>
+              {subValue}
+            </Text>
+          )}
+        </View>
+        <Ionicons name="chevron-down" size={18} color="#94A3B8" />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 interface ToggleItemProps {
   label: string;
@@ -610,6 +719,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
   },
   modalItemText: { fontSize: 16, color: '#CBD5E1' },
+  avatarImagePreview: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 45,
+  },
 });
 
 export default AddStaffScreen;

@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useRef, useState } from 'react';
@@ -20,6 +19,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useVerifyOtp } from '../../../api/hook/company/auth/useAuth';
 import { RootStackParamList } from '../../../src/navigation/Stack';
+import { useAuthStore } from '../../../src/store/useAuthStore';
 
 const VerificationScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -29,6 +29,7 @@ const VerificationScreen = () => {
   const [otp, setOtp] = useState(['', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const inputs = useRef<Array<TextInput | null>>([]);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const { mutate: verifyOtp, isPending } = useVerifyOtp();
 
@@ -62,23 +63,12 @@ const VerificationScreen = () => {
         onSuccess: async (data) => {
           console.log('OTP verified successfully:', data);
           
-          let isRegistered = false;
-          // Check if business is already registered (if name exists)
-          if (data.data?.company?.name) {
-            isRegistered = true;
-          }
+          const { token, company } = data;
+          
+          // Store auth data in Zustand (which persists to AsyncStorage)
+          setAuth(token, company);
 
-          try {
-            await AsyncStorage.setItem('adminIsLoggedIn', 'true');
-            if (isRegistered) {
-              await AsyncStorage.setItem('adminIsBusinessRegistered', 'true');
-            }
-            if (data.data?.token) {
-              await AsyncStorage.setItem('adminToken', data.data.token);
-            }
-          } catch (error) {
-            console.error('Error saving admin login state', error);
-          }
+          const isRegistered = !!company.name;
 
           navigation.reset({
             index: 0,

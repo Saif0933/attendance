@@ -17,7 +17,8 @@ import {
   View,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-// import type { SettingsStackParamList } from '../src/navigation/SettingsStackNavigator';
+import { IMAGE_BASE_URL } from '../api/api';
+import { useGetEmployeeById } from '../src/employee/hook/useEmployee';
 import type { RootStackParamList } from '../src/navigation/Stack';
 
 const { height } = Dimensions.get('window');
@@ -40,9 +41,6 @@ const ProfileScreen = () => {
   // --- Navigation ---
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // --- State for Profile Image ---
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-
-  // --- State for Toggles ---
   const [toggles, setToggles] = useState({
     leaveSystem: false,
     faceAttendance: false,
@@ -50,6 +48,50 @@ const ProfileScreen = () => {
     geoFencing: false,
     customSalary: false,
   });
+
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getEmployeeId = async () => {
+      try {
+        const storedData = await AsyncStorage.getItem('employeeData');
+        if (storedData) {
+          const employee = JSON.parse(storedData);
+          setEmployeeId(employee.id);
+        }
+      } catch (error) {
+        console.error('Error fetching employee ID:', error);
+      }
+    };
+    getEmployeeId();
+  }, []);
+
+  const { data: employeeDetails } = useGetEmployeeById(employeeId || '');
+
+  const getProfileImageUrl = () => {
+    const emp = employeeDetails?.data?.employee || employeeDetails?.data || employeeDetails?.employee || employeeDetails;
+    if (!emp) return null;
+    const pp = emp.profilePicture || emp.avatar || emp.image || emp.logo || emp.profilePhoto;
+    if (!pp) return null;
+
+    let finalUrl = '';
+    if (typeof pp === 'string') {
+      finalUrl = pp;
+    } else {
+      finalUrl = pp.secure_url || pp.url || pp.uri || pp.imagePath;
+    }
+    if (!finalUrl) return null;
+    if (finalUrl.startsWith('http') || finalUrl.startsWith('data:')) return finalUrl;
+
+    const normalizedPath = finalUrl.replace(/\\/g, '/');
+    const baseUrl = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+    const path = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+    return `${baseUrl}${path}`;
+  };
+
+  const profileImageUrl = getProfileImageUrl();
+  const empInfo = employeeDetails?.data?.employee || employeeDetails?.data || employeeDetails?.employee || employeeDetails;
+  const fullName = empInfo ? `${empInfo.firstname || ''} ${empInfo.lastname || ''}`.trim() || 'User' : 'Loading...';
 
   // --- Animation Values ---
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -65,30 +107,6 @@ const ProfileScreen = () => {
 
   const handleToggle = (key: keyof typeof toggles) => {
     setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleEditProfilePicture = () => {
-    Alert.alert(
-      "Change Profile Photo",
-      "Choose an option to update your profile picture",
-      [
-        {
-          text: "Camera",
-          onPress: () => console.log("Launch Camera Logic Here"),
-        },
-        {
-          text: "Choose from Library",
-          onPress: () => {
-            setProfileImage("https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop");
-            Alert.alert("Success", "Profile picture updated!");
-          },
-        },
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-      ]
-    );
   };
 
   const handleLogout = async () => {
@@ -279,25 +297,22 @@ const ProfileScreen = () => {
               },
             ]}
           >
-            <TouchableOpacity onPress={handleEditProfilePicture} activeOpacity={0.9}>
-              {profileImage ? (
-                <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+            <View>
+              {profileImageUrl ? (
+                <Image source={{ uri: profileImageUrl }} style={styles.avatarImage} />
               ) : (
                 <View style={styles.placeholderAvatar}>
-                  <Text style={styles.placeholderText}>MS</Text>
+                  <Text style={styles.placeholderText}>
+                    {empInfo?.firstname ? empInfo.firstname.charAt(0).toUpperCase() : 'U'}
+                  </Text>
                 </View>
               )}
-              
-              {/* Camera/Edit Badge */}
-              <View style={styles.editBadge}>
-                <Ionicons name="camera" size={14} color="#FFF" />
-              </View>
-            </TouchableOpacity>
+            </View>
           </Animated.View>
           
           {/* USER NAME & ROLE - CENTERED */}
           <Animated.View style={{ opacity: headerOpacity, alignItems: 'center', width: '100%' }}>
-             <Text style={styles.userName}>Md. Saif</Text>
+             <Text style={styles.userName}>{fullName}</Text>
              {/* <Text style={styles.userRole}>Full Stack Developer</Text> */}
           </Animated.View>
         </View>

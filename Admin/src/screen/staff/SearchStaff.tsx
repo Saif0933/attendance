@@ -262,6 +262,7 @@
 
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   SafeAreaView,
@@ -273,46 +274,10 @@ import {
   View,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
 
-interface StaffMember {
-  id: string;
-  name: string;
-  role: string;
-  roleColor?: string;
-  status: 'IN' | 'Not marked';
-  time?: string;
-  avatar: string;
-  isImage: boolean;
-}
+const IMAGE_BASE_URL = "http://192.168.1.10:5000";
 
-const STAFF_DATA: StaffMember[] = [
-  {
-    id: '1',
-    name: 'Md. Saif',
-    role: 'Employee',
-    status: 'IN',
-    time: '9:11 AM',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    isImage: true,
-  },
-  {
-    id: '2',
-    name: 'Puja Staff',
-    role: 'Category Manager',
-    roleColor: '#FBBF24', // Adjusted slightly for dark mode visibility
-    status: 'Not marked',
-    avatar: 'P',
-    isImage: false,
-  },
-  {
-    id: '3',
-    name: 'Roshni Parween',
-    role: 'Employee',
-    status: 'Not marked',
-    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    isImage: true,
-  },
-];
 
 interface SearchStaffProps {
   onClose?: () => void;
@@ -321,39 +286,50 @@ interface SearchStaffProps {
 const SearchStaff: React.FC<SearchStaffProps> = ({ onClose }) => {
   const [searchText, setSearchText] = useState('');
 
-  const filteredData = STAFF_DATA.filter(item =>
-    item.name.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useGetAllEmployeesWithInfiniteQuery({ 
+    search: searchText,
+    limit: 20
+  });
 
-  const renderItem = ({ item }: { item: StaffMember }) => (
+  const employees = data?.pages.flatMap(page => page.data.employees) || [];
+
+  const renderItem = ({ item: emp }: { item: any }) => (
     <View style={styles.itemContainer}>
       <View style={styles.avatarContainer}>
-        {item.isImage ? (
-          <Image source={{ uri: item.avatar }} style={styles.avatarImage} />
+        {emp.profilePicture?.url ? (
+          <Image 
+            source={{ uri: `${IMAGE_BASE_URL}${emp.profilePicture.url}` }} 
+            style={styles.avatarImage} 
+          />
         ) : (
           <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarInitials}>{item.avatar}</Text>
+             <Text style={styles.avatarInitials}>
+              {emp.firstname.charAt(0).toUpperCase()}
+            </Text>
           </View>
         )}
       </View>
 
       <View style={styles.infoContainer}>
-        <Text style={styles.nameText}>{item.name}</Text>
-        <Text
-          style={[
-            styles.roleText,
-            item.roleColor ? { color: item.roleColor } : null,
-          ]}
-        >
-          {item.role}
+        <Text style={styles.nameText}>{emp.firstname} {emp.lastname}</Text>
+        <Text style={styles.roleText}>
+          {emp.designation || 'Staff'}
         </Text>
       </View>
 
       <View style={styles.statusContainer}>
-        {item.status === 'IN' ? (
+        {emp.attendances?.length > 0 ? (
           <View style={styles.statusInWrapper}>
-            <Text style={styles.statusInText}>IN</Text>
-            <Text style={styles.timeText}>{item.time}</Text>
+            <Text style={styles.statusInText}>{emp.attendances[0].status}</Text>
+            <Text style={styles.timeText}>
+               {emp.attendances[0].checkIn ? new Date(emp.attendances[0].checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+            </Text>
           </View>
         ) : (
           <View style={styles.notMarkedBadge}>
@@ -405,13 +381,26 @@ const SearchStaff: React.FC<SearchStaffProps> = ({ onClose }) => {
       </View>
 
       <FlatList
-        data={filteredData}
+        data={employees}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        onEndReached={() => {
+          if (hasNextPage) fetchNextPage();
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={() => (
+          isFetchingNextPage ? (
+            <ActivityIndicator size="small" color="#3B82F6" style={{ marginVertical: 20 }} />
+          ) : null
+        )}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No staff found</Text>
+          !isLoading ? (
+            <Text style={styles.emptyText}>No staff found</Text>
+          ) : (
+            <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 50 }} />
+          )
         }
       />
     </SafeAreaView>

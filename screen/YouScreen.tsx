@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -35,9 +36,17 @@ const AttendanceDashboardScreen: React.FC = () => {
     loadEmployeeData();
   }, []);
 
-  const { data: attendanceHistory, isLoading, error } = useGetAttendance({
+  const { data: attendanceHistory, isLoading, error, refetch } = useGetAttendance({
     employeeId: employeeId || '',
   });
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const previousMonths = [
     {
@@ -153,7 +162,18 @@ const AttendanceDashboardScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#2D9CDB']}
+            tintColor="#2D9CDB"
+          />
+        }
+      >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Attendance Dashboard</Text>
         </View>

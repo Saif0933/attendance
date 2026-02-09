@@ -655,7 +655,6 @@
 // export default AdminSettingScreen;
 
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
@@ -671,11 +670,15 @@ import {
   Switch,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-// Adjust this import path to point to your actual Stack.tsx file
+import { IMAGE_BASE_URL } from '../../../../api/api';
+import { useGetCompanyById, useOnboardCompany } from '../../../../api/hook/company/onBoarding/useCompany';
 import { RootStackParamList } from '../../../../src/navigation/Stack';
+import { useAuthStore } from '../../../../src/store/useAuthStore';
+import { showError, showSuccess } from '../../../../src/utils/meesage';
 
 const { height } = Dimensions.get('window');
 
@@ -698,6 +701,39 @@ interface MenuItemProps {
 const AdminSettingScreen = () => {
   // --- Navigation ---
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { company } = useAuthStore();
+  const { data } = useGetCompanyById(company?.id || '');
+  const { mutate: onboardCompany } = useOnboardCompany();
+  
+  const companyInfo = data?.company || data?.data || (data?.id ? data : null);
+
+  const getLogoUrl = () => {
+    if (!companyInfo?.logo) return null;
+    
+    let logoPath = '';
+    if (typeof companyInfo.logo === 'string') {
+      logoPath = companyInfo.logo;
+    } else {
+      // Check for secure_url (Cloudinary) or url or path
+      logoPath = companyInfo.logo.secure_url || companyInfo.logo.url || companyInfo.logo.path || '';
+    }
+
+    if (!logoPath) return null;
+
+    // Handle full URLs
+    if (logoPath.startsWith('http')) {
+      return logoPath;
+    }
+    
+    // Use IMAGE_BASE_URL from api.ts
+    const baseUrl = IMAGE_BASE_URL || 'http://192.168.1.7:5000';
+    
+    // Ensure no double slashes if IMAGE_BASE_URL ends with / and logoPath starts with /
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const cleanPath = logoPath.startsWith('/') ? logoPath : `/${logoPath}`;
+    
+    return `${cleanBase}${cleanPath}`;
+  };
   
   // --- State for Profile Image ---
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -731,10 +767,35 @@ const AdminSettingScreen = () => {
   };
 
   const handleEditProfilePicture = () => {
-    Alert.alert("Change Profile Photo", "Choose an option", [
-        { text: "Camera", onPress: () => console.log("Camera") },
-        { text: "Cancel", style: "cancel" }
-    ]);
+    launchImageLibrary({ mediaType: 'photo', quality: 0.5 }, (response) => {
+      if (response.didCancel) return;
+      if (response.errorCode) {
+        showError(new Error(response.errorMessage));
+        return;
+      }
+      if (response.assets && response.assets.length > 0) {
+        const asset = response.assets[0];
+        
+        const logoFile = {
+          uri: asset.uri,
+          type: asset.type,
+          name: asset.fileName || `logo_${Date.now()}.jpg`,
+        };
+
+        // Merge existing data to ensure update is complete
+        const currentData = companyInfo || {};
+        const payload = {
+          ...currentData,
+          logo: logoFile,
+        };
+
+        onboardCompany(payload, {
+          onSuccess: () => {
+            showSuccess("Logo updated successfully");
+          }
+        });
+      }
+    });
   };
 
   const handleLogout = async () => {
@@ -748,11 +809,9 @@ const AdminSettingScreen = () => {
           style: 'destructive',
           onPress: async () => {
              try {
-                await AsyncStorage.multiRemove([
-                    'adminIsLoggedIn', 
-                    'adminToken', 
-                    'adminIsBusinessRegistered'
-                ]);
+                // Logout from Zustand store (which clears persisted AsyncStorage)
+                useAuthStore.getState().logout();
+
                 navigation.reset({
                   index: 0,
                   routes: [{ name: 'SelectRoleScreen' }],
@@ -768,13 +827,13 @@ const AdminSettingScreen = () => {
 
   // --- Menu Data List ---
   const menuItems: MenuItemProps[] = [
-    { 
-      id: '1', 
-      title: 'Your Personal Details', 
-      type: 'navigation', 
-      icon: 'person', 
-      iconColor: '#3B82F6' 
-    },
+    // { 
+    //   id: '1', 
+    //   title: 'Your Personal Details', 
+    //   type: 'navigation', 
+    //   icon: 'person', 
+    //   iconColor: '#3B82F6' 
+    // },
     { 
       id: '1.5', 
       title: 'Company Details', 
@@ -803,41 +862,41 @@ const AdminSettingScreen = () => {
       icon: 'shield-checkmark', 
       iconColor: '#EC4899' // Pink
     },
-    {
-      id: '4',
-      title: 'Leave System',
-      type: 'toggle',
-      value: toggles.leaveSystem,
-      onToggle: () => handleToggle('leaveSystem'),
-      icon: 'calendar',
-      iconColor: '#EF4444' 
-    },
-    // --- UPDATED: Icon changed back to 'finger-print' ---
-    {
-      id: '5',
-      title: 'Face Attendance',
-      type: 'toggle',
-      value: toggles.faceAttendance,
-      onToggle: () => handleToggle('faceAttendance'),
-      icon: 'finger-print', // Changed from 'scan'
-      iconColor: '#10B981' 
-    },
-    {
-      id: '6',
-      title: 'Expense System',
-      type: 'toggle',
-      value: toggles.expenseSystem,
-      onToggle: () => handleToggle('expenseSystem'),
-      icon: 'wallet',
-      iconColor: '#8B5CF6' 
-    },
-    { 
-      id: '7', 
-      title: 'Expense Types', 
-      type: 'navigation', 
-      icon: 'list', 
-      iconColor: '#D946EF' 
-    },
+    // {
+    //   id: '4',
+    //   title: 'Leave System',
+    //   type: 'toggle',
+    //   value: toggles.leaveSystem,
+    //   onToggle: () => handleToggle('leaveSystem'),
+    //   icon: 'calendar',
+    //   iconColor: '#EF4444' 
+    // },
+    // // --- UPDATED: Icon changed back to 'finger-print' ---
+    // {
+    //   id: '5',
+    //   title: 'Face Attendance',
+    //   type: 'toggle',
+    //   value: toggles.faceAttendance,
+    //   onToggle: () => handleToggle('faceAttendance'),
+    //   icon: 'finger-print', // Changed from 'scan'
+    //   iconColor: '#10B981' 
+    // },
+    // {
+    //   id: '6',
+    //   title: 'Expense System',
+    //   type: 'toggle',
+    //   value: toggles.expenseSystem,
+    //   onToggle: () => handleToggle('expenseSystem'),
+    //   icon: 'wallet',
+    //   iconColor: '#8B5CF6' 
+    // },
+    // { 
+    //   id: '7', 
+    //   title: 'Expense Types', 
+    //   type: 'navigation', 
+    //   icon: 'list', 
+    //   iconColor: '#D946EF' 
+    // },
     {
       id: '8',
       title: 'Geo Fencing',
@@ -863,15 +922,15 @@ const AdminSettingScreen = () => {
       icon: 'cash', 
       iconColor: '#EAB308' 
     },
-    {
-        id: '10.5',
-        title: 'Maintain Salary Payment History',
-        type: 'toggle',
-        value: toggles.salaryHistory,
-        onToggle: () => handleToggle('salaryHistory'),
-        icon: 'refresh-circle', 
-        iconColor: '#84CC16' // Lime
-    },
+    // {
+    //     id: '10.5',
+    //     title: 'Maintain Salary Payment History',
+    //     type: 'toggle',
+    //     value: toggles.salaryHistory,
+    //     onToggle: () => handleToggle('salaryHistory'),
+    //     icon: 'refresh-circle', 
+    //     iconColor: '#84CC16' // Lime
+    // },
     { 
       id: '11', 
       title: 'Holidays', 
@@ -896,17 +955,17 @@ const AdminSettingScreen = () => {
         icon: 'notifications', 
         iconColor: '#F97316' // Orange
     },
-    {
-        id: '13',
-        title: 'WhatsApp Report',
-        subtitle: 'Get daily attendance report of your staff on WhatsApp at the end of the day.',
-        rightText: '20:00',
-        type: 'toggle',
-        value: toggles.whatsappReport,
-        onToggle: () => handleToggle('whatsappReport'),
-        icon: 'logo-whatsapp', 
-        iconColor: '#25D366' // WhatsApp Green
-    },
+    // {
+    //     id: '13',
+    //     title: 'WhatsApp Report',
+    //     subtitle: 'Get daily attendance report of your staff on WhatsApp at the end of the day.',
+    //     rightText: '20:00',
+    //     type: 'toggle',
+    //     value: toggles.whatsappReport,
+    //     onToggle: () => handleToggle('whatsappReport'),
+    //     icon: 'logo-whatsapp', 
+    //     iconColor: '#25D366' // WhatsApp Green
+    // },
   ];
 
   // --- Animations Interpolation ---
@@ -975,11 +1034,18 @@ const AdminSettingScreen = () => {
             ]}
           >
             <TouchableOpacity onPress={handleEditProfilePicture} activeOpacity={0.9}>
-              {profileImage ? (
-                <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+              {getLogoUrl() ? (
+                <Image 
+                  key={getLogoUrl()} // Force refresh when URL changes
+                  source={{ uri: getLogoUrl() as string }} 
+                  style={styles.avatarImage} 
+                  resizeMode="cover"
+                />
               ) : (
                 <View style={styles.placeholderAvatar}>
-                  <Text style={styles.placeholderText}>MS</Text>
+                  <Text style={styles.placeholderText}>
+                    {companyInfo?.name ? companyInfo.name.slice(0, 2).toUpperCase() : 'CO'}
+                  </Text>
                 </View>
               )}
               
@@ -990,7 +1056,7 @@ const AdminSettingScreen = () => {
           </Animated.View>
           
           <Animated.View style={{ opacity: headerOpacity, alignItems: 'center', width: '100%' }}>
-             <Text style={styles.userName}>Md. Saif</Text>
+             <Text style={styles.userName}>{companyInfo?.name || "Loading..."}</Text>
           </Animated.View>
         </View>
 

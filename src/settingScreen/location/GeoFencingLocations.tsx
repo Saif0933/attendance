@@ -1,6 +1,6 @@
 
-import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -68,6 +68,54 @@ const GeoFencingScreen: React.FC = () => {
 
     requestLocationPermission();
   }, []);
+
+  // Function to focus the map based on data or current location
+  const focusMap = useCallback(() => {
+    if (!mapRef.current) return;
+
+    if (geofences.length > 0) {
+      if (geofences.length === 1) {
+        // Center on the single geofence
+        mapRef.current.animateToRegion({
+          latitude: geofences[0].latitude,
+          longitude: geofences[0].longitude,
+          latitudeDelta: 0.012,
+          longitudeDelta: 0.012,
+        }, 1000);
+      } else {
+        // Fit all geofences into view
+        const coordinates = geofences.map(gf => ({
+          latitude: gf.latitude,
+          longitude: gf.longitude,
+        }));
+        mapRef.current.fitToCoordinates(coordinates, {
+          edgePadding: { top: 80, right: 80, bottom: 80, left: 80 },
+          animated: true,
+        });
+      }
+    } else if (currentLocation) {
+      // Fallback to current location if no geofences
+      mapRef.current.animateToRegion({
+        ...currentLocation,
+        latitudeDelta: 0.012,
+        longitudeDelta: 0.012,
+      }, 1000);
+    }
+  }, [geofences, currentLocation]);
+
+  // Focus map when geofences data changes (refetch/reload)
+  useEffect(() => {
+    if (!isLoading) {
+      focusMap();
+    }
+  }, [geofences, isLoading]);
+
+  // Focus map when screen comes into focus (back navigation)
+  useFocusEffect(
+    useCallback(() => {
+      focusMap();
+    }, [focusMap])
+  );
 
   const handleZoomIn = () => {
     const newDeltas = {

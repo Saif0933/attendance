@@ -6,12 +6,16 @@ import {
   EmployeeVerifyOtpPayload,
   EmployeeVerifyOtpResponse,
 } from "../hook/employeeAuth.api";
+import { showError } from "../../utils/meesage";
 
 /* ---------- REQUEST OTP ---------- */
 export const useEmployeeRequestOtp = () => {
   return useMutation({
     mutationFn: (payload: EmployeeRequestOtpPayload) =>
       requestEmployeeOtpApi(payload),
+    onError(error){
+      showError(error)
+    }
   });
 };
 
@@ -23,5 +27,8 @@ export const useEmployeeVerifyOtp = () => {
     EmployeeVerifyOtpPayload
   >({
     mutationFn: (payload) => verifyEmployeeOtpApi(payload),
+    onError(error){
+      showError(error)
+    }
   });
 };

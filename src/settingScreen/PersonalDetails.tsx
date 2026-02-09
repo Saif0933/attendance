@@ -1,21 +1,250 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Using Material Icons
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { IMAGE_BASE_URL } from '../../api/api';
+import { useGetEmployeeById, useUpdateEmployee } from '../employee/hook/useEmployee';
+import { useDeleteProfilePicture, useUploadProfilePicture } from '../employee/hook/useProfilePicture';
+import { showSuccess } from '../utils/meesage';
 
-const App = () => {
+const PersonalDetails = () => {
   const navigation = useNavigation();
-  
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    firstname: '',
+    lastname: '',
+    phoneNumber: '',
+    salary: '',
+    salaryType: 'Monthly', // Default if not provided
+  });
+  const [pendingImage, setPendingImage] = useState<any>(null);
+
+  useEffect(() => {
+    const getEmployeeId = async () => {
+      try {
+        const storedData = await AsyncStorage.getItem('employeeData');
+        if (storedData) {
+          const employee = JSON.parse(storedData);
+          setEmployeeId(employee.id);
+        }
+      } catch (error) {
+        console.error('Error fetching employee ID:', error);
+      }
+    };
+    getEmployeeId();
+  }, []);
+
+  const { data: employeeDetails, isLoading } = useGetEmployeeById(employeeId || '');
+  const updateEmployeeMutation = useUpdateEmployee();
+  const uploadPhotoMutation = useUploadProfilePicture();
+  const deletePhotoMutation = useDeleteProfilePicture();
+
+  useEffect(() => {
+    // Try to find the employee object in common response locations
+    const emp = employeeDetails?.data?.employee || employeeDetails?.data || employeeDetails?.employee || employeeDetails;
+    
+    if (emp && (emp.id || emp.firstname)) {
+      console.log('Employee Data for Form:', emp);
+      let fname = emp.firstname || '';
+      let lname = emp.lastname || '';
+
+      // If lastname is missing but firstname has multiple words, split them for the UI
+      if (!lname && fname.trim().includes(' ')) {
+        const parts = fname.trim().split(/\s+/);
+        fname = parts[0];
+        lname = parts.slice(1).join(' ');
+      }
+
+      setFormData({
+        firstname: fname,
+        lastname: lname,
+        phoneNumber: emp.phoneNumber || '',
+        salary: emp.salary ? emp.salary.toString() : '',
+        salaryType: emp.salaryType || 'Monthly',
+      });
+    }
+  }, [employeeDetails]);
+
+  const handleImagePick = async () => {
+    if (!employeeId) return;
+
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.7,
+      selectionLimit: 1,
+    });
+
+    if (result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      const photoFile: any = {
+        uri: asset.uri,
+        type: asset.type,
+        name: asset.fileName || `profile_${employeeId}.jpg`,
+      };
+
+      setPendingImage(photoFile);
+    }
+  };
+
+  const handleImageDelete = () => {
+    if (!employeeId) return;
+    
+    Alert.alert(
+      'Delete Photo',
+      'Are you sure you want to remove your profile picture?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => {
+            deletePhotoMutation.mutate(employeeId, {
+              onSuccess: () => {
+                showSuccess('Profile picture removed');
+              },
+              onError: (err: any) => {
+                Alert.alert('Error', err?.response?.data?.message || 'Failed to delete photo');
+              },
+            });
+          }
+        },
+      ]
+    );
+  };
+
+  const handleUpdate = async () => {
+    if (!employeeId) return;
+
+    // We'll use a simple flag to track if we should go back
+    let navigateBackOnSuccess = true;
+
+    // 1. If there's a pending image, upload it first or in parallel
+    if (pendingImage) {
+      navigateBackOnSuccess = false; // We'll handle navigation in the image upload callback
+      uploadPhotoMutation.mutate(
+        { employeeId, file: pendingImage },
+        {
+          onSuccess: () => {
+             // After image upload is successful, update employee details
+             updateEmployeeMutation.mutate(
+              {
+                id: employeeId,
+                payload: {
+                  firstname: formData.firstname,
+                  lastname: formData.lastname,
+                },
+              },
+              {
+                onSuccess: () => {
+                  showSuccess('Personal details updated');
+                  navigation.goBack();
+                },
+                onError: (error: any) => {
+                  Alert.alert('Error', error?.response?.data?.message || 'Failed to update details');
+                },
+              }
+            );
+          },
+          onError: (err: any) => {
+            Alert.alert('Error', err?.response?.data?.message || 'Failed to upload photo');
+          },
+        }
+      );
+    }
+
+    // 2. If no pending image, just update the names
+    if (navigateBackOnSuccess) {
+      updateEmployeeMutation.mutate(
+        {
+          id: employeeId,
+          payload: {
+            firstname: formData.firstname,
+            lastname: formData.lastname,
+          },
+        },
+        {
+          onSuccess: () => {
+            showSuccess('Personal details updated');
+            navigation.goBack();
+          },
+          onError: (error: any) => {
+            Alert.alert('Error', error?.response?.data?.message || 'Failed to update details');
+          },
+        }
+      );
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#FF9F00" />
+      </View>
+    );
+  }
+
+  // Determine the profile image URL with multiple fallbacks
+  const getProfileImageUrl = () => {
+    // 0. Priority: If user just selected a new image locally
+    if (pendingImage?.uri) return pendingImage.uri;
+
+    // 1. Try to find the inner object where health/profile data usually lives
+    const emp = employeeDetails?.data?.employee || employeeDetails?.data || employeeDetails?.employee || employeeDetails;
+    
+    if (!emp) return null;
+
+    // 2. Try various keys the backend might use for the photo
+    const pp = emp.profilePicture || emp.avatar || emp.image || emp.logo || emp.profilePhoto;
+    
+    if (!pp) return null;
+
+    let finalUrl = '';
+
+    // 3. Extract the URL string
+    if (typeof pp === 'string') {
+      finalUrl = pp;
+    } else {
+      // If it's an object (like from Cloudinary/Multer), look for the URL inside
+      finalUrl = pp.secure_url || pp.url || pp.uri || pp.imagePath;
+    }
+
+    if (!finalUrl) return null;
+
+    // 4. Debug log to see exactly what we found
+    console.log('--- Profile Picture Debug ---');
+    console.log('Original Value:', pp);
+    console.log('Extracted Value:', finalUrl);
+
+    // 5. Handle different types of URLs
+    if (finalUrl.startsWith('http') || finalUrl.startsWith('data:')) {
+      return finalUrl;
+    }
+
+    // 6. If it's a relative path, prepend the IMAGE_BASE_URL
+    const normalizedPath = finalUrl.replace(/\\/g, '/');
+    const baseUrl = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+    const path = normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+    
+    console.log('Final Constructed URL:', `${baseUrl}${path}`);
+    return `${baseUrl}${path}`;
+  };
+
+  const profileImageUrl = getProfileImageUrl();
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -26,8 +255,19 @@ const App = () => {
           <Icon name="close" size={28} color="#000" />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save</Text>
+        <TouchableOpacity 
+          style={[
+            styles.saveButton, 
+            (updateEmployeeMutation.isPending || uploadPhotoMutation.isPending) && styles.disabledButton
+          ]} 
+          onPress={handleUpdate}
+          disabled={updateEmployeeMutation.isPending || uploadPhotoMutation.isPending}
+        >
+          {updateEmployeeMutation.isPending || uploadPhotoMutation.isPending ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.saveButtonText}>Save</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -36,14 +276,37 @@ const App = () => {
         {/* --- Profile Avatar Section --- */}
         <View style={styles.avatarContainer}>
           <View style={styles.imageWrapper}>
-            <Image
-              // Placeholder image mimicking the user in the photo
-              source={{ uri: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=256&q=80' }} 
-              style={styles.avatar}
-            />
-            <View style={styles.cameraIconContainer}>
-              <Icon name="camera-alt" size={16} color="#fff" />
-            </View>
+            <TouchableOpacity 
+              activeOpacity={0.8} 
+              onPress={handleImagePick}
+              style={styles.imageContainer}
+            >
+              <Image
+                source={
+                  profileImageUrl 
+                    ? { uri: profileImageUrl } 
+                    : { uri: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' } // Generic placeholder
+                } 
+                style={styles.avatar}
+              />
+              {uploadPhotoMutation.isPending && (
+                <View style={[styles.avatar, styles.loadingOverlay]}>
+                  <ActivityIndicator color="#fff" />
+                </View>
+              )}
+              <View style={styles.cameraIconContainer}>
+                <Icon name="camera-alt" size={16} color="#fff" />
+              </View>
+            </TouchableOpacity>
+
+            {profileImageUrl && !uploadPhotoMutation.isPending && (
+              <TouchableOpacity 
+                style={styles.deleteIconContainer}
+                onPress={handleImageDelete}
+              >
+                <Icon name="delete" size={16} color="#fff" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -55,7 +318,8 @@ const App = () => {
             <Text style={styles.floatingLabel}>First Name</Text>
             <TextInput 
               style={styles.input} 
-              value="Md." 
+              value={formData.firstname} 
+              onChangeText={(text) => setFormData({ ...formData, firstname: text })}
               editable={true}
             />
           </View>
@@ -64,7 +328,8 @@ const App = () => {
             <Text style={styles.floatingLabel}>Last Name</Text>
             <TextInput 
               style={styles.input} 
-              value="Saif" 
+              value={formData.lastname} 
+              onChangeText={(text) => setFormData({ ...formData, lastname: text })}
               editable={true}
             />
           </View>
@@ -75,8 +340,8 @@ const App = () => {
           <Text style={styles.floatingLabel}>Phone Number</Text>
           <TextInput 
             style={[styles.input, styles.disabledText]} 
-            value="9334804356" 
-            editable={false} // Assuming read-only based on grey color
+            value={formData.phoneNumber} 
+            editable={false} 
           />
         </View>
 
@@ -85,7 +350,7 @@ const App = () => {
           <Text style={styles.floatingLabel}>Pay Type</Text>
           <TextInput 
             style={[styles.input, styles.disabledText]} 
-            value="Monthly" 
+            value={formData.salaryType} 
             editable={false}
           />
         </View>
@@ -95,7 +360,7 @@ const App = () => {
           <Text style={styles.floatingLabel}>Monthly Salary</Text>
           <TextInput 
             style={[styles.input, styles.disabledText]} 
-            value="₹ 10000" 
+            value={formData.salary ? `₹ ${formData.salary}` : ''} 
             editable={false}
           />
         </View>
@@ -110,6 +375,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -117,13 +386,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: '#fff',
-    // Slight shadow for header separation if desired, though image looks flat
   },
   saveButton: {
-    backgroundColor: '#FF9F00', // Matches the specific orange/yellow in image
+    backgroundColor: '#FF9F00', 
     paddingVertical: 8,
     paddingHorizontal: 24,
-    borderRadius: 20, // Pill shape
+    borderRadius: 20, 
+    minWidth: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   saveButtonText: {
     color: '#fff',
@@ -141,11 +415,20 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'relative',
   },
+  imageContainer: {
+    borderRadius: 50,
+  },
   avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
     backgroundColor: '#eee',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cameraIconContainer: {
     position: 'absolute',
@@ -155,7 +438,17 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#fff', // White border to separate icon from image
+    borderColor: '#fff', 
+  },
+  deleteIconContainer: {
+    position: 'absolute',
+    top: 0,
+    right: -10,
+    backgroundColor: '#FF3B30',
+    padding: 6,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   row: {
     flexDirection: 'row',
@@ -164,32 +457,32 @@ const styles = StyleSheet.create({
   inputWrapper: {
     position: 'relative',
     borderWidth: 1,
-    borderColor: '#D1D5DB', // Light grey border
+    borderColor: '#D1D5DB', 
     borderRadius: 8,
-    marginBottom: 24, // Space between inputs
+    marginBottom: 24, 
     paddingHorizontal: 12,
     paddingTop: 4, 
-    height: 56, // Fixed height for consistency
+    height: 56, 
     justifyContent: 'center',
   },
   floatingLabel: {
     position: 'absolute',
-    top: -10, // Pulls the label up to sit on the border
+    top: -10, 
     left: 10,
-    backgroundColor: '#fff', // White background covers the border line
+    backgroundColor: '#fff', 
     paddingHorizontal: 4,
     fontSize: 12,
-    color: '#9CA3AF', // Grey text for label
+    color: '#9CA3AF', 
   },
   input: {
     fontSize: 16,
-    color: '#1F2937', // Dark text color
-    paddingVertical: 0, // Reset padding to align text perfectly
+    color: '#1F2937', 
+    paddingVertical: 0, 
     height: '100%',
   },
   disabledText: {
-    color: '#9CA3AF', // Grey text for disabled fields like phone/salary
+    color: '#9CA3AF', 
   }
 });
 
-export default App;
+export default PersonalDetails;

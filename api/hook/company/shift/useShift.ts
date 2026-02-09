@@ -11,6 +11,7 @@ import {
   CreateShiftPayload,
   UpdateShiftPayload,
 } from "../../type/shift";
+import { showError } from "../../../../src/utils/meesage";
 
 /* ---------- CREATE ---------- */
 export const useCreateShift = () => {
@@ -22,6 +23,9 @@ export const useCreateShift = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shifts"] });
     },
+    onError(error){
+      showError(error)
+    }
   });
 };
 

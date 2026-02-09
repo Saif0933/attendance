@@ -22,19 +22,28 @@ export interface VerifyOtpPayload {
 }
 
 export interface Company {
-  id: number;
-  phone: string;
+  id: string;
+  name: string | null;
   code: string;
-  name?: string;
+  numberOfEmployees: number | null;
+  address: string | null;
+  logo: string | null;
+  email: string | null;
+  phone: string;
+  website: string | null;
+  gstNumber: string | null;
+  estiblishedDate: string | null;
+  status: string;
+  payPeriod: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface VerifyOtpResponse {
   success: boolean;
   message: string;
-  data: {
-    token: string;
-    company: Company;
-  };
+  token: string;
+  company: Company;
 }
 
 /* ---------- API CALLS ---------- */

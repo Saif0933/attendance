@@ -456,11 +456,12 @@
 
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
+  FlatList,
   Image,
   Modal,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -468,6 +469,7 @@ import {
   View
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
 import AddStaffScreen from './AddStaffScreen';
 import NewCategoryScreen from './NewCategoryScreen';
 import SearchStaff from './SearchStaff';
@@ -475,111 +477,9 @@ import TodaysAbsentScreen from './TodaysAbsentScreen';
 
 const { width } = Dimensions.get('window');
 
-/* ===================== MOCK DATA ===================== */
+// API Base URL for images
+const IMAGE_BASE_URL = "http://192.168.1.10:5000";
 
-type Employee = {
-  id: string;
-  name: string;
-  role: string;
-  status: 'IN' | 'Not marked';
-  time: string;
-  flag: string;
-  avatar: string;
-  isImage: boolean;
-};
-
-const EMPLOYEES: Employee[] = [
-  {
-    id: '1',
-    name: 'Md. Saif',
-    role: 'Full Stack Developer',
-    status: 'IN',
-    time: '9:11 AM',
-    flag: 'L',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    isImage: true,
-  },
-  {
-    id: '2',
-    name: 'Puja Staff',
-    role: 'Human Resource',
-    status: 'Not marked',
-    time: '',
-    flag: '',
-    avatar: 'P',
-    isImage: false,
-  },
-  {
-    id: '3',
-    name: 'Roshni Parween',
-    role: 'Full Stack Developer',
-    status: 'Not marked',
-    time: '',
-    flag: '',
-    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    isImage: true,
-  },
-  {
-    id: '4',
-    name: 'Amit Sharma',
-    role: 'Backend Developer',
-    status: 'IN',
-    time: '9:05 AM',
-    flag: '',
-    avatar: 'https://randomuser.me/api/portraits/men/11.jpg',
-    isImage: true,
-  },
-  {
-    id: '5',
-    name: 'Sarah Jenkins',
-    role: 'UI/UX Designer',
-    status: 'IN',
-    time: '9:30 AM',
-    flag: 'L',
-    avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
-    isImage: true,
-  },
-  {
-    id: '6',
-    name: 'Rahul Verma',
-    role: 'QA Engineer',
-    status: 'Not marked',
-    time: '',
-    flag: '',
-    avatar: 'R',
-    isImage: false,
-  },
-  {
-    id: '7',
-    name: 'John Doe',
-    role: 'Product Manager',
-    status: 'IN',
-    time: '8:55 AM',
-    flag: '',
-    avatar: 'https://randomuser.me/api/portraits/men/85.jpg',
-    isImage: true,
-  },
-  {
-    id: '8',
-    name: 'Emily Davis',
-    role: 'Marketing Lead',
-    status: 'IN',
-    time: '9:15 AM',
-    flag: 'L',
-    avatar: 'https://randomuser.me/api/portraits/women/12.jpg',
-    isImage: true,
-  },
-  {
-    id: '9',
-    name: 'Vikram Singh',
-    role: 'DevOps Engineer',
-    status: 'Not marked',
-    time: '',
-    flag: '',
-    avatar: 'V',
-    isImage: false,
-  },
-];
 
 /* ===================== SCREEN ===================== */
 
@@ -590,141 +490,147 @@ const StaffHomeScreen: React.FC = () => {
   const [todaysAbsentModalVisible, setTodaysAbsentModalVisible] = useState(false);
   const [searchStaffModalVisible, setSearchStaffModalVisible] = useState(false);
 
+  // FETCH EMPLOYEES
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch
+  } = useGetAllEmployeesWithInfiniteQuery({ limit: 10 });
+
+  const employees = data?.pages.flatMap(page => page.data.employees) || [];
+  const stats = data?.pages[0]?.data.meta || { totalCount: 0 };
+
+  const renderHeader = () => (
+    <>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.greetingText}>Good morning.</Text>
+        <View style={styles.headerDot} />
+      </View>
+
+      {/* Stats Card */}
+      <View style={styles.statsCard}>
+        <View style={styles.statsHeader}>
+          <View>
+            <Text style={styles.statsTitle}>Attendance Statistics</Text>
+            <Text style={styles.statsSubtitle}>Based on {new Date().toLocaleDateString()}</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setCalendarVisible(true)}
+          >
+            <Ionicons name="calendar-outline" size={18} color="#fff" />
+            <Text style={styles.dateButtonText}>Today</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Stat items */}
+        <View style={styles.statsGrid}>
+          <View style={styles.statRow}>
+            <StatItem 
+              label="Staff Heads" 
+              value={stats.totalCount.toString()} 
+              color="#4FC3F7" 
+              onPress={() => setTodaysAbsentModalVisible(true)} 
+            />
+            <StatItem 
+              label="Staff Present" 
+              value="0" 
+              color="#66BB6A" 
+              onPress={() => setTodaysAbsentModalVisible(true)} 
+            />
+            <StatItem 
+              label="Staff Absence" 
+              value="0" 
+              color="#FF7043" 
+              onPress={() => setTodaysAbsentModalVisible(true)} 
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Search */}
+      <TouchableOpacity 
+        style={styles.searchContainer}
+        onPress={() => setSearchStaffModalVisible(true)}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="search-outline" size={22} color="#A0A0A0" />
+        <Text style={styles.searchPlaceholder}>Search</Text>
+        <Ionicons name="filter-outline" size={22} color="#A0A0A0" />
+      </TouchableOpacity>
+
+      {/* Filter + Add */}
+      <View style={styles.actionRow}>
+        <TouchableOpacity style={styles.filterPillActive}>
+          <Text style={styles.filterPillTextActive}>All</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.addButtonSmall}
+          onPress={() => setCategoryModalVisible(true)}
+        >
+          <Ionicons name="add-circle-outline" size={32} color="#4A90E2" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Employees Header */}
+      <View style={styles.listHeader}>
+        <Text style={styles.listTitle}>Employees</Text>
+        <Text style={styles.listSubtitle}>Current Company Staff</Text>
+      </View>
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-
-      {/* Background layer slightly adjusted for better contrast */}
       <View style={styles.backgroundLayer} />
 
-      <ScrollView 
+      <FlatList
+        data={employees}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.greetingText}>Good morning.</Text>
-          <View style={styles.headerDot} />
-        </View>
-
-        {/* Stats Card */}
-        <View style={styles.statsCard}>
-          <View style={styles.statsHeader}>
-            <View>
-              <Text style={styles.statsTitle}>Attendance Statistics</Text>
-              <Text style={styles.statsSubtitle}>Based on Jan 21, 2026</Text>
-            </View>
-
-            {/* UPDATED: Today Button Functionality Verified */}
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setCalendarVisible(true)}
-            >
-              <Ionicons name="calendar-outline" size={18} color="#fff" />
-              <Text style={styles.dateButtonText}>Today</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Stat items */}
-          <View style={styles.statsGrid}>
-            <View style={styles.statRow}>
-              <StatItem 
-                label="Staff Heads" 
-                value="9" 
-                color="#4FC3F7" 
-                onPress={() => setTodaysAbsentModalVisible(true)} 
-              />
-              <StatItem 
-                label="Staff Present" 
-                value="5" 
-                color="#66BB6A" 
-                onPress={() => setTodaysAbsentModalVisible(true)} 
-              />
-              <StatItem 
-                label="Staff Absence" 
-                value="4" 
-                color="#FF7043" 
-                onPress={() => setTodaysAbsentModalVisible(true)} 
-              />
-            </View>
-            <View style={styles.statRow}>
-              <StatItem 
-                label="Staff Late" 
-                value="3" 
-                color="#FFCA28" 
-                onPress={() => setTodaysAbsentModalVisible(true)} 
-              />
-              <StatItem 
-                label="Leave" 
-                value="0" 
-                color="#AB47BC" 
-                onPress={() => setTodaysAbsentModalVisible(true)} 
-              />
-              <StatItem 
-                label="Early" 
-                value="0" 
-                color="#FFA726" 
-                onPress={() => setTodaysAbsentModalVisible(true)} 
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Search */}
-        <TouchableOpacity 
-          style={styles.searchContainer}
-          onPress={() => setSearchStaffModalVisible(true)}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="search-outline" size={22} color="#A0A0A0" />
-          <Text style={styles.searchPlaceholder}>Search</Text>
-          <Ionicons name="filter-outline" size={22} color="#A0A0A0" />
-        </TouchableOpacity>
-
-        {/* Filter + Add */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.filterPillActive}>
-            <Text style={styles.filterPillTextActive}>All</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.addButtonSmall}
-            onPress={() => setCategoryModalVisible(true)}
-          >
-            <Ionicons name="add-circle-outline" size={32} color="#4A90E2" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Employees */}
-        <View style={styles.listHeader}>
-          <Text style={styles.listTitle}>Employees</Text>
-          <Text style={styles.listSubtitle}>Current Company Staff</Text>
-        </View>
-
-        {EMPLOYEES.map(emp => (
-          <View key={emp.id} style={styles.employeeCard}>
+        ListHeaderComponent={renderHeader}
+        onEndReached={() => {
+          if (hasNextPage) fetchNextPage();
+        }}
+        onEndReachedThreshold={0.5}
+        refreshing={isLoading}
+        onRefresh={refetch}
+        renderItem={({ item: emp }) => (
+          <View style={styles.employeeCard}>
             <View style={styles.avatarContainer}>
-              {emp.isImage ? (
-                <Image source={{ uri: emp.avatar }} style={styles.avatarImage} />
+              {emp.profilePicture?.url ? (
+                <Image 
+                  source={{ uri: `${IMAGE_BASE_URL}${emp.profilePicture.url}` }} 
+                  style={styles.avatarImage} 
+                />
               ) : (
                 <View style={[styles.avatarImage, styles.avatarPlaceholder]}>
-                  <Text style={styles.avatarText}>{emp.avatar}</Text>
+                  <Text style={styles.avatarText}>
+                    {emp.firstname.charAt(0).toUpperCase()}
+                  </Text>
                 </View>
               )}
             </View>
 
             <View style={styles.employeeInfo}>
-              <Text style={styles.employeeName}>{emp.name}</Text>
-              <Text style={styles.employeeRole}>{emp.role}</Text>
+              <Text style={styles.employeeName}>{emp.firstname} {emp.lastname}</Text>
+              <Text style={styles.employeeRole}>{emp.designation || 'Staff'}</Text>
             </View>
 
             <View style={styles.statusContainer}>
-              {emp.status === 'IN' ? (
+              {emp.attendances.length > 0 ? (
                 <>
-                  <Text style={styles.statusInText}>IN</Text>
+                  <Text style={styles.statusInText}>{emp.attendances[0].status}</Text>
                   <Text style={styles.timeText}>
-                    {emp.time}{' '}
-                    <Text style={styles.lateFlag}>{emp.flag}</Text>
+                    {emp.attendances[0].checkIn ? new Date(emp.attendances[0].checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                   </Text>
                 </>
               ) : (
@@ -732,8 +638,20 @@ const StaffHomeScreen: React.FC = () => {
               )}
             </View>
           </View>
-        ))}
-      </ScrollView>
+        )}
+        ListFooterComponent={() => (
+          isFetchingNextPage ? (
+            <ActivityIndicator size="small" color="#3B82F6" style={{ marginVertical: 20 }} />
+          ) : null
+        )}
+        ListEmptyComponent={() => (
+          !isLoading && (
+            <View style={{ alignItems: 'center', marginTop: 50 }}>
+              <Text style={{ color: '#94A3B8' }}>No employees found</Text>
+            </View>
+          )
+        )}
+      />
 
       {/* FAB */}
       <TouchableOpacity style={styles.fab} onPress={() => setAddStaffModalVisible(true)}>

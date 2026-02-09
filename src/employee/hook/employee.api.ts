@@ -1,5 +1,6 @@
 // src/api/employee.api.ts
 import { api } from "../../../api/api";
+import { GetEmployeesQuery, GetEmployeesResponse } from "../type/employee";
 import { EmployeePayload } from "../validator/employee.validator";
 
 /* ---------- CREATE ---------- */
@@ -14,8 +15,10 @@ export const onboardEmployeeApi = async (
 };
 
 /* ---------- READ ALL ---------- */
-export const getAllEmployeesApi = async () => {
-  const { data } = await api.get("/employee");
+export const getAllEmployeesApi = async (query?: GetEmployeesQuery) => {
+  const { data } = await api.get<GetEmployeesResponse>("/employee", {
+    params: query,
+  });
   return data;
 };
 
@@ -45,3 +48,4 @@ export const deleteEmployeeApi = async (id: string) => {
   const { data } = await api.delete(`/employee/${id}`);
   return data;
 };
+

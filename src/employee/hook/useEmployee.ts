@@ -1,13 +1,15 @@
 // src/hooks/useEmployee.ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  onboardEmployeeApi,
+  deleteEmployeeApi,
   getAllEmployeesApi,
   getEmployeeByIdApi,
+  onboardEmployeeApi,
   updateEmployeeApi,
-  deleteEmployeeApi,
 } from "../../employee/hook/employee.api";
 import { EmployeePayload } from "../../employee/validator/employee.validator";
+import { showError } from "../../utils/meesage";
+import { GetEmployeesQuery } from "../type/employee";
 
 /* ---------- CREATE ---------- */
 export const useOnboardEmployee = () => {
@@ -19,6 +21,9 @@ export const useOnboardEmployee = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     },
+    onError(error){
+      showError(error)
+    }
   });
 };
 
@@ -26,7 +31,7 @@ export const useOnboardEmployee = () => {
 export const useGetAllEmployees = () => {
   return useQuery({
     queryKey: ["employees"],
-    queryFn: getAllEmployeesApi,
+    queryFn: () => getAllEmployeesApi(),
   });
 };
 
@@ -51,6 +56,9 @@ export const useUpdateEmployee = () => {
         queryKey: ["employee", variables.id],
       });
     },
+    onError(error){
+      showError(error)
+    }
   });
 };
 
@@ -62,6 +70,23 @@ export const useDeleteEmployee = () => {
     mutationFn: deleteEmployeeApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+    },
+    onError(error){
+      showError(error)
+    }
+  });
+};
+
+// src/hooks/useEmployees.ts
+export const useGetAllEmployeesWithInfiniteQuery = (query: GetEmployeesQuery) => {
+  return useInfiniteQuery({
+    queryKey: ["employees", query],
+    queryFn: ({ pageParam = 1 }) =>
+      getAllEmployeesApi({ ...query, page: pageParam as number }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.meta;
+      return page < totalPages ? page + 1 : undefined;
     },
   });
 };

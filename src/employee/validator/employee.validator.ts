@@ -62,4 +62,47 @@ export interface EmployeePayload {
   bankBranchName: string;
   accountHolderName: string;
   address: string;
+  shiftId?: string | null;
+}
+
+// src/types/profilePicture.ts
+
+export interface UploadProfilePicturePayload {
+  employeeId: string;
+  file: File;
+}
+
+// src/types/employee.ts
+
+export interface GetEmployeesQuery {
+  companyId?: string;
+  search?: string;
+  designation?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface EmployeeListItem {
+  id: string;
+  firstname: string;
+  lastname: string;
+  designation: string | null;
+  profilePicture?: {
+    url: string;
+  } | null;
+  attendances: {
+    checkIn: string | null;
+    checkOut: string | null;
+    status: "PRESENT" | "LATE" | "ABSENT" | "HALF_DAY" | "ON_LEAVE";
+  }[];
+}
+
+export interface GetEmployeesResponse {
+  employees: EmployeeListItem[];
+  meta: {
+    totalCount: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }

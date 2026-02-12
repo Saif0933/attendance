@@ -5,7 +5,10 @@ import {
   Alert,
   Animated,
   Dimensions,
+  FlatList,
+  Image,
   KeyboardAvoidingView,
+  Modal,
   PermissionsAndroid,
   Platform,
   RefreshControl,
@@ -21,8 +24,10 @@ import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useCreateGeofence, useUpdateGeofence } from '../../../api/hook/company/deofence/useGeofence';
+import { useCreateGeofence, useGetGeofenceById, useUpdateGeofence } from '../../../api/hook/company/deofence/useGeofence';
 import { Geofence } from '../../../api/hook/type/geofence';
+import { useGetAllEmployees } from '../../employee/hook/useEmployee';
+import { EmployeeListItem } from '../../employee/type/employee';
 
 const { width, height } = Dimensions.get('window');
 
@@ -39,6 +44,9 @@ const AddGeofenceScreen: React.FC = () => {
   const { mutate: createGeofence, isPending: isCreating } = useCreateGeofence();
   const { mutate: updateGeofence, isPending: isUpdating } = useUpdateGeofence();
 
+  // Fetch Employees
+  const { data: employeesData, isLoading: isLoadingEmployees } = useGetAllEmployees();
+
   // State for Radius (in meters)
   const [radius, setRadius] = useState(editingGeofence?.radius || 100);
   
@@ -53,11 +61,30 @@ const AddGeofenceScreen: React.FC = () => {
   // State for User's live location (Blue dot)
   const [userLocation, setUserLocation] = useState<any>(null);
 
-  // State for Form Inputs (Aligned with Prisma Schema: Name, Lat, Lng, Radius)
+  // State for Form Inputs
   const [address, setAddress] = useState(editingGeofence?.name || '');
+  
+  // Fetch current Geofence Details if editing
+  const { data: geofenceDetailsResponse } = useGetGeofenceById(editingGeofence?.id || "");
+  const geofenceDetails = geofenceDetailsResponse?.data;
+
+  // State for Employee Selection
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
+  
+  // Update state when geofence details are loaded
+  useEffect(() => {
+    if (geofenceDetails?.employees) {
+      setSelectedEmployeeIds(geofenceDetails.employees.map((emp: any) => emp.id));
+    } else if (editingGeofence?.employees) {
+       setSelectedEmployeeIds(editingGeofence.employees.map((emp: any) => emp.id));
+    }
+  }, [geofenceDetails, editingGeofence]);
+
+  const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
   
   const [refreshing, setRefreshing] = useState(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
+  const [hasCentered, setHasCentered] = useState(false);
 
   useEffect(() => {
     requestPermission();
@@ -90,7 +117,6 @@ const AddGeofenceScreen: React.FC = () => {
   const reverseGeocode = async (lat: number, lng: number) => {
     setIsReverseGeocoding(true);
     try {
-      // Using Nominatim (OpenStreetMap) - Free reverse geocoding
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
         {
@@ -127,6 +153,39 @@ const AddGeofenceScreen: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (userLocation && !hasCentered && !editingGeofence) {
+      const newRegion = {
+        ...region,
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+      };
+      setRegion(newRegion);
+      mapRef.current?.animateToRegion(newRegion, 1000);
+      reverseGeocode(userLocation.latitude, userLocation.longitude);
+      setHasCentered(true);
+    }
+  }, [userLocation, hasCentered, editingGeofence]);
+
+  const toggleEmployeeSelection = (employeeId: string) => {
+    setSelectedEmployeeIds(prev => 
+      prev.includes(employeeId)
+        ? prev.filter(id => id !== employeeId)
+        : [...prev, employeeId]
+    );
+  };
+
+  const handleSelectAllEmployees = () => {
+    if (employeesData?.data?.employees) {
+      const allIds = employeesData.data.employees.map((emp) => emp.id);
+      setSelectedEmployeeIds(allIds);
+    }
+  };
+
+  const handleClearAllEmployees = () => {
+    setSelectedEmployeeIds([]);
+  };
+
   const handleConfirm = () => {
     if (!address.trim()) {
       Alert.alert("Error", "Please provide a geofence name/address.");
@@ -138,6 +197,7 @@ const AddGeofenceScreen: React.FC = () => {
       latitude: region.latitude,
       longitude: region.longitude,
       radius: radius,
+      employeeIds: selectedEmployeeIds,
     };
 
     if (editingGeofence) {
@@ -173,6 +233,28 @@ const AddGeofenceScreen: React.FC = () => {
 
   const isLoading = isCreating || isUpdating;
 
+  const renderEmployeeItem = ({ item }: { item: EmployeeListItem }) => {
+    const isSelected = selectedEmployeeIds.includes(item.id);
+    return (
+      <TouchableOpacity 
+        style={[styles.employeeItem, isSelected && styles.selectedEmployeeItem]} 
+        onPress={() => toggleEmployeeSelection(item.id)}
+      >
+        <Image 
+          source={{ uri: item.profilePicture?.url || 'https://via.placeholder.com/50' }} 
+          style={styles.employeeImage} 
+        />
+        <View style={styles.employeeInfo}>
+          <Text style={styles.employeeName}>{item.firstname} {item.lastname}</Text>
+          <Text style={styles.employeeDesignation}>{item.designation || 'No Designation'}</Text>
+        </View>
+        {isSelected && (
+          <Icon name="checkmark-circle" size={24} color="#FF7F50" />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
@@ -183,7 +265,7 @@ const AddGeofenceScreen: React.FC = () => {
           ref={mapRef}
           provider={PROVIDER_GOOGLE}
           style={styles.map}
-          region={region}
+          initialRegion={region}
           showsUserLocation={true}
           onUserLocationChange={onUserLocationChange}
           onRegionChangeComplete={onRegionChangeComplete}
@@ -295,6 +377,23 @@ const AddGeofenceScreen: React.FC = () => {
               </View>
             </View>
 
+            {/* Employee Selection Section */}
+            <View style={styles.inputGroup}>
+              <TouchableOpacity 
+                style={styles.employeeSelectorBtn} 
+                onPress={() => setIsEmployeeModalVisible(true)}
+              >
+                <View style={styles.labelRow}>
+                  <MaterialIcons name="people" size={20} color="#FF7F50" style={styles.iconWidth} />
+                  <Text style={styles.labelTitle}>Assigned Employees</Text>
+                </View>
+                <View style={styles.employeeCountBadge}>
+                  <Text style={styles.employeeCountText}>{selectedEmployeeIds.length} Selected</Text>
+                  <Icon name="chevron-forward" size={20} color="#999" />
+                </View>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity 
               style={[styles.confirmButton, isLoading && { opacity: 0.7 }]}
               onPress={handleConfirm}
@@ -313,6 +412,56 @@ const AddGeofenceScreen: React.FC = () => {
           </ScrollView>
         </Animated.View>
       </KeyboardAvoidingView>
+
+      {/* Employee Selection Modal */}
+      <Modal
+        visible={isEmployeeModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsEmployeeModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Employees</Text>
+              <TouchableOpacity onPress={() => setIsEmployeeModalVisible(false)}>
+                <Icon name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalActions}>
+              <TouchableOpacity onPress={handleSelectAllEmployees} style={styles.actionLink}>
+                <Text style={styles.actionLinkText}>Select All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleClearAllEmployees} style={styles.actionLink}>
+                <Text style={styles.actionLinkText}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
+
+            {isLoadingEmployees ? (
+              <ActivityIndicator size="large" color="#FF7F50" style={styles.loader} />
+            ) : (
+              <FlatList
+                data={employeesData?.data?.employees || []}
+                keyExtractor={(item) => item.id}
+                renderItem={renderEmployeeItem}
+                contentContainerStyle={styles.employeeList}
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={
+                  <Text style={styles.emptyText}>No employees found</Text>
+                }
+              />
+            )}
+            
+            <TouchableOpacity 
+              style={styles.modalConfirmBtn} 
+              onPress={() => setIsEmployeeModalVisible(false)}
+            >
+              <Text style={styles.modalConfirmBtnText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -515,6 +664,114 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  // Employee Selection Styles
+  employeeSelectorBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  employeeCountBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  employeeCountText: {
+    fontSize: 14,
+    color: '#666',
+    marginRight: 5,
+  },
+  
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: '80%',
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+    gap: 15,
+  },
+  actionLink: {
+    padding: 5,
+  },
+  actionLinkText: {
+    color: '#FF7F50',
+    fontWeight: '600',
+  },
+  loader: {
+    marginTop: 50,
+  },
+  employeeList: {
+    paddingBottom: 20,
+  },
+  employeeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  selectedEmployeeItem: {
+    backgroundColor: '#FFF0E6',
+  },
+  employeeImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  employeeInfo: {
+    flex: 1,
+  },
+  employeeName: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  employeeDesignation: {
+    fontSize: 13,
+    color: '#777',
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#999',
+    marginTop: 50,
+  },
+  modalConfirmBtn: {
+    backgroundColor: '#FF7F50',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  modalConfirmBtnText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

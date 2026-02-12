@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
@@ -20,6 +19,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { IMAGE_BASE_URL } from '../api/api';
 import { useGetEmployeeById } from '../src/employee/hook/useEmployee';
 import type { RootStackParamList } from '../src/navigation/Stack';
+import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
 
 const { height } = Dimensions.get('window');
 
@@ -49,22 +49,8 @@ const ProfileScreen = () => {
     customSalary: false,
   });
 
-  const [employeeId, setEmployeeId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getEmployeeId = async () => {
-      try {
-        const storedData = await AsyncStorage.getItem('employeeData');
-        if (storedData) {
-          const employee = JSON.parse(storedData);
-          setEmployeeId(employee.id);
-        }
-      } catch (error) {
-        console.error('Error fetching employee ID:', error);
-      }
-    };
-    getEmployeeId();
-  }, []);
+  const employee = useEmployeeAuthStore((state) => state.employee);
+  const employeeId = employee?.id;
 
   const { data: employeeDetails } = useGetEmployeeById(employeeId || '');
 
@@ -118,16 +104,12 @@ const ProfileScreen = () => {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await AsyncStorage.multiRemove(['employeeToken', 'employeeData']);
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'SelectRoleScreen' }],
-              });
-            } catch (error) {
-              console.error('Error during logout:', error);
-            }
+          onPress: () => {
+             useEmployeeAuthStore.getState().logout();
+             navigation.reset({
+               index: 0,
+               routes: [{ name: 'SelectRoleScreen' }],
+             });
           },
         },
       ]

@@ -1,25 +1,25 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RootStackParamList } from '../../navigation/Stack';
+import { useEmployeeAuthStore } from '../../store/useEmployeeAuthStore';
 import { useEmployeeRequestOtp, useEmployeeVerifyOtp } from '../hook/useEmployeeAuth';
 import { EmployeeLoginValidator } from '../validator/auth.validator';
 
@@ -119,13 +119,25 @@ const VerificationScreen = () => {
     verifyOtpMutation.mutate(
       { mobile: mobile, otp: otpString },
       {
-        onSuccess: async (data) => {
-          console.log('OTP Verification Success:', data);
+        onSuccess: async (data: any) => {
+          console.log('--- OTP Verification Response ---');
+          console.log('Full data:', JSON.stringify(data, null, 2));
           
-          // Store the token in AsyncStorage
-          if (data.token) {
-            await AsyncStorage.setItem('employeeToken', data.token);
-            await AsyncStorage.setItem('employeeData', JSON.stringify(data.employee));
+          // The backend might return data at the top level or inside a .data property
+          const responseData = data.data || data;
+          const { token, employee, company } = responseData;
+
+          console.log('Extracted Token:', !!token);
+          console.log('Extracted Employee:', !!employee);
+          console.log('Extracted Company:', !!company);
+          
+          // Use EmployeeAuthStore to save session
+          if (token && employee && company) {
+            useEmployeeAuthStore.getState().setEmployeeAuth(token, employee, company);
+          } else {
+            console.error('Missing critical auth data in response:', { token: !!token, employee: !!employee, company: !!company });
+            // If data is partially missing but employee is there, maybe the user only wants that.
+            // But they said they want all three, so we should log if any are missing.
           }
 
           Alert.alert('Success', data.message || 'Login successful!', [

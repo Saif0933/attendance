@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -30,9 +29,11 @@ import PersonalDetails from '../settingScreen/PersonalDetails';
 import PopUpDesignationScreen from '../settingScreen/PopUpDesignationScreen';
 import ReportsScreen from '../settingScreen/ReportsScreen';
 
-import SelectRoleScreen from '../roleScreen/SelectRoleScreen';
 import EmployeeLoginScreen from '../employee/employeeAuth/EmployeeLoginScreen';
 import EmployeeVerificationScreen from '../employee/employeeAuth/VerificationScreen';
+import SelectRoleScreen from '../roleScreen/SelectRoleScreen';
+import { useAuthStore } from '../store/useAuthStore';
+import { useEmployeeAuthStore } from '../store/useEmployeeAuthStore';
 import BottomTabNavigator from './BottomTabNavigator';
 
 //Admin
@@ -48,13 +49,15 @@ import VerificationScreen from '../../Admin/src/auth/VerificationScreen';
 import BottomTabNavigation from '../../Admin/src/navigation/BottomTabNavigation';
 import { AdminWork } from '../../Admin/src/screen/AdminWork';
 import AllRequestsScreen from '../../Admin/src/screen/AllRequestsScreen';
+import PermissionsScreen from '../../Admin/src/screen/homeScreen/PermissionsScreen';
 import AdminSettingScreen from '../../Admin/src/screen/setting/AdminSettingScreen';
 import AddStaffScreen from '../../Admin/src/screen/staff/AddStaffScreen';
+import EmployeeDetailsScreen from '../../Admin/src/screen/staff/EmployeeDetailsScreen';
 import NewCategoryScreen from '../../Admin/src/screen/staff/NewCategoryScreen';
 import SearchStaff from '../../Admin/src/screen/staff/SearchStaff';
 import StaffHomeScreen from '../../Admin/src/screen/staff/StaffHomeScreen';
 import TodaysAbsentScreen from '../../Admin/src/screen/staff/TodaysAbsentScreen';
-
+import AdminHolidaysScreen from '../../Admin/src/screen/holidayScreen/AdminHolidayScreen';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -102,11 +105,14 @@ export type RootStackParamList = {
   AllRequestsScreen:undefined;
   AdminSettingScreen:undefined; 
   AdminBottomTabNavigation:undefined;  
+  PermissionsScreen: undefined;
 
   LoginScreen:undefined;
   VerificationScreen: { mobile: string };
   // SelectAccountTypeScreen: undefined;
   RegisterBusinessScreen: undefined;
+  EmployeeDetailsScreen: { employeeId: string };
+  AdminHolidaysScreen:undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -116,31 +122,56 @@ const RootNavigator = () => {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList>('SelectRoleScreen');
 
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const employeeToken = await AsyncStorage.getItem('employeeToken');
-        const adminIsLoggedIn = await AsyncStorage.getItem('adminIsLoggedIn');
-        const adminIsBusinessRegistered = await AsyncStorage.getItem('adminIsBusinessRegistered');
+    const checkLoginStatus = () => {
+      const adminStore = useAuthStore.getState();
+      const employeeStore = useEmployeeAuthStore.getState();
 
-        if (employeeToken) {
-          setInitialRoute('EmployeeBottomTab');
-        } else if (adminIsLoggedIn === 'true') {
-          if (adminIsBusinessRegistered === 'true') {
-            setInitialRoute('AdminBottomTabNavigation');
-          } else {
-            setInitialRoute('RegisterBusinessScreen');
-          }
+      if (employeeStore.isLoggedIn && employeeStore.token && employeeStore.employee) {
+        // Employee login prioritized
+        setInitialRoute('EmployeeBottomTab');
+      } else if (adminStore.isLoggedIn && adminStore.token && adminStore.company) {
+        // Admin/Company login
+        if (adminStore.company.name) {
+          setInitialRoute('AdminBottomTabNavigation');
         } else {
-          setInitialRoute('SelectRoleScreen');
+          setInitialRoute('RegisterBusinessScreen');
         }
-      } catch (error) {
-        console.error('Error checking login status:', error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        setInitialRoute('SelectRoleScreen');
       }
+      setIsLoading(false);
     };
 
-    checkLoginStatus();
+    const isHydrated = useAuthStore.persist.hasHydrated() && useEmployeeAuthStore.persist.hasHydrated();
+
+    if (!isHydrated) {
+      let adminHydrated = useAuthStore.persist.hasHydrated();
+      let employeeHydrated = useEmployeeAuthStore.persist.hasHydrated();
+
+      const checkBoth = () => {
+        if (adminHydrated && employeeHydrated) {
+          checkLoginStatus();
+        }
+      };
+
+      if (!adminHydrated) {
+        const unsubAdmin = useAuthStore.persist.onFinishHydration(() => {
+          adminHydrated = true;
+          checkBoth();
+          unsubAdmin();
+        });
+      }
+
+      if (!employeeHydrated) {
+        const unsubEmployee = useEmployeeAuthStore.persist.onFinishHydration(() => {
+          employeeHydrated = true;
+          checkBoth();
+          unsubEmployee();
+        });
+      }
+    } else {
+      checkLoginStatus();
+    }
   }, []);
 
   if (isLoading) {
@@ -215,8 +246,10 @@ const RootNavigator = () => {
       <Stack.Screen name="AdminWork" component={AdminWork} />
       <Stack.Screen name="AllRequestsScreen" component={AllRequestsScreen} />
       <Stack.Screen name="AdminSettingScreen" component={AdminSettingScreen} />
+      <Stack.Screen name="PermissionsScreen" component={PermissionsScreen} />
 
       <Stack.Screen name="AdminBottomTabNavigation" component={BottomTabNavigation} />
+      <Stack.Screen name="AdminHolidaysScreen" component={AdminHolidaysScreen} />
 
 
       {/* login screen */}
@@ -224,6 +257,7 @@ const RootNavigator = () => {
       <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
       {/* <Stack.Screen name="SelectAccountTypeScreen" component={SelectAccountTypeScreen} /> */}
       <Stack.Screen name="RegisterBusinessScreen" component={RegisterBusinessScreen} />
+      <Stack.Screen name="EmployeeDetailsScreen" component={EmployeeDetailsScreen} />
       
 
     </Stack.Navigator>

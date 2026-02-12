@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -19,11 +18,15 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { IMAGE_BASE_URL } from '../../api/api';
 import { useGetEmployeeById, useUpdateEmployee } from '../employee/hook/useEmployee';
 import { useDeleteProfilePicture, useUploadProfilePicture } from '../employee/hook/useProfilePicture';
+import { useEmployeeAuthStore } from '../store/useEmployeeAuthStore';
 import { showSuccess } from '../utils/meesage';
 
 const PersonalDetails = () => {
   const navigation = useNavigation();
-  const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const { employee, company,token } = useEmployeeAuthStore();
+  const employeeId = employee?.id;
+  
+  console.log({employee,company,token})
   const [formData, setFormData] = useState({
     firstname: '',
     lastname: '',
@@ -32,21 +35,6 @@ const PersonalDetails = () => {
     salaryType: 'Monthly', // Default if not provided
   });
   const [pendingImage, setPendingImage] = useState<any>(null);
-
-  useEffect(() => {
-    const getEmployeeId = async () => {
-      try {
-        const storedData = await AsyncStorage.getItem('employeeData');
-        if (storedData) {
-          const employee = JSON.parse(storedData);
-          setEmployeeId(employee.id);
-        }
-      } catch (error) {
-        console.error('Error fetching employee ID:', error);
-      }
-    };
-    getEmployeeId();
-  }, []);
 
   const { data: employeeDetails, isLoading } = useGetEmployeeById(employeeId || '');
   const updateEmployeeMutation = useUpdateEmployee();
@@ -233,6 +221,7 @@ const PersonalDetails = () => {
     if (finalUrl.startsWith('http') || finalUrl.startsWith('data:')) {
       return finalUrl;
     }
+  
 
     // 6. If it's a relative path, prepend the IMAGE_BASE_URL
     const normalizedPath = finalUrl.replace(/\\/g, '/');

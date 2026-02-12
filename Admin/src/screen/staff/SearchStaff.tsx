@@ -260,23 +260,24 @@
 // export default SearchStaff;
 
 
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
 
-const IMAGE_BASE_URL = "http://192.168.1.10:5000";
+const IMAGE_BASE_URL = "http://192.168.1.7:5000";
 
 
 interface SearchStaffProps {
@@ -284,6 +285,7 @@ interface SearchStaffProps {
 }
 
 const SearchStaff: React.FC<SearchStaffProps> = ({ onClose }) => {
+  const navigation = useNavigation<any>();
   const [searchText, setSearchText] = useState('');
 
   const {
@@ -300,7 +302,13 @@ const SearchStaff: React.FC<SearchStaffProps> = ({ onClose }) => {
   const employees = data?.pages.flatMap(page => page.data.employees) || [];
 
   const renderItem = ({ item: emp }: { item: any }) => (
-    <View style={styles.itemContainer}>
+    <TouchableOpacity 
+      style={styles.itemContainer}
+      onPress={() => {
+        onClose?.();
+        navigation.navigate('EmployeeDetailsScreen', { employeeId: emp.id });
+      }}
+    >
       <View style={styles.avatarContainer}>
         {emp.profilePicture?.url ? (
           <Image 
@@ -310,7 +318,7 @@ const SearchStaff: React.FC<SearchStaffProps> = ({ onClose }) => {
         ) : (
           <View style={styles.avatarPlaceholder}>
              <Text style={styles.avatarInitials}>
-              {emp.firstname.charAt(0).toUpperCase()}
+              {(emp.firstname || '?').charAt(0).toUpperCase()}
             </Text>
           </View>
         )}
@@ -337,7 +345,7 @@ const SearchStaff: React.FC<SearchStaffProps> = ({ onClose }) => {
           </View>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

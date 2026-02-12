@@ -1,16 +1,16 @@
+import { Fingerprint } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Alert,
+  Dimensions,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import ReactNativeBiometrics from "react-native-biometrics";
-import { RefreshCw, Fingerprint } from "lucide-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 

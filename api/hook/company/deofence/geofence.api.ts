@@ -1,10 +1,10 @@
 // src/api/geofence.api.ts
 import { api } from "../../../../api/api";
-import { GeofencePayload } from "../../type/geofence"
+import { ApiResponse, Geofence, GeofencePayload } from "../../type/geofence";
 /* ---------- CREATE ---------- */
 export const createGeofenceApi = async (
   payload: GeofencePayload
-) => {
+): Promise<ApiResponse<Geofence>> => {
   const { data } = await api.post(
     "/company/geofence",
     payload
@@ -13,7 +13,7 @@ export const createGeofenceApi = async (
 };
 
 /* ---------- READ ALL ---------- */
-export const getAllGeofencesApi = async () => {
+export const getAllGeofencesApi = async (): Promise<ApiResponse<Geofence[]>> => {
   const { data } = await api.get(
     "/company/geofence"
   );
@@ -21,7 +21,7 @@ export const getAllGeofencesApi = async () => {
 };
 
 /* ---------- READ ONE ---------- */
-export const getGeofenceByIdApi = async (id: string) => {
+export const getGeofenceByIdApi = async (id: string): Promise<ApiResponse<Geofence>> => {
   const { data } = await api.get(
     `/company/geofence/${id}`
   );
@@ -35,7 +35,7 @@ export const updateGeofenceApi = async ({
 }: {
   id: string;
   payload: Partial<GeofencePayload>;
-}) => {
+}): Promise<ApiResponse<Geofence>> => {
   const { data } = await api.put(
     `/company/geofence/${id}`,
     payload
@@ -44,7 +44,7 @@ export const updateGeofenceApi = async ({
 };
 
 /* ---------- DELETE ---------- */
-export const deleteGeofenceApi = async (id: string) => {
+export const deleteGeofenceApi = async (id: string): Promise<ApiResponse<null>> => {
   const { data } = await api.delete(
     `/company/geofence/${id}`
   );

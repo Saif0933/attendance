@@ -8,6 +8,7 @@ import {
   FlatList,
   Image,
   Modal,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,14 +21,21 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { IMAGE_BASE_URL } from '../api/api';
 import { useGetAttendance } from '../src/employee/hook/useAttendance';
 import { useGetEmployeeById } from '../src/employee/hook/useEmployee';
+import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
 
 const { height, width } = Dimensions.get('window');
 
-const SalaryScreen: React.FC = () => {
+interface SalaryScreenProps {
+  employeeId?: string;
+  hideHeader?: boolean;
+}
+
+const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId, hideHeader }) => {
   const navigation = useNavigation();
   
-  // State for Employee ID
-  const [employeeId, setEmployeeId] = useState<string | null>(null);
+  // Use the employee data directly from the store if available
+  const { employee: storeEmployee } = useEmployeeAuthStore();
+  const [employeeId, setEmployeeId] = useState<string | null>(propEmployeeId || storeEmployee?.id || null);
 
   // State for Date Picker Modal
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -35,24 +43,26 @@ const SalaryScreen: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [availableDates, setAvailableDates] = useState<string[]>([]);
 
-  // Fetch Employee ID from AsyncStorage
+  // Backup: Fetch Employee ID from AsyncStorage if store is empty
   useEffect(() => {
-    const getEmployeeId = async () => {
-      try {
-        const storedData = await AsyncStorage.getItem('employeeData');
-        if (storedData) {
-          const employee = JSON.parse(storedData);
-          setEmployeeId(employee.id);
+    if (!employeeId) {
+      const getEmployeeId = async () => {
+        try {
+          const storedData = await AsyncStorage.getItem('employeeData');
+          if (storedData) {
+            const parsed = JSON.parse(storedData);
+            setEmployeeId(parsed.id || parsed._id);
+          }
+        } catch (error) {
+          console.error('Error fetching employee ID:', error);
         }
-      } catch (error) {
-        console.error('Error fetching employee ID:', error);
-      }
-    };
-    getEmployeeId();
-  }, []);
+      };
+      getEmployeeId();
+    }
+  }, [employeeId]);
 
   // Fetch Employee Details
-  const { data: employeeDetails, isLoading: isLoadingEmployee } = useGetEmployeeById(employeeId || '');
+  const { data: employeeDetails, isLoading: isLoadingEmployee, refetch: refetchEmployee } = useGetEmployeeById(employeeId || '');
 
   // Calculate date range for selected month
   const dateRange = useMemo(() => {
@@ -65,19 +75,32 @@ const SalaryScreen: React.FC = () => {
   }, [selectedYear, selectedMonth]);
 
   // Fetch Attendance for selected month
-  const { data: attendanceData, isLoading: isLoadingAttendance } = useGetAttendance({
+  const { data: attendanceData, isLoading: isLoadingAttendance, refetch: refetchAttendance } = useGetAttendance({
     employeeId: employeeId || '',
     startDate: dateRange.startDate,
     endDate: dateRange.endDate,
   });
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetchEmployee(), refetchAttendance()]);
+    setRefreshing(false);
+  };
 
   // Generate dates from Joining Date to Current Date
   useEffect(() => {
     const generateDates = () => {
       const dates = [];
       const currentDate = new Date();
-      const joiningDate = new Date('2023-01-01'); // You can fetch this from employee data
-      let tempDate = new Date(joiningDate);
+      // Try to get joining date from employee data
+      const emp = employeeDetails?.data?.employee || employeeDetails?.data || employeeDetails?.employee || employeeDetails;
+      const joiningDateStr = emp?.dateOfJoining || emp?.createdAt || '2024-01-01';
+      const joiningDate = new Date(joiningDateStr);
+      
+      let tempDate = new Date(joiningDate.getFullYear(), joiningDate.getMonth(), 1);
+      
       while (tempDate <= currentDate) {
         const monthStr = tempDate.toLocaleString('default', { month: 'long' });
         const yearStr = tempDate.getFullYear();
@@ -86,8 +109,10 @@ const SalaryScreen: React.FC = () => {
       }
       setAvailableDates(dates.reverse());
     };
-    generateDates();
-  }, []);
+    if (employeeDetails) {
+      generateDates();
+    }
+  }, [employeeDetails]);
 
   const handleSelectDate = (date: string) => {
     const [monthName, year] = date.split(' ');
@@ -98,19 +123,19 @@ const SalaryScreen: React.FC = () => {
   };
 
   // Extract employee info
-  const emp = employeeDetails?.data?.employee || employeeDetails?.data || employeeDetails?.employee || employeeDetails;
+  const emp = employeeDetails?.data?.employee || employeeDetails?.data || employeeDetails?.employee;
   const fullName = emp ? `${emp.firstname || ''} ${emp.lastname || ''}`.trim() || 'Employee' : 'Loading...';
   const designation = emp?.designation || 'N/A';
-  const empIdDisplay = emp?.employeeCode || emp?.id?.slice(0, 8).toUpperCase() || 'N/A';
+  const empIdDisplay = emp?.employeeCode?.toString() || emp?.id?.slice(0, 8).toUpperCase() || 'N/A';
   const salary = emp?.salary || 0;
-  const salaryType = emp?.salaryType || 'Monthly';
+  const salaryType = emp?.payrollConfiguration === 'DAY_WISE' ? 'Day-wise' : (emp?.salaryType || 'Monthly');
 
   // Profile Image URL
   const getProfileImageUrl = () => {
     if (!emp) return null;
     const pp = emp.profilePicture || emp.avatar || emp.image;
     if (!pp) return null;
-    let finalUrl = typeof pp === 'string' ? pp : pp.url || pp.secure_url || pp.uri;
+    let finalUrl = typeof pp === 'string' ? pp : pp.url || pp.secure_url || pp.uri || pp.path;
     if (!finalUrl) return null;
     if (finalUrl.startsWith('http')) return finalUrl;
     const normalizedPath = finalUrl.replace(/\\/g, '/');
@@ -122,7 +147,7 @@ const SalaryScreen: React.FC = () => {
 
   // Calculate salary details
   const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
-  const dailyRate = salaryType === 'Monthly' ? (salary / daysInMonth) : salary;
+  const dailyRate = salaryType === 'Day-wise' ? salary : (salary / daysInMonth);
 
   // Attendance summary calculations
   const attendanceRecords = attendanceData?.data?.records || attendanceData?.records || [];
@@ -178,52 +203,66 @@ const SalaryScreen: React.FC = () => {
   const selectedDateDisplay = `${new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long' })} ${selectedYear}`;
 
   if (isLoadingEmployee) {
-    return (
-      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+    const loadingContent = (
+      <View style={[styles.container, hideHeader && { backgroundColor: 'transparent', height: 200 }, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color="#2089dc" />
         <Text style={{ marginTop: 10, color: '#666' }}>Loading salary details...</Text>
+      </View>
+    );
+    if (hideHeader) return loadingContent;
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        {loadingContent}
       </SafeAreaView>
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+  const content = (
+      <View style={[styles.container, hideHeader && { backgroundColor: 'transparent' }]}>
       
       {/* --- HEADER --- */}
-      <View style={styles.navHeader}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="chevron-back" size={26} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.navTitle}>Salary Details</Text>
-        <TouchableOpacity>
-            <Icon name="eye-outline" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
+      {!hideHeader && (
+        <View style={styles.navHeader}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Icon name="chevron-back" size={26} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.navTitle}>Salary Details</Text>
+          <TouchableOpacity>
+              <Icon name="eye-outline" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ScrollView 
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, hideHeader && { padding: 0 }]}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!hideHeader}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2089dc']} />
+        }
       >
         
         {/* --- PROFILE CARD --- */}
-        <View style={styles.card}>
-            <View style={styles.profileRow}>
-                {profileImageUrl ? (
-                  <Image source={{ uri: profileImageUrl }} style={styles.profileImage} />
-                ) : (
-                  <View style={[styles.profileImage, { backgroundColor: '#E1E1E1', justifyContent: 'center', alignItems: 'center' }]}>
-                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#888' }}>
-                      {emp?.firstname ? emp.firstname.charAt(0).toUpperCase() : 'U'}
-                    </Text>
+        {!hideHeader && (
+          <View style={styles.card}>
+              <View style={styles.profileRow}>
+                  {profileImageUrl ? (
+                    <Image source={{ uri: profileImageUrl }} style={styles.profileImage} />
+                  ) : (
+                    <View style={[styles.profileImage, { backgroundColor: '#E1E1E1', justifyContent: 'center', alignItems: 'center' }]}>
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#888' }}>
+                        {emp?.firstname ? emp.firstname.charAt(0).toUpperCase() : 'U'}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.profileInfo}>
+                      <Text style={styles.profileName}>{fullName}</Text>
+                      <Text style={styles.profileRole}>{designation}</Text>
+                      <Text style={styles.profileId}>EMP-ID: {empIdDisplay}</Text>
                   </View>
-                )}
-                <View style={styles.profileInfo}>
-                    <Text style={styles.profileName}>{fullName}</Text>
-                    <Text style={styles.profileRole}>{designation}</Text>
-                    <Text style={styles.profileId}>EMP-ID: {empIdDisplay}</Text>
-                </View>
-            </View>
-        </View>
+              </View>
+          </View>
+        )}
 
         {/* --- PAYROLL PERIOD SELECTOR --- */}
         <Text style={styles.sectionLabel}>Payroll Period</Text>
@@ -315,7 +354,7 @@ const SalaryScreen: React.FC = () => {
              
              <View style={styles.row}>
                 <Text style={styles.labelBlue}>Payment Mode</Text>
-                <Text style={styles.value}>Bank Transfer</Text>
+                <Text style={styles.value}>{emp?.bankName ? `Transfer to ${emp.bankName}` : 'Bank Transfer'}</Text>
              </View>
 
              <View style={[styles.row, { marginTop: 15, alignItems: 'center' }]}>
@@ -384,6 +423,14 @@ const SalaryScreen: React.FC = () => {
         </TouchableWithoutFeedback>
       </Modal>
 
+      </View>
+  );
+
+  if (hideHeader) return content;
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        {content}
     </SafeAreaView>
   );
 };

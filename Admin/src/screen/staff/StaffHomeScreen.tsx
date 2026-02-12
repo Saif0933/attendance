@@ -454,14 +454,17 @@
 
 
 
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   FlatList,
   Image,
   Modal,
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -469,7 +472,10 @@ import {
   View
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useDeleteCategory, useGetAllCategories } from '../../../../src/employee/hook/useCategory';
 import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
+import { Category } from '../../../../src/employee/type/category';
+import { showError, showSuccess } from '../../../../src/utils/meesage';
 import AddStaffScreen from './AddStaffScreen';
 import NewCategoryScreen from './NewCategoryScreen';
 import SearchStaff from './SearchStaff';
@@ -478,17 +484,60 @@ import TodaysAbsentScreen from './TodaysAbsentScreen';
 const { width } = Dimensions.get('window');
 
 // API Base URL for images
-const IMAGE_BASE_URL = "http://192.168.1.10:5000";
+const IMAGE_BASE_URL = "http://192.168.1.7:5000";
 
 
 /* ===================== SCREEN ===================== */
 
 const StaffHomeScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
   const [todaysAbsentModalVisible, setTodaysAbsentModalVisible] = useState(false);
   const [searchStaffModalVisible, setSearchStaffModalVisible] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
+  const [optionsModalVisible, setOptionsModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedCategoryForAction, setSelectedCategoryForAction] = useState<Category | null>(null);
+
+  // FETCH CATEGORIES
+  const { data: categoriesData } = useGetAllCategories();
+  const deleteCategoryMutation = useDeleteCategory();
+  const categories: Category[] = Array.isArray(categoriesData) ? categoriesData : (categoriesData as any)?.data || [];
+
+  const handleLongPressCategory = (cat: Category) => {
+    setSelectedCategoryForAction(cat);
+    setOptionsModalVisible(true);
+  };
+
+  const handleDeleteCategory = () => {
+    if (!selectedCategoryForAction) return;
+
+    Alert.alert(
+      'Delete Category',
+      `Are you sure you want to delete "${selectedCategoryForAction.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => {
+            deleteCategoryMutation.mutate(selectedCategoryForAction.id, {
+              onSuccess: () => {
+                showSuccess('Category deleted');
+                setOptionsModalVisible(false);
+                if (selectedCategoryId === selectedCategoryForAction.id) {
+                  setSelectedCategoryId(undefined);
+                }
+              },
+              onError: (err: any) => showError(err)
+            });
+          }
+        }
+      ]
+    );
+  };
 
   // FETCH EMPLOYEES
   const {
@@ -499,10 +548,13 @@ const StaffHomeScreen: React.FC = () => {
     hasNextPage,
     isFetchingNextPage,
     refetch
-  } = useGetAllEmployeesWithInfiniteQuery({ limit: 10 });
+  } = useGetAllEmployeesWithInfiniteQuery({ 
+    limit: 10,
+    categoryId: selectedCategoryId 
+  });
 
-  const employees = data?.pages.flatMap(page => page.data.employees) || [];
-  const stats = data?.pages[0]?.data.meta || { totalCount: 0 };
+  const employees = data?.pages?.flatMap(page => page.data.employees) || [];
+  const stats = data?.pages?.[0]?.data?.meta || { totalCount: 0 };
 
   const renderHeader = () => (
     <>
@@ -567,9 +619,32 @@ const StaffHomeScreen: React.FC = () => {
 
       {/* Filter + Add */}
       <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.filterPillActive}>
-          <Text style={styles.filterPillTextActive}>All</Text>
-        </TouchableOpacity>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.filterScroll}
+        >
+          <TouchableOpacity 
+            style={selectedCategoryId === undefined ? styles.filterPillActive : styles.filterPillInactive}
+            onPress={() => setSelectedCategoryId(undefined)}
+          >
+            <Text style={selectedCategoryId === undefined ? styles.filterPillTextActive : styles.filterPillTextInactive}>All</Text>
+          </TouchableOpacity>
+
+          {categories.map((cat: Category) => (
+            <TouchableOpacity 
+              key={cat.id}
+              style={selectedCategoryId === cat.id ? styles.filterPillActive : styles.filterPillInactive}
+              onPress={() => setSelectedCategoryId(cat.id)}
+              onLongPress={() => handleLongPressCategory(cat)}
+              delayLongPress={500}
+            >
+              <Text style={selectedCategoryId === cat.id ? styles.filterPillTextActive : styles.filterPillTextInactive}>
+                {cat.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
         <TouchableOpacity
           style={styles.addButtonSmall}
@@ -604,7 +679,11 @@ const StaffHomeScreen: React.FC = () => {
         refreshing={isLoading}
         onRefresh={refetch}
         renderItem={({ item: emp }) => (
-          <View style={styles.employeeCard}>
+          <TouchableOpacity 
+            style={styles.employeeCard}
+            onPress={() => navigation.navigate('EmployeeDetailsScreen', { employeeId: emp.id })}
+            activeOpacity={0.7}
+          >
             <View style={styles.avatarContainer}>
               {emp.profilePicture?.url ? (
                 <Image 
@@ -614,7 +693,7 @@ const StaffHomeScreen: React.FC = () => {
               ) : (
                 <View style={[styles.avatarImage, styles.avatarPlaceholder]}>
                   <Text style={styles.avatarText}>
-                    {emp.firstname.charAt(0).toUpperCase()}
+                    {(emp.firstname || '?').charAt(0).toUpperCase()}
                   </Text>
                 </View>
               )}
@@ -637,7 +716,7 @@ const StaffHomeScreen: React.FC = () => {
                 <Text style={styles.statusNotMarked}>Not marked</Text>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
         )}
         ListFooterComponent={() => (
           isFetchingNextPage ? (
@@ -645,11 +724,11 @@ const StaffHomeScreen: React.FC = () => {
           ) : null
         )}
         ListEmptyComponent={() => (
-          !isLoading && (
+          !isLoading ? (
             <View style={{ alignItems: 'center', marginTop: 50 }}>
               <Text style={{ color: '#94A3B8' }}>No employees found</Text>
             </View>
-          )
+          ) : null
         )}
       />
 
@@ -680,7 +759,10 @@ const StaffHomeScreen: React.FC = () => {
       <Modal transparent visible={categoryModalVisible}>
         <View style={styles.categoryModalOverlay}>
           <View style={styles.categoryModalContainer}>
-            <NewCategoryScreen onClose={() => setCategoryModalVisible(false)} />
+            <NewCategoryScreen onClose={() => {
+              setCategoryModalVisible(false);
+              refetch();
+            }} />
           </View>
         </View>
       </Modal>
@@ -694,7 +776,63 @@ const StaffHomeScreen: React.FC = () => {
       >
         <View style={styles.addStaffModalOverlay}>
           <View style={styles.addStaffModalContainer}>
-            <AddStaffScreen onClose={() => setAddStaffModalVisible(false)} />
+            <AddStaffScreen onClose={() => {
+              setAddStaffModalVisible(false);
+              refetch();
+            }} />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Category Options Modal (Edit/Delete) */}
+      <Modal
+        transparent
+        visible={optionsModalVisible}
+        animationType="fade"
+        onRequestClose={() => setOptionsModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setOptionsModalVisible(false)}
+        >
+          <View style={styles.optionsContainer}>
+            <Text style={styles.optionsTitle}>{selectedCategoryForAction?.name}</Text>
+            
+            <TouchableOpacity 
+              style={styles.optionItem} 
+              onPress={() => {
+                setOptionsModalVisible(false);
+                setEditModalVisible(true);
+              }}
+            >
+              <Ionicons name="create-outline" size={24} color="#fff" />
+              <Text style={styles.optionText}>Edit Category</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.optionItem, styles.optionItemDestructive]} 
+              onPress={handleDeleteCategory}
+            >
+              <Ionicons name="trash-outline" size={24} color="#F87171" />
+              <Text style={[styles.optionText, { color: '#F87171' }]}>Delete Category</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Edit Category Modal */}
+      <Modal transparent visible={editModalVisible}>
+        <View style={styles.categoryModalOverlay}>
+          <View style={styles.categoryModalContainer}>
+            <NewCategoryScreen 
+              onClose={() => {
+                setEditModalVisible(false);
+                refetch();
+              }} 
+              isEditing={true}
+              initialData={selectedCategoryForAction}
+            />
           </View>
         </View>
       </Modal>
@@ -880,9 +1018,12 @@ const styles = StyleSheet.create({
   searchPlaceholder: { flex: 1, color: '#94A3B8', fontSize: 16, marginLeft: 12 },
 
   actionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, justifyContent: 'space-between' },
-  filterPillActive: { backgroundColor: '#fff', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 30 },
+  filterPillActive: { backgroundColor: '#fff', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 30, marginRight: 8 },
+  filterPillInactive: { backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30, marginRight: 8 },
   filterPillTextActive: { fontWeight: '700', color: '#0F172A' },
-  addButtonSmall: { padding: 5 },
+  filterPillTextInactive: { fontWeight: '600', color: '#94A3B8' },
+  filterScroll: { paddingRight: 10, alignItems: 'center' },
+  addButtonSmall: { padding: 5, marginLeft: 5 },
 
   listHeader: { marginBottom: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   listTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
@@ -960,6 +1101,41 @@ const styles = StyleSheet.create({
 
   searchStaffModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   searchStaffModalContainer: { backgroundColor: '#1E293B', borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
+
+  // Options Modal Styles
+  optionsContainer: {
+    backgroundColor: '#1E293B',
+    width: width * 0.8,
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  optionsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    gap: 15,
+  },
+  optionItemDestructive: {
+    marginTop: 5,
+  },
+  optionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
 });
 
 export default StaffHomeScreen;

@@ -4,6 +4,7 @@ export interface GetEmployeesQuery {
   companyId?: string;
   search?: string;
   designation?: string;
+  categoryId?: string;
   page?: number;
   limit?: number;
 }

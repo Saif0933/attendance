@@ -25,6 +25,7 @@ import { useGetAllShifts } from '../../../../api/hook/company/shift/useShift';
 import { useOnboardEmployee } from '../../../../src/employee/hook/useEmployee';
 import { useUploadProfilePicture } from '../../../../src/employee/hook/useProfilePicture';
 import { BloodGroup, EmployeePayload, Gender, PunchFromGeofence } from '../../../../src/employee/validator/employee.validator';
+import { useAuthStore } from '../../../../src/store/useAuthStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -223,6 +224,9 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
     return true;
   };
 
+  const {company} = useAuthStore()
+  console.log(company)
+
   const handleSave = () => {
     // Validate form before proceeding
     if (!validateForm()) {
@@ -231,6 +235,7 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
 
     // Build the payload matching EmployeePayload interface
     const payload: EmployeePayload = {
+      companyId: company?.id || '',
       // Basic Information
       firstname: formData.firstName.trim(),
       lastname: formData.lastName.trim() || undefined,

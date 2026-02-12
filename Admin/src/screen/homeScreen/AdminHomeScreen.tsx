@@ -1,17 +1,19 @@
 
-import React, { useCallback, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   Modal,
-  RefreshControl,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Import popup screens
@@ -21,29 +23,79 @@ import Others from './Others';
 const { width, height } = Dimensions.get('window');
 
 const AdminHomeScreen = () => {
-  const [refreshing, setRefreshing] = useState(false);
   const [othersModalVisible, setOthersModalVisible] = useState(false);
   const [punchingModalVisible, setPunchingModalVisible] = useState(false);
+  const navigation = useNavigation<any>();
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
+  const mapRef = useRef<MapView>(null);
+  const [userLocation, setUserLocation] = useState<any>(null);
+  const [hasCentered, setHasCentered] = useState(false);
+
+  const onUserLocationChange = (event: any) => {
+    const { coordinate } = event.nativeEvent;
+    setUserLocation(coordinate);
+  };
+
+  const handleRecenter = () => {
+    if (userLocation && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.0121,
+      }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    if (userLocation && !hasCentered && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.0121,
+      }, 1000);
+      setHasCentered(true);
+    }
+  }, [userLocation, hasCentered]);
+
+  const handlePunchPress = async () => {
+    try {
+      // 1. Check Location Permission
+      const permission = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+      
+      if (permission !== RESULTS.GRANTED) {
+        navigation.navigate('PermissionsScreen');
+        return;
+      }
+
+      // 2. Check if Location (GPS) is Enabled
+      const status = await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+        interval: 10000,
+      });
+
+      if (status === 'already-enabled' || status === 'enabled') {
+        setPunchingModalVisible(true);
+      } else {
+        navigation.navigate('PermissionsScreen');
+      }
+    } catch (error) {
+      console.log('Location enable error:', error);
+      // If user cancels or error occurs, show permissions screen
+      navigation.navigate('PermissionsScreen');
+    }
+  };
+
+
 
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-      <ScrollView
-        contentContainerStyle={{ flex: 1 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+      <SafeAreaView style={{ flex: 1, position: 'relative' }}>
         {/* MAP */}
         <MapView
+          ref={mapRef}
           provider={PROVIDER_GOOGLE}
           style={styles.map}
           initialRegion={{
@@ -52,12 +104,11 @@ const AdminHomeScreen = () => {
             latitudeDelta: 0.015,
             longitudeDelta: 0.0121,
           }}
+          showsUserLocation={true}
+          showsMyLocationButton={false}
+          onUserLocationChange={onUserLocationChange}
         >
-          <Marker coordinate={{ latitude: 23.3441, longitude: 85.3096 }}>
-            <View style={styles.userLocationMarker}>
-              <View style={styles.userLocationInner} />
-            </View>
-          </Marker>
+          <Marker coordinate={userLocation || { latitude: 23.3441, longitude: 85.3096 }} />
         </MapView>
 
         {/* ROUTINE */}
@@ -73,9 +124,11 @@ const AdminHomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* NAVIGATION */}
         <View style={styles.topRightContainer}>
-          <TouchableOpacity style={[styles.circleButton, styles.navButton]}>
+          <TouchableOpacity 
+            style={[styles.circleButton, styles.navButton]}
+            onPress={handleRecenter}
+          >
             <Ionicons
               name="navigate-outline"
               size={18}
@@ -103,7 +156,7 @@ const AdminHomeScreen = () => {
         <View style={styles.bottomRightContainer}>
           <TouchableOpacity
             style={styles.handButton}
-            onPress={() => setPunchingModalVisible(true)}
+            onPress={handlePunchPress}
           >
             <Ionicons
               name="finger-print"
@@ -112,7 +165,7 @@ const AdminHomeScreen = () => {
             />
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </SafeAreaView>
 
       {/* OTHERS MODAL */}
       <Modal transparent visible={othersModalVisible} animationType="slide">

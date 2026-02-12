@@ -1,11 +1,12 @@
 import axios from "axios";
 import { useAuthStore } from "../src/store/useAuthStore";
+import { useEmployeeAuthStore } from "../src/store/useEmployeeAuthStore";
 
 // If you are using a physical device or emulator, "localhost" might not work.
 // - Android Emulator: Use "http://10.0.2.2:8000/api/v1"
 // - Physical Device: Use your machine's local IP (e.g., "http://192.168.1.10:8000/api/v1")
-export const BASE_URL = "http://192.168.1.7:5000/api/v1"; 
-export const IMAGE_BASE_URL = "http://192.168.1.7:5000"; // Assuming images are served from root or specific uploads folder
+export const BASE_URL = "http://192.168.1.9:5000/api/v1"; 
+export const IMAGE_BASE_URL = "http://192.168.1.9:5000"; // Assuming images are served from root or specific uploads folder
 //192.168.1.9, localhost
 
 export const api = axios.create({
@@ -18,7 +19,12 @@ export const api = axios.create({
 
 // Add a request interceptor for debugging and Authorization
 api.interceptors.request.use((request) => {
-  const token = useAuthStore.getState().token;
+  // Check both stores for the token
+  const companyToken = useAuthStore.getState().token;
+  const employeeToken = useEmployeeAuthStore.getState().token;
+  
+  const token = employeeToken || companyToken;
+
   if (token) {
     request.headers.Authorization = `Bearer ${token}`;
   }

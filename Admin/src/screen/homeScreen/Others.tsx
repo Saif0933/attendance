@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -10,6 +11,8 @@ import {
   View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
+import { EmployeeListItem } from '../../../../src/employee/type/employee';
 
 // --- Types ---
 interface Colleague {
@@ -19,39 +22,6 @@ interface Colleague {
   image: string; // URL or local require
   isFollowing: boolean;
 }
-
-// --- Mock Data ---
-// In a real app, replace the URLs with actual image imports or remote URLs
-const COLLEAGUES_DATA: Colleague[] = [
-  {
-    id: '1',
-    name: 'Alice Johnson',
-    role: 'Product Designer',
-    image: 'https://randomuser.me/api/portraits/women/44.jpg',
-    isFollowing: false,
-  },
-  {
-    id: '2',
-    name: 'Mark Stevenson',
-    role: 'Software Engineer',
-    image: 'https://randomuser.me/api/portraits/men/32.jpg',
-    isFollowing: true,
-  },
-  {
-    id: '3',
-    name: 'Sarah Connor',
-    role: 'Project Manager',
-    image: 'https://randomuser.me/api/portraits/women/68.jpg',
-    isFollowing: false,
-  },
-  {
-    id: '4',
-    name: 'David Smith',
-    role: 'Marketing Head',
-    image: 'https://randomuser.me/api/portraits/men/85.jpg',
-    isFollowing: false,
-  },
-];
 
 const FILTERS = ['All', 'Active', 'Nearby', 'New'];
 
@@ -63,6 +33,29 @@ interface OthersProps {
 
 const Others: React.FC<OthersProps> = ({ onClose }) => {
   const [selectedFilter, setSelectedFilter] = useState('All');
+
+  // --- Data Fetching ---
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useGetAllEmployeesWithInfiniteQuery({ limit: 10 });
+
+  // Flatten the data from pages
+  const colleagues: Colleague[] = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flatMap((page) =>
+      page.data.employees.map((employee: EmployeeListItem) => ({
+        id: employee.id,
+        name: `${employee.firstname} ${employee.lastname}`,
+        role: employee.designation || 'Team Member',
+        image: employee.profilePicture?.url || 'https://ui-avatars.com/api/?name=' + employee.firstname + '+' + employee.lastname,
+        isFollowing: false, // Default value as backend doesn't support this yet
+      }))
+    );
+  }, [data]);
 
   // --- Render Components ---
 
@@ -91,7 +84,11 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
   const renderColleagueItem = ({ item }: { item: Colleague }) => (
     <View style={styles.cardItem}>
       {/* Profile Image */}
-      <Image source={{ uri: item.image }} style={styles.avatar} />
+      <Image 
+        source={{ uri: item.image }} 
+        style={styles.avatar} 
+        // defaultSource={require('../../../../assets/images/placeholder.png')} // Commented out as path might be wrong, relying on uri fallback
+      />
 
       {/* Text Info */}
       <View style={styles.infoContainer}>
@@ -103,20 +100,30 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
       <TouchableOpacity
         style={[
           styles.actionButton,
-          item.isFollowing ? styles.btnFollowing : styles.btnFollow,
+          styles.btnFollow, 
         ]}
+        // onPress={() => {}} // Placeholder action
       >
         <Text
           style={[
             styles.btnText,
-            item.isFollowing ? styles.textFollowing : styles.textFollow,
+            styles.textFollow,
           ]}
         >
-          {item.isFollowing ? 'Following' : 'Follow'}
+          View
         </Text>
       </TouchableOpacity>
     </View>
   );
+
+  const renderFooter = () => {
+    if (!isFetchingNextPage) return null;
+    return (
+      <View style={{ paddingVertical: 20 }}>
+        <ActivityIndicator size="small" color="#000" />
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -149,12 +156,28 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
       </View>
 
       {/* Colleagues List */}
-      <FlatList
-        data={COLLEAGUES_DATA}
-        renderItem={renderColleagueItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-      />
+      {isLoading ? (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+           <ActivityIndicator size="large" color="#000" />
+        </View>
+      ) : (
+        <FlatList
+          data={colleagues}
+          renderItem={renderColleagueItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          onEndReached={() => {
+            if (hasNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={
+             <View style={{alignItems: 'center', marginTop: 50}}>
+               <Text style={{color: '#888'}}>No colleagues found.</Text>
+             </View>
+          }
+        />
+      )}
     </View>
   );
 };
@@ -208,7 +231,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700', // Using generic bold, use custom font if needed
     color: '#1A1A1A',
-    fontFamily: 'System', // Looks 'handwritten' in the image, strictly generic here
+    fontFamily: 'System', 
   },
   closeButton: {
     padding: 4,
@@ -273,7 +296,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
     marginBottom: 4,
-    fontFamily: 'System', // Use a handwriting font if available (e.g., 'Comic Sans MS' on iOS)
+    fontFamily: 'System',
   },
   roleText: {
     fontSize: 14,

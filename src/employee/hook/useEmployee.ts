@@ -30,7 +30,7 @@ export const useOnboardEmployee = () => {
 /* ---------- READ ALL ---------- */
 export const useGetAllEmployees = () => {
   return useQuery({
-    queryKey: ["employees"],
+    queryKey: ["employees", ],
     queryFn: () => getAllEmployeesApi(),
   });
 };

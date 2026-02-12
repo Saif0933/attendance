@@ -1108,7 +1108,7 @@ const AdminSettingScreen = () => {
                             navigation.navigate('GeoFencingLocations');
                             break;
                         case 'Holidays':
-                            navigation.navigate('HolidaysScreen');
+                            navigation.navigate('AdminHolidaysScreen');
                             break;
                         case 'Reports':
                             navigation.navigate('ReportsScreen');

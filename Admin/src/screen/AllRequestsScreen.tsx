@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import { useGetLeaves, useUpdateLeaveStatus } from '../../../api/hook/leaves/hook/useLeave';
 import { Leave, LeaveStatus } from '../../../api/hook/leaves/type';
+import { useAuthStore } from '../../../src/store/useAuthStore';
 
 const AllRequestsScreen = () => {
   const [activeTab, setActiveTab] = useState<'All' | 'PENDING' | 'APPROVED' | 'REJECTED'>('All');
@@ -190,6 +191,9 @@ const AllRequestsScreen = () => {
       </View>
     </View>
   );
+
+  const {company} = useAuthStore()
+  console.log(company)
 
   return (
     <SafeAreaView style={styles.container}>

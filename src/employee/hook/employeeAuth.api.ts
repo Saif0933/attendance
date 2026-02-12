@@ -12,14 +12,14 @@ export interface EmployeeVerifyOtpPayload {
 }
 
 export interface Employee {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   firstname: string;
   lastname: string;
   email: string;
   phoneNumber: string;
   designation: string;
-  employeeCode: string;
+  employeeCode: number;
 }
 
 export interface EmployeeVerifyOtpResponse {
@@ -27,6 +27,7 @@ export interface EmployeeVerifyOtpResponse {
   message: string;
   token: string;
   employee: Employee;
+  company: any; // Using any for now or I can import Company if available
 }
 
 /* ---------- API CALLS ---------- */

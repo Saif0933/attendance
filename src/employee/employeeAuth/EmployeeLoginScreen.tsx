@@ -36,7 +36,7 @@ const EmployeeLoginScreen = () => {
 
     // Format phone number - add + prefix if not present
     let formattedPhone = phoneNumber.trim();
-    if (!formattedPhone.startsWith('+')) {
+    if (!formattedPhone.startsWith('')) {
       formattedPhone = '+' + formattedPhone;
     }
 

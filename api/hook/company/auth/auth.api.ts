@@ -27,7 +27,7 @@ export interface Company {
   code: string;
   numberOfEmployees: number | null;
   address: string | null;
-  logo: string | null;
+  logo: string | { public_id: string; secure_url: string } | null;
   email: string | null;
   phone: string;
   website: string | null;

@@ -17,6 +17,7 @@ export type PunchFromGeofence =
   | "PUNCH_FROM_ANYWHERE";
 
 export interface EmployeePayload {
+  companyId: string;
   // Basic
   firstname: string;
   lastname?: string;

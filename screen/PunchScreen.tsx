@@ -1,8 +1,8 @@
 
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Fingerprint, RefreshCw } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,9 +15,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import ReactNativeBiometrics from "react-native-biometrics";
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCheckIn, useCheckOut } from "../src/employee/hook/useAttendance";
+import { useEmployeeAuthStore } from "../src/store/useEmployeeAuthStore";
 
 const { width } = Dimensions.get("window");
 
@@ -32,12 +35,10 @@ const PunchScreen = () => {
 };
 
 const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
-  const [employee, setEmployee] = useState<{ id: string; firstname: string; lastname: string } | null>(null);
+  const navigation = useNavigation<any>();
+  const { employee: hookEmployee } = useEmployeeAuthStore();
   const [punchType, setPunchType] = useState<"IN" | "OUT">("IN");
-  const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number }>({
-    latitude: 28.6139,
-    longitude: 77.2090,
-  });
+  const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // TanStack Query Hooks
   const { mutate: checkIn, isPending: isCheckingIn } = useCheckIn();
@@ -47,62 +48,95 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
     allowDeviceCredentials: true,
   });
 
-  useEffect(() => {
-    const loadEmployeeData = async () => {
-      try {
-        const storedData = await AsyncStorage.getItem("employeeData");
-        if (storedData) {
-          setEmployee(JSON.parse(storedData));
-        }
-      } catch (error) {
-        console.error("Error loading employee data:", error);
-      }
-    };
-    loadEmployeeData();
-  }, []);
+  // Attempt to get real location on focus or refresh
+  useFocusEffect(
+    useCallback(() => {
+      const checkLocationAndFetch = async () => {
+        if (Platform.OS === 'android') {
+          try {
+            // 1. Check if location services are enabled
+            const result = await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+              interval: 10000,
+            });
+            
+            if (result !== 'already-enabled' && result !== 'enabled') {
+              navigation.navigate('PermissionsScreen');
+              return;
+            }
 
-  // Attempt to get real location on mount or refresh
-  useEffect(() => {
-    const getRealLocation = async () => {
-      if (Platform.OS === 'android') {
-        try {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            // 2. Request Permissions
+            const granted = await PermissionsAndroid.requestMultiple([
+              PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+              PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+            ]);
+            
+            if (granted['android.permission.ACCESS_FINE_LOCATION'] !== PermissionsAndroid.RESULTS.GRANTED) {
+              console.log("Location permission denied");
+              return;
+            }
+          } catch (err: any) {
+            console.warn("Location Helper Error:", err);
+            navigation.navigate('PermissionsScreen');
             return;
           }
-        } catch (err) {
-          console.warn(err);
         }
-      }
-      
-      // @ts-ignore
-      navigator?.geolocation?.getCurrentPosition(
-        (pos: any) => {
-          setCurrentLocation({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          });
-        },
-        (err: any) => console.log("Location Error:", err),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-      );
-    };
-    getRealLocation();
-  }, [onRefresh]);
+        
+        // 3. Get precise position
+        // @ts-ignore
+        navigator?.geolocation?.getCurrentPosition(
+          (pos: any) => {
+            console.log("Location Found:", pos.coords.latitude, pos.coords.longitude);
+            setCurrentLocation({
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+            });
+          },
+          (err: any) => {
+            console.log("Location Error:", err);
+            // @ts-ignore
+            navigator?.geolocation?.getCurrentPosition(
+              (secondPos: any) => {
+                setCurrentLocation({
+                  latitude: secondPos.coords.latitude,
+                  longitude: secondPos.coords.longitude,
+                });
+              },
+              (secondErr: any) => console.log("Final Location Error:", secondErr),
+              { enableHighAccuracy: false, timeout: 20000, maximumAge: 1000 }
+            );
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
+        );
+      };
+
+      checkLocationAndFetch();
+    }, [onRefresh, navigation])
+  );
 
   const activeColor = punchType === "IN" ? "#10B981" : "#EF4444";
   const isPending = isCheckingIn || isCheckingOut;
 
   const handlePunch = async () => {
-    if (!employee) {
+    // Get latest state from store to avoid any closure issues
+    const currentEmployee = useEmployeeAuthStore.getState().employee;
+    
+    if (!currentEmployee) {
       Alert.alert("Error", "User details not found. Please log in again.");
       return;
     }
 
+    // Check if location is available
+    if (!currentLocation) {
+      Alert.alert(
+        "Location Not Found", 
+        "We haven't received your precise location yet. Please wait a moment until the GPS coordinates appear at the bottom, or refresh.",
+        [{ text: "Try Again", onPress: onRefresh }]
+      );
+      return;
+    }
+
     const payload = {
-      employeeId: employee.id,
+      employeeId: currentEmployee.id,
       latitude: currentLocation.latitude,
       longitude: currentLocation.longitude,
       remarks: punchType === "IN" ? "Reached office on time" : "Leaving for the day",
@@ -110,7 +144,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
 
     if (punchType === "IN") {
       checkIn(payload, {
-        onSuccess: (res) => {
+        onSuccess: (res: any) => {
           Alert.alert("Success", res.message || "Checked-in successfully");
           onRefresh();
         },
@@ -120,7 +154,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
       });
     } else {
       checkOut(payload, {
-        onSuccess: (res) => {
+        onSuccess: (res: any) => {
           Alert.alert("Success", res.message || "Checked-out successfully");
           onRefresh();
         },
@@ -164,18 +198,18 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
 
       {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.greetingText}>
-            Hello, {employee ? `${employee.firstname} ${employee.lastname}` : "Employee"}
+            Hello, {hookEmployee ? `${hookEmployee.firstname} ${hookEmployee.lastname}` : "Employee"}
           </Text>
           <Text style={styles.subText}>Mark your attendance</Text>
         </View>
         <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
-          <RefreshCw size={20} color="#fff" />
+          <RefreshCw size={20} color="#1E293B" />
         </TouchableOpacity>
       </View>
 
@@ -258,8 +292,27 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
         </TouchableOpacity>
 
         <Text style={styles.footerNote}>
-          Current Location: {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}
+          {currentLocation 
+            ? `Current Location: ${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}`
+            : "Fetching precise location... Please wait."}
         </Text>
+      </View>
+
+      {/* Hidden Location Provider */}
+      <View style={{ width: 1, height: 1, opacity: 0, position: 'absolute' }}>
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          showsUserLocation={true}
+          onUserLocationChange={(e) => {
+            const coord = e.nativeEvent.coordinate;
+            if (coord) {
+              setCurrentLocation({
+                latitude: coord.latitude,
+                longitude: coord.longitude,
+              });
+            }
+          }}
+        />
       </View>
     </SafeAreaView>
   );
@@ -268,7 +321,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
 export default PunchScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
+  container: { flex: 1, backgroundColor: "#F8FAFC" },
 
   header: {
     padding: 20,
@@ -276,9 +329,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  greetingText: { color: "#fff", fontSize: 22, fontWeight: "bold" },
-  subText: { color: "#aaa", fontSize: 14, marginTop: 4 },
-  refreshBtn: { padding: 10, backgroundColor: "#222", borderRadius: 50 },
+  greetingText: { color: "#1E293B", fontSize: 24, fontWeight: "800" },
+  subText: { color: "#64748B", fontSize: 14, marginTop: 4, fontWeight: "500" },
+  refreshBtn: { padding: 10, backgroundColor: "#fff", borderRadius: 50, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
 
   scannerSection: {
     flex: 1,
@@ -286,19 +339,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   scannerCircle: {
-    width: width * 0.7,
-    height: width * 0.7,
-    borderRadius: (width * 0.7) / 2,
+    width: width * 0.75,
+    height: width * 0.75,
+    borderRadius: (width * 0.75) / 2,
     borderWidth: 2,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "#fff",
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
   },
   visualHint: {
-    color: "#fff",
-    marginTop: 15,
-    fontWeight: "bold",
-    fontSize: 16,
+    color: "#1E293B",
+    marginTop: 18,
+    fontWeight: "800",
+    fontSize: 18,
   },
   subVisualHint: {
     color: "#666",
@@ -313,12 +371,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 15,
   },
-  punchLabel: { color: "#888" },
+  punchLabel: { color: "#64748B", fontWeight: "600", fontSize: 14 },
   switchContainer: {
     flexDirection: "row",
-    backgroundColor: "#222",
-    borderRadius: 20,
-    padding: 2,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 24,
+    padding: 4,
   },
   switchBtn: {
     paddingVertical: 6,
@@ -326,8 +384,9 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   switchText: {
-    color: "#666",
-    fontWeight: "600",
+    color: "#94A3B8",
+    fontWeight: "700",
+    fontSize: 13,
   },
 
   footer: {
@@ -352,7 +411,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   footerNote: {
-    color: "#555",
-    fontSize: 12,
+    color: "#94A3B8",
+    fontSize: 13,
+    fontWeight: "500",
+    marginTop: 10,
+    textAlign: "center",
   },
 });

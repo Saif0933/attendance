@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 // Changed to FontAwesome5 for more attractive icons
+import { SafeAreaView } from 'react-native-safe-area-context';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AddPayrollHead = ({ navigation }: any) => {
   const [entryType, setEntryType] = useState('Deduction');
@@ -24,7 +24,7 @@ const AddPayrollHead = ({ navigation }: any) => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color="#FFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add Payroll Head</Text>
       </View>
@@ -146,42 +146,52 @@ const AddPayrollHead = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FB',
+    backgroundColor: '#0A2540',
   },
   header: {
-    backgroundColor: '#E8F1FC',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    backgroundColor: '#0A2540',
+    paddingVertical: 18,
+    paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    paddingTop: 10,
   },
   backButton: {
-    marginRight: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#0F172A',
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
   },
   content: {
-    padding: 20,
+    flexGrow: 1,
+    backgroundColor: '#F4F7FA',
+    padding: 24,
   },
   label: {
-    fontSize: 16,
-    color: '#374151',
-    marginBottom: 12,
-    fontWeight: '500',
+    fontSize: 15,
+    color: '#1A202C',
+    marginBottom: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   
-  // Entry Type Toggle
   entryTypeContainer: {
     flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: '#94A3B8',
-    borderRadius: 8,
-    marginBottom: 24,
-    height: 48,
     backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    marginBottom: 24,
+    height: 52,
     overflow: 'hidden',
   },
   entryTypeBtn: {
@@ -192,38 +202,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   entryTypeBtnActive: {
-    backgroundColor: '#FFF',
-    borderRightWidth: 1,
-    borderColor: '#94A3B8',
+    backgroundColor: '#E0F2FE',
+    borderRightWidth: 1.5,
+    borderColor: '#E2E8F0',
   },
   entryTypeBtnActiveDeduction: {
-    backgroundColor: '#DCE7FA',
-    borderLeftWidth: 1,
-    borderColor: '#94A3B8',
+    backgroundColor: '#FEF3C7',
+    borderLeftWidth: 1.5,
+    borderColor: '#E2E8F0',
   },
   entryTypeText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#64748B',
-    marginLeft: 8, // Increased margin for new icon
+    marginLeft: 10,
   },
   entryTypeTextActive: {
-    color: '#000',
-    fontWeight: '600',
+    color: '#0F172A',
+    fontWeight: '800',
   },
 
-  // Inputs
   input: {
-    backgroundColor: '#E5E7EB',
-    borderRadius: 8,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 24,
     fontSize: 16,
-    color: '#000',
+    color: '#0F172A',
+    fontWeight: '500',
   },
 
-  // Custom Option Buttons (Value Type)
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -235,125 +246,140 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 8,
-    borderWidth: 1,
+    paddingVertical: 15,
+    borderRadius: 12,
+    borderWidth: 1.5,
   },
   optionBtnSelected: {
-    backgroundColor: '#DCE7FA',
-    borderColor: '#335C8D',
+    backgroundColor: '#0A2540',
+    borderColor: '#0A2540',
   },
   optionBtnUnselected: {
-    backgroundColor: '#E5E7EB',
-    borderColor: '#E5E7EB',
+    backgroundColor: '#FFF',
+    borderColor: '#E2E8F0',
   },
   dotSelected: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#000',
-    marginRight: 8,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF9500',
+    marginRight: 10,
   },
   dotUnselected: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     borderWidth: 1,
-    borderColor: '#9CA3AF',
-    marginRight: 8,
+    borderColor: '#CBD5E1',
+    marginRight: 10,
   },
   optionText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#4B5563',
+    fontWeight: '600',
+    color: '#64748B',
   },
   optionTextSelected: {
-    color: '#000',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 
-  // Amount
   currencyInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E5E7EB',
-    borderRadius: 8,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
     paddingHorizontal: 16,
     marginBottom: 24,
   },
   currencySymbol: {
-    fontSize: 16,
-    color: '#4B5563',
-    marginRight: 10,
+    fontSize: 18,
+    color: '#0F172A',
+    fontWeight: '700',
+    marginRight: 12,
   },
   currencyInput: {
     flex: 1,
     paddingVertical: 14,
-    fontSize: 16,
-    color: '#000',
+    fontSize: 18,
+    color: '#0F172A',
+    fontWeight: '800',
   },
 
-  // Attendance Chips
   chipBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#E5E7EB',
+    paddingVertical: 15,
+    borderRadius: 12,
+    backgroundColor: '#FFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
   },
   chipBtnSelected: {
-     backgroundColor: '#E5E7EB',
+    borderColor: '#FF9500',
+    backgroundColor: 'rgba(255, 149, 0, 0.05)',
   },
   chipBtnUnselected: {
-    backgroundColor: '#E5E7EB',
+    borderColor: '#E2E8F0',
   },
   radioCircleUnselected: {
     width: 14,
     height: 14,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: '#9CA3AF',
-    marginRight: 8,
+    borderColor: '#CBD5E1',
+    marginRight: 10,
   },
   chipText: {
-    color: '#4B5563',
+    color: '#64748B',
     fontSize: 14,
+    fontWeight: '600',
   },
 
-  // Dropdown
   dropdownInput: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 18,
     paddingVertical: 16,
     marginBottom: 20,
   },
   dropdownPlaceholder: {
-    color: '#4B5563',
-    fontSize: 16,
+    color: '#64748B',
+    fontSize: 15,
+    fontWeight: '500',
   },
 
-  // Footer
   footer: {
-    padding: 16,
-    backgroundColor: '#F8F9FB',
+    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
   },
   addButton: {
-    backgroundColor: '#335C8D',
+    backgroundColor: '#0A2540',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    borderRadius: 8,
+    borderRadius: 15,
+    shadowColor: "#0A2540",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+    elevation: 10,
   },
   addButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 });
 

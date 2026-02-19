@@ -1,7 +1,6 @@
 
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -25,12 +24,13 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useApplyLeave, useDeleteLeave, useGetLeaves } from '../api/hook/leaves/hook/useLeave';
 import { LeaveType } from '../api/hook/leaves/type';
 import { useGetEmployeeById } from '../src/employee/hook/useEmployee';
+import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
 
 const { width } = Dimensions.get('window');
 
 // --- Color Palette ---
 const ORANGE = '#FF9F1C';
-const BLUE = '#3A86FF';
+const BLUE = '#4b43f0';
 const DARK_BLUE = '#1D3557';
 const LIGHT_GRAY = '#A8DADC';
 const TEXT_GRAY = '#6C757D';
@@ -45,27 +45,13 @@ const SOFT_PURPLE_BG = '#F3E5F5';
 const RequestScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'Expenses' | 'Leaves' | 'Loans'>('Leaves');
   const scrollViewRef = useRef<ScrollView>(null);
-  const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const { employee } = useEmployeeAuthStore();
+  const employeeId = employee?.id || null;
 
-  // --- State for New Request Feature ---
+  // Fetch Data
   const [modalVisible, setModalVisible] = useState(false);
   const [reason, setReason] = useState('');
   const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveType>('CASUAL');
-
-  useEffect(() => {
-    const fetchEmployeeId = async () => {
-      try {
-        const storedData = await AsyncStorage.getItem('employeeData');
-        if (storedData) {
-          const employee = JSON.parse(storedData);
-          setEmployeeId(employee.id);
-        }
-      } catch (error) {
-        console.error('Error fetching employee ID:', error);
-      }
-    };
-    fetchEmployeeId();
-  }, []);
 
   // Fetch Data
   const { data: employeeDetails, isLoading: isEmpLoading, refetch: refetchEmp } = useGetEmployeeById(employeeId || '');
@@ -554,7 +540,7 @@ const styles = StyleSheet.create({
 
   // FAB Button
   fabButton: {
-    backgroundColor: YELLOW,
+    backgroundColor: BLUE,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

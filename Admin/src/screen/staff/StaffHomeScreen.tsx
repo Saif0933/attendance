@@ -457,21 +457,22 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  FlatList,
-  Image,
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    FlatList,
+    Image,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useGetDailyAttendanceSummary } from '../../../../src/employee/hook/useAttendance';
 import { useDeleteCategory, useGetAllCategories } from '../../../../src/employee/hook/useCategory';
 import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
 import { Category } from '../../../../src/employee/type/category';
@@ -500,6 +501,12 @@ const StaffHomeScreen: React.FC = () => {
   const [optionsModalVisible, setOptionsModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedCategoryForAction, setSelectedCategoryForAction] = useState<Category | null>(null);
+  const [selectedTab, setSelectedTab] = useState<'Absent' | 'Present' | 'Heads'>('Absent');
+
+  // FETCH ATTENDANCE SUMMARY
+  const todayStr = new Date().toISOString().split('T')[0];
+  const { data: summaryData } = useGetDailyAttendanceSummary(todayStr);
+  const summary = (summaryData as any)?.data || { present: 0, absent: 0, late: 0, totalEmployees: 0 };
 
   // FETCH CATEGORIES
   const { data: categoriesData } = useGetAllCategories();
@@ -588,19 +595,28 @@ const StaffHomeScreen: React.FC = () => {
               label="Staff Heads" 
               value={stats.totalCount.toString()} 
               color="#4FC3F7" 
-              onPress={() => setTodaysAbsentModalVisible(true)} 
+              onPress={() => {
+                setSelectedTab('Heads');
+                setTodaysAbsentModalVisible(true);
+              }} 
             />
             <StatItem 
               label="Staff Present" 
-              value="0" 
+              value={(summary.present + summary.late + (summary.halfDay || 0)).toString()} 
               color="#66BB6A" 
-              onPress={() => setTodaysAbsentModalVisible(true)} 
+              onPress={() => {
+                setSelectedTab('Present');
+                setTodaysAbsentModalVisible(true);
+              }} 
             />
             <StatItem 
               label="Staff Absence" 
-              value="0" 
+              value={(stats.totalCount - (summary.present + summary.late + (summary.halfDay || 0))).toString()} 
               color="#FF7043" 
-              onPress={() => setTodaysAbsentModalVisible(true)} 
+              onPress={() => {
+                setSelectedTab('Absent');
+                setTodaysAbsentModalVisible(true);
+              }} 
             />
           </View>
         </View>
@@ -846,7 +862,10 @@ const StaffHomeScreen: React.FC = () => {
       >
         <View style={styles.todaysAbsentModalOverlay}>
           <View style={styles.todaysAbsentModalContainer}>
-            <TodaysAbsentScreen onClose={() => setTodaysAbsentModalVisible(false)} />
+            <TodaysAbsentScreen 
+              onClose={() => setTodaysAbsentModalVisible(false)} 
+              initialTab={selectedTab}
+            />
           </View>
         </View>
       </Modal>

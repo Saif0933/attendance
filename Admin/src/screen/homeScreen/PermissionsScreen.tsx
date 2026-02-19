@@ -2,13 +2,13 @@ import { useNavigation } from '@react-navigation/native';
 import { Check, ChevronLeft, LocateFixed, ShieldCheck } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import LinearGradient from 'react-native-linear-gradient';
@@ -31,18 +31,35 @@ const PermissionsScreen = () => {
   const [locationService, setLocationService] = useState<'granted' | 'pending'>('pending');
 
   useEffect(() => {
-    checkPermissions();
+    const checkStatus = async () => {
+      await checkPermissions();
+      // Also check if location services are already enabled
+      // Note: checkPermissions already checks the ANDROID permission
+    };
+    
+    // Initial check
+    checkStatus();
+
+    // If both are already granted, we might want to navigate immediately,
+    // but usually user is here because one was missing.
   }, []);
 
   const checkPermissions = async () => {
     const locResult = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-    setLocationPermission(locResult === RESULTS.GRANTED ? 'granted' : 'pending');
+    const isGranted = locResult === RESULTS.GRANTED;
+    setLocationPermission(isGranted ? 'granted' : 'pending');
+    
+    // We don't have a direct "poll" for location service without prompting, 
+    // but if we are here we want to monitor.
   };
 
   const handleAllowLocation = async () => {
     const result = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
     if (result === RESULTS.GRANTED) {
       setLocationPermission('granted');
+      if (locationService === 'granted') {
+        navigation.goBack();
+      }
     }
   };
 
@@ -53,6 +70,13 @@ const PermissionsScreen = () => {
       });
       if (result === 'already-enabled' || result === 'enabled') {
         setLocationService('granted');
+        const locResult = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+        if (locResult === RESULTS.GRANTED) {
+           navigation.goBack();
+        } else {
+           // Still need permission
+           handleAllowLocation();
+        }
       }
     } catch (error) {
       console.log('GPS Enabler error:', error);
@@ -105,9 +129,17 @@ const PermissionsScreen = () => {
               <PermissionItem
                 icon={<LocateFixed size={24} color="#323bf0" />}
                 title="Location Services"
-                description="Required for GPS based attendance"
+                description="Required to enable GPS tracking"
                 status={locationService}
                 onPress={handleEnableGPS}
+              />
+
+              <PermissionItem
+                icon={<ShieldCheck size={24} color="#323bf0" />}
+                title="Location Permission"
+                description="Required to access device coordinates"
+                status={locationPermission}
+                onPress={handleAllowLocation}
               />
 
               {/* Add more items here if needed in the future */}

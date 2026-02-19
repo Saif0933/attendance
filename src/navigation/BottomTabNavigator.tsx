@@ -40,7 +40,7 @@ export default function BottomTabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#007bff",
+        tabBarActiveTintColor: "#4b43f0",
         tabBarInactiveTintColor: "#999",
         tabBarStyle: {
           height: 60,

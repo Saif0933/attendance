@@ -1,17 +1,16 @@
 
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
   StatusBar,
-  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const ReportsScreen = () => {
   const navigation = useNavigation();
@@ -23,20 +22,20 @@ const ReportsScreen = () => {
         <Text style={styles.itemTitle}>{title}</Text>
         <Text style={styles.itemDescription}>{description}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+      <Ionicons name="chevron-forward" size={20} color="#475569" />
     </TouchableOpacity>
   );
 
   return (
     // Replaced View with SafeAreaView
     <SafeAreaView style={styles.container}>
-      {/* --- Status Bar: Dark Content for Yellow Background --- */}
-      <StatusBar barStyle="dark-content" backgroundColor="#FACC15" />
+      {/* --- Status Bar: Light Content for Dark Background --- */}
+      <StatusBar barStyle="light-content" backgroundColor="#0A2540" />
 
       {/* --- Header Section --- */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#0F172A" />
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <View>
           <Text style={styles.headerTitle}>Reports.</Text>
@@ -68,43 +67,52 @@ const ReportsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Dark Blue Background
+    backgroundColor: '#0A2540',
   },
   // --- Header Styles ---
   header: {
-    backgroundColor: '#FACC15', // Yellow Header
-    // SafeAreaView handles top padding on iOS, so we reduce it here to avoid double padding
-    paddingTop: Platform.OS === 'android' ? 40 : 10, 
-    paddingBottom: 20,
+    backgroundColor: '#0A2540',
+    paddingVertical: 18,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    paddingTop: 10,
   },
   backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 15,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#0F172A', // Dark Text on Yellow
-    marginBottom: 4,
-    marginTop: -15,
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#0F172A',
+    color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '500',
+    marginTop: -2,
   },
   // --- List Content Styles ---
   scrollContent: {
+    flexGrow: 1,
+    backgroundColor: '#F4F7FA',
     paddingTop: 10,
   },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 15,
+    paddingVertical: 18,
     paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+    marginBottom: 1, // subtle gap
   },
   textContainer: {
     flex: 1,
@@ -113,18 +121,19 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF', // White Title
+    color: '#0F172A',
     marginBottom: 4,
   },
   itemDescription: {
     fontSize: 14,
-    color: '#CBD5E1', // Lighter White/Grey for Description
+    color: '#64748B',
     lineHeight: 20,
+    fontWeight: '400',
   },
   separator: {
     height: 1,
-    backgroundColor: '#1E293B', // Darker separator line
-    marginHorizontal: 20,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 0,
   },
 });
 

@@ -6,6 +6,7 @@ import {
   Eye,
   Filter,
   Plus,
+  ServerOff,
   Users,
   XCircle
 } from 'lucide-react-native';
@@ -43,7 +44,7 @@ const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 +
 
 const { width } = Dimensions.get('window');
 
-const DARK_BLUE = '#0A2540';
+const DARK_BLUE = '#4b43f0';
 const WHITE = '#FFFFFF';
 const ORANGE = '#FF9500';
 const LIGHT_GRAY = '#B0B3B8';
@@ -71,6 +72,7 @@ const WorkScreen: React.FC = () => {
   const { 
     data: tasksData, 
     isLoading: isLoadingTasks, 
+    isError: isTaskError,
     refetch: refetchTasks 
   } = useGetAllTasks(companyId, filterState);
 
@@ -80,6 +82,7 @@ const WorkScreen: React.FC = () => {
   const { 
     data: decisionsData, 
     isLoading: isLoadingDecisions, 
+    isError: isDecisionError,
     refetch: refetchDecisions 
   } = useGetAllDecisions(companyId, { page: 1, limit: 50, ...filterState });
   const decisions = decisionsData?.decisions || [];
@@ -271,16 +274,32 @@ const WorkScreen: React.FC = () => {
     </View>
   );
 
-  const renderPlaceholderContent = (title: string) => (
+  const renderPlaceholderContent = (title: string, isError: boolean = false) => (
     <View style={[styles.contentPage, { width: width }]}>
-      <Text style={styles.contentTextGray}>Your firm has not enabled {title} Management.</Text>
-      <Text style={styles.contentTextGray}>Please contact your administrator.</Text>
+      {isError ? (
+        <ServerOff size={60} color={ORANGE} />
+      ) : (
+        <Calendar size={60} color="#CBD5E1" />
+      )}
+      <Text style={[styles.contentTextGray, { fontWeight: '700', fontSize: 18, color: '#0F172A', marginTop: 20 }]}>
+        {isError ? "Connection Problem" : `${title} Not Available`}
+      </Text>
+      <Text style={styles.contentTextGray}>
+        {isError 
+          ? "We could not connect to the server. Please check your internet or try again later." 
+          : `Your firm has not enabled ${title} Management. Please contact your administrator.`}
+      </Text>
+      {isError && (
+        <TouchableOpacity style={styles.retryBtn} onPress={() => { refetchTasks(); refetchDecisions(); }}>
+          <Text style={styles.retryBtnText}>Retry Connection</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
   return (
     <SafeAreaView style={styles.containerDark}>
-      <StatusBar barStyle="light-content" backgroundColor={DARK_BLUE} />
+      <StatusBar barStyle="dark-content" backgroundColor={WHITE} />
 
       {/* Header */}
       <View style={styles.headerDark}>
@@ -292,7 +311,7 @@ const WorkScreen: React.FC = () => {
           onPress={() => setIsFilterVisible(!isFilterVisible)}
           style={[styles.filterToggle, isFilterVisible && styles.filterToggleActive]}
         >
-          <Filter size={20} color={isFilterVisible ? WHITE : ORANGE} strokeWidth={2.5} />
+          <Filter size={20} color={isFilterVisible ? WHITE : DARK_BLUE} strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 
@@ -302,7 +321,7 @@ const WorkScreen: React.FC = () => {
             onPress={() => setIsMonthModalVisible(true)}
             style={styles.datePickerBtn}
           >
-            <Calendar size={16} color={ORANGE} />
+            <Calendar size={16} color={DARK_BLUE} />
             <Text style={styles.datePickerBtnText}>
               {filterState.startDate ? `${months[selectedMonth]} ${selectedYear}` : 'Select Month'}
             </Text>
@@ -360,7 +379,7 @@ const WorkScreen: React.FC = () => {
                 keyExtractor={(item) => item.id}
                 renderItem={renderTaskItem}
                 contentContainerStyle={styles.taskList}
-                ListEmptyComponent={renderPlaceholderContent('Task')}
+                ListEmptyComponent={renderPlaceholderContent('Task', isTaskError)}
                 refreshControl={<RefreshControl refreshing={isLoadingTasks} onRefresh={refetchTasks} tintColor={ORANGE} />}
               />
             </View>
@@ -378,7 +397,7 @@ const WorkScreen: React.FC = () => {
                 keyExtractor={(item) => item.id}
                 renderItem={renderDecisionItem}
                 contentContainerStyle={styles.taskList}
-                ListEmptyComponent={renderPlaceholderContent('Decision')}
+                ListEmptyComponent={renderPlaceholderContent('Decision', isDecisionError)}
                 refreshControl={<RefreshControl refreshing={isLoadingDecisions} onRefresh={refetchDecisions} tintColor={ORANGE} />}
               />
             </View>
@@ -647,7 +666,7 @@ const WorkScreen: React.FC = () => {
 const styles = StyleSheet.create({
   containerDark: {
     flex: 1,
-    backgroundColor: DARK_BLUE,
+    backgroundColor: WHITE,
   },
   headerTitleContainer: {
     flexDirection: 'row',
@@ -659,13 +678,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: DARK_BLUE,
+    backgroundColor: WHITE,
   },
   titleWhite: {
     fontSize: 25,
     fontWeight: '800',
     padding: 5,
-    color: WHITE,
+    color: '#000000',
   },
   orangeDot: {
     fontSize: 34,
@@ -677,9 +696,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: DARK_BLUE,
+    backgroundColor: WHITE,
     borderBottomWidth: 1,
-    borderBottomColor: '#1B3555',
+    borderBottomColor: '#F1F5F9',
   },
   tabWrapper: {
     alignItems: 'center',
@@ -687,10 +706,10 @@ const styles = StyleSheet.create({
   tabWhite: {
     fontSize: 17,
     fontWeight: '400',
-    color: LIGHT_GRAY,
+    color: '#000000',
   },
   activeTabWhite: {
-    color: WHITE,
+    color: '#000000',
     fontWeight: '600',
   },
   activeLine: {
@@ -750,13 +769,13 @@ const styles = StyleSheet.create({
   dueDateText: { fontSize: 12, color: '#64748B', fontWeight: '600' },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   statusText: { fontSize: 11, color: WHITE, fontWeight: '800', textTransform: 'uppercase' },
-  filterToggle: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#1B3555', justifyContent: 'center', alignItems: 'center' },
-  filterToggleActive: { backgroundColor: ORANGE },
-  filterBar: { backgroundColor: DARK_BLUE, paddingHorizontal: 16, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  filterInputGroup: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#1B3555', borderRadius: 10, paddingHorizontal: 10, height: 40 },
-  filterInput: { flex: 1, color: WHITE, fontSize: 12, fontWeight: '600', padding: 0 },
-  clearBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: '#334155' },
-  clearBtnText: { color: WHITE, fontSize: 12, fontWeight: '700' },
+  filterToggle: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
+  filterToggleActive: { backgroundColor: DARK_BLUE },
+  filterBar: { backgroundColor: WHITE, paddingHorizontal: 16, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  filterInputGroup: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 10, height: 40 },
+  filterInput: { flex: 1, color: '#0F172A', fontSize: 12, fontWeight: '600', padding: 0 },
+  clearBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: '#F1F5F9' },
+  clearBtnText: { color: DARK_BLUE, fontSize: 12, fontWeight: '700' },
   paginationContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: WHITE, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
   pageBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, backgroundColor: DARK_BLUE },
   pageBtnText: { color: WHITE, fontSize: 14, fontWeight: '700' },
@@ -765,14 +784,14 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1B3555',
+    backgroundColor: '#F8FAFC',
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 40,
     gap: 8,
   },
   datePickerBtnText: {
-    color: WHITE,
+    color: '#0F172A',
     fontSize: 13,
     fontWeight: '700',
   },
@@ -839,7 +858,7 @@ const styles = StyleSheet.create({
     color: WHITE,
   },
   applyBtn: {
-    backgroundColor: ORANGE,
+    backgroundColor: DARK_BLUE,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
@@ -974,7 +993,7 @@ const styles = StyleSheet.create({
     width: 65,
     height: 65,
     borderRadius: 32.5,
-    backgroundColor: ORANGE,
+    backgroundColor: DARK_BLUE,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 8,
@@ -1021,6 +1040,19 @@ const styles = StyleSheet.create({
   },
   participantChipTextActive: {
     color: WHITE,
+  },
+  retryBtn: {
+    marginTop: 24,
+    backgroundColor: DARK_BLUE,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  retryBtnText: {
+    color: WHITE,
+    fontWeight: '700',
+    fontSize: 14,
   },
 });
 

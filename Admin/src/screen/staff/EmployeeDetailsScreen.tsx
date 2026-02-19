@@ -1,21 +1,29 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useMemo, useState } from 'react';
 import {
-    Dimensions,
-    Image,
-    Modal,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  Linking,
+  Modal,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { IMAGE_BASE_URL } from '../../../../api/api';
 import SalaryScreen from '../../../../screen/SalaryScreen';
+import { useGetAttendance } from '../../../../src/employee/hook/useAttendance';
+import { useDeleteEmployee, useGetEmployeeById } from '../../../../src/employee/hook/useEmployee';
+import { Attendance } from '../../../../src/employee/type/attendance.type';
+import { showError, showSuccess } from '../../../../src/utils/meesage';
 
 
 const { width } = Dimensions.get('window');
@@ -26,6 +34,7 @@ interface ActionButtonProps {
   label: string;
   isMaterial?: boolean;
   isIonicons?: boolean;
+  onPress?: () => void;
 }
 
 interface StatCardProps {
@@ -43,19 +52,15 @@ interface DateCellProps {
   isEmpty?: boolean;
 }
 
-// --- Mock Data for "Full Functionality" ---
-const MOCK_ATTENDANCE: Record<string, 'present' | 'absent' | 'halfday' | 'leave'> = {
-  '2': 'present',
-  '3': 'present',
-  '4': 'present',
-  '5': 'present',
-  '6': 'present',
-  '9': 'absent',
-  '11': 'absent',
-  '12': 'absent',
-  '16': 'halfday',
-  '18': 'leave',
-};
+// --- Constants ---
+const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS_OF_WEEK_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+/* ===================== MONTH HELPERS ===================== */
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
 /* ===================== CUSTOM CALENDAR ===================== */
 const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void, onClose: () => void }) => {
@@ -67,10 +72,7 @@ const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void,
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
+
 
   const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -109,7 +111,7 @@ const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void,
         </TouchableOpacity>
       </View>
       <View style={styles.calendarWeekRow}>
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+        {DAYS_OF_WEEK_SHORT.map((day, index) => (
           <Text key={index} style={styles.calendarWeekDayText}>{day}</Text>
         ))}
       </View>
@@ -125,30 +127,138 @@ const EmployeeDetailsScreen = () => {
   const route = useRoute<any>();
   const { employeeId } = route.params || {};
 
-  // State for Selection
-  const [selectedDate, setSelectedDate] = useState<number>(10);
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1));
+  // --- Date/Month State ---
+  const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('Attendance');
 
   const tabs = ['Attendance', 'Salary', 'Incentive', 'Expense', 'Loan/Adv'];
 
-  // --- Dynamic Stats Calculation ---
+  // --- Fetch Employee Details ---
+  const { data: employeeDetails, isLoading: isLoadingEmployee, isError: isErrorEmployee, refetch: refetchEmployee } = useGetEmployeeById(employeeId || '');
+  
+  // Adjusted data extraction to handle different API wrapper structures
+  const employee = useMemo(() => {
+    if (!employeeDetails) return null;
+    return employeeDetails.employee || employeeDetails.data || employeeDetails;
+  }, [employeeDetails]);
+
+  // --- Fetch Attendance Data ---
+  const dateRange = useMemo(() => {
+    const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    return {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+    };
+  }, [currentMonth]);
+
+  const { data: attendanceData, isLoading: isLoadingAttendance, refetch: refetchAttendance } = useGetAttendance({
+    employeeId: employeeId || '',
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
+  });
+
+  const attendanceRecords = attendanceData?.data?.records || [];
+
+  // --- Action Handlers ---
+  const handleCall = () => {
+    if (employee?.phoneNumber) Linking.openURL(`tel:${employee.phoneNumber}`);
+  };
+
+  const handleWhatsApp = () => {
+    if (employee?.phoneNumber) {
+      const phone = employee.phoneNumber.replace('+', '');
+      Linking.openURL(`whatsapp://send?phone=${phone}`);
+    }
+  };
+
+  const handleEmail = () => {
+    if (employee?.email) Linking.openURL(`mailto:${employee.email}`);
+  };
+
+  const handleMessage = () => {
+    if (employee?.phoneNumber) Linking.openURL(`sms:${employee.phoneNumber}`);
+  };
+
+  // --- Action Mutations ---
+  const deleteEmployeeMutation = useDeleteEmployee();
+
+  const handleDeleteEmployee = () => {
+    Alert.alert(
+      "Delete Employee",
+      "Are you sure you want to delete this employee? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: () => {
+            deleteEmployeeMutation.mutate(employeeId, {
+              onSuccess: () => {
+                showSuccess("Employee deleted successfully");
+                navigation.goBack();
+              },
+              onError: (err) => showError(err)
+            });
+          }
+        }
+      ]
+    );
+  };
+
+  // --- Attendance Mapping ---
+  const attendanceMap = useMemo(() => {
+    const map: Record<string, 'present' | 'absent' | 'halfday' | 'leave'> = {};
+    if (!Array.isArray(attendanceRecords)) return map;
+    
+    attendanceRecords.forEach((record: Attendance) => {
+      try {
+        const day = new Date(record.date).getDate().toString();
+        let status: 'present' | 'absent' | 'halfday' | 'leave' = 'present';
+        
+        switch (record.status) {
+          case 'PRESENT':
+          case 'LATE':
+            status = 'present';
+            break;
+          case 'ABSENT':
+            status = 'absent';
+            break;
+          case 'HALF_DAY':
+            status = 'halfday';
+            break;
+          case 'ON_LEAVE':
+            status = 'leave';
+            break;
+          default:
+            status = 'present';
+        }
+        map[day] = status;
+      } catch (e) {
+        console.warn("Invalid record date:", record.date);
+      }
+    });
+    return map;
+  }, [attendanceRecords]);
+
+  // --- Stats Calculation ---
   const stats = useMemo(() => {
     let present = 0;
     let absent = 0;
     let halfDay = 0;
     let leaves = 0;
 
-    Object.values(MOCK_ATTENDANCE).forEach(status => {
-      if (status === 'present') present++;
-      if (status === 'absent') absent++;
-      if (status === 'halfday') halfDay++;
-      if (status === 'leave') leaves++;
+    attendanceRecords.forEach((record: Attendance) => {
+      if (record.status === 'PRESENT' || record.status === 'LATE') present++;
+      if (record.status === 'ABSENT') absent++;
+      if (record.status === 'HALF_DAY') halfDay++;
+      if (record.status === 'ON_LEAVE') leaves++;
     });
 
     return { present, absent, halfDay, leaves };
-  }, []);
+  }, [attendanceRecords]);
 
   // --- Dynamic Calendar Generation ---
   const renderCalendarDays = () => {
@@ -170,7 +280,7 @@ const EmployeeDetailsScreen = () => {
     // Actual Days
     for (let i = 1; i <= daysInMonth; i++) {
       const dateKey = `${i}`;
-      const status = MOCK_ATTENDANCE[dateKey];
+      const status = attendanceMap[dateKey];
       
       const currentDayOfWeek = new Date(year, month, i).getDay();
       const isWeekend = currentDayOfWeek === 0 || currentDayOfWeek === 6;
@@ -189,6 +299,26 @@ const EmployeeDetailsScreen = () => {
     return days;
   };
 
+  if (isLoadingEmployee) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text style={{ color: '#94A3B8', marginTop: 10 }}>Loading employee details...</Text>
+      </View>
+    );
+  }
+
+  if (isErrorEmployee || !employee) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: '#EF4444' }}>Failed to load employee details</Text>
+        <TouchableOpacity style={styles.tabButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.tabText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
@@ -202,10 +332,16 @@ const EmployeeDetailsScreen = () => {
             <Ionicons name="close" size={24} color="#FFF" />
           </TouchableOpacity>
           <View style={styles.rightIcons}>
+            <TouchableOpacity 
+                style={styles.iconButton}
+                onPress={() => refetchAttendance()}
+            >
+              <Ionicons name="refresh-outline" size={22} color="#FFF" />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton}>
               <Ionicons name="create-outline" size={22} color="#FFF" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconButton} onPress={handleDeleteEmployee}>
               <Ionicons name="trash-outline" size={22} color="#FFF" />
             </TouchableOpacity>
           </View>
@@ -214,27 +350,39 @@ const EmployeeDetailsScreen = () => {
         {/* Profile Info */}
         <View style={styles.profileContainer}>
           <View style={styles.avatarWrapper}>
-            <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?fit=crop&w=200&h=200' }} 
-              style={styles.avatar} 
-            />
+            {employee?.profilePicture?.url ? (
+              <Image 
+                source={{ 
+                  uri: employee.profilePicture.url.startsWith('http') 
+                    ? employee.profilePicture.url 
+                    : `${IMAGE_BASE_URL}${employee.profilePicture.url}` 
+                }} 
+                style={styles.avatar} 
+              />
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#FFF' }}>
+                  {(employee?.firstname || '?').charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>Monthly</Text>
+              <Text style={styles.badgeText}>{employee?.payrollConfiguration === 'DAY_WISE' ? 'Daily' : 'Monthly'}</Text>
             </View>
           </View>
           <View style={styles.infoWrapper}>
-            <Text style={styles.name}>Md. Saif</Text>
-            <Text style={styles.phone}>+919334804356</Text>
-            <Text style={styles.role}>Full Stack Developer</Text>
+            <Text style={styles.name}>{employee?.firstname} {employee?.lastname}</Text>
+            <Text style={styles.phone}>{employee?.phoneNumber || 'No phone'}</Text>
+            <Text style={styles.role}>{employee?.designation || 'Staff'}</Text>
           </View>
         </View>
 
         {/* Action Buttons Grid */}
         <View style={styles.actionGrid}>
-          <ActionButton icon="call-outline" label="Call" isIonicons />
-          <ActionButton icon="chatbubble-ellipses-outline" label="Message" isIonicons />
-          <ActionButton icon="mail-outline" label="Email" isIonicons />
-          <ActionButton icon="logo-whatsapp" label="WhatsApp" isIonicons />
+          <ActionButton icon="call-outline" label="Call" isIonicons onPress={handleCall} />
+          <ActionButton icon="chatbubble-ellipses-outline" label="Msg" isIonicons onPress={handleMessage} />
+          <ActionButton icon="mail-outline" label="Email" isIonicons onPress={handleEmail} />
+          <ActionButton icon="logo-whatsapp" label="WhatsApp" isIonicons onPress={handleWhatsApp} />
         </View>
 
         {/* Tab Navigation */}
@@ -272,7 +420,7 @@ const EmployeeDetailsScreen = () => {
             <TouchableOpacity style={styles.datePicker} onPress={() => setCalendarVisible(true)}>
               <Feather name="calendar" size={16} color="#555" />
               <Text style={styles.dateText}>
-                 {currentMonth.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                 {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
               </Text>
             </TouchableOpacity>
           </View>
@@ -299,7 +447,7 @@ const EmployeeDetailsScreen = () => {
           {activeTab === 'Attendance' && (
             <View style={styles.calendarContainer}>
               <View style={styles.weekRow}>
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                {DAYS_OF_WEEK.map((day, index) => (
                   <Text key={index} style={styles.weekDayText}>{day}</Text>
                 ))}
               </View>
@@ -369,8 +517,8 @@ const EmployeeDetailsScreen = () => {
 
 // --- Helper Components ---
 
-const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, isMaterial, isIonicons }) => (
-  <TouchableOpacity style={styles.actionBtn}>
+const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, isMaterial, isIonicons, onPress }) => (
+  <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
     <View style={styles.actionIconCircle}>
       {isIonicons ? (
         <Ionicons name={icon} size={20} color="#FFF" />

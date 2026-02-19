@@ -1,5 +1,4 @@
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -35,31 +34,13 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
   
   // Use the employee data directly from the store if available
   const { employee: storeEmployee } = useEmployeeAuthStore();
-  const [employeeId, setEmployeeId] = useState<string | null>(propEmployeeId || storeEmployee?.id || null);
+  const employeeId = propEmployeeId || storeEmployee?.id || null;
 
   // State for Date Picker Modal
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [availableDates, setAvailableDates] = useState<string[]>([]);
-
-  // Backup: Fetch Employee ID from AsyncStorage if store is empty
-  useEffect(() => {
-    if (!employeeId) {
-      const getEmployeeId = async () => {
-        try {
-          const storedData = await AsyncStorage.getItem('employeeData');
-          if (storedData) {
-            const parsed = JSON.parse(storedData);
-            setEmployeeId(parsed.id || parsed._id);
-          }
-        } catch (error) {
-          console.error('Error fetching employee ID:', error);
-        }
-      };
-      getEmployeeId();
-    }
-  }, [employeeId]);
 
   // Fetch Employee Details
   const { data: employeeDetails, isLoading: isLoadingEmployee, refetch: refetchEmployee } = useGetEmployeeById(employeeId || '');
@@ -205,7 +186,7 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
   if (isLoadingEmployee) {
     const loadingContent = (
       <View style={[styles.container, hideHeader && { backgroundColor: 'transparent', height: 200 }, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#2089dc" />
+        <ActivityIndicator size="large" color="#4b43f0" />
         <Text style={{ marginTop: 10, color: '#666' }}>Loading salary details...</Text>
       </View>
     );
@@ -595,7 +576,7 @@ const styles = StyleSheet.create({
 
   /* BUTTON */
   generateBtn: {
-    backgroundColor: '#2089dc', // Solid Blue
+    backgroundColor: '#4b43f0', // Solid Blue
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',

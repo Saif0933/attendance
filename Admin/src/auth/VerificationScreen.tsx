@@ -2,17 +2,17 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator, Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -190,7 +190,7 @@ const VerificationScreen = () => {
             disabled={isPending}
           >
             <LinearGradient
-               colors={['#2D9CDB', '#2D9CDB', '#56CCF2']}
+               colors={['#4b43f0', '#4b43f0', '#56CCF2']}
                start={{x: 0, y: 0}} 
                end={{x: 1, y: 0}}
               style={styles.gradientButton}
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   phoneNumber: {
     fontSize: 16,
-    color: '#2FAED7', // Bright Blue
+    color: '#4b43f0', // Bright Blue
     fontWeight: '600',
   },
 
@@ -290,9 +290,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   otpBoxFocused: {
-    borderColor: '#2FAED7',
+    borderColor: '#4b43f0',
     borderWidth: 2.5, // Thicker border for focus
-    shadowColor: '#2FAED7',
+    shadowColor: '#4b43f0',
     shadowOpacity: 0.2,
   },
   otpInput: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   timeBox: {
     width: 50,
     height: 50,
-    backgroundColor: '#E1F4F9', // Light Cyan/Blue bg for timer
+    backgroundColor: '#E8E7FF', // Light Cyan/Blue bg for timer
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#2FAED7',
+    color: '#4b43f0',
   },
   timeUnit: {
     fontSize: 10,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   colon: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#2FAED7',
+    color: '#4b43f0',
     marginHorizontal: 10,
     marginTop: 8,
   },
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     marginBottom: 25,
-    shadowColor: '#2FAED7',
+    shadowColor: '#4b43f0',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 10,

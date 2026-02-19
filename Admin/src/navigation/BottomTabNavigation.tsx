@@ -62,9 +62,9 @@ import React from "react";
 import Icon from "react-native-vector-icons/Ionicons";
 import { AdminWork } from "../screen/AdminWork";
 import AllRequestsScreen from "../screen/AllRequestsScreen";
+import AdminHomeScreen from "../screen/homeScreen/AdminHomeScreen";
 import AdminSettingScreen from "../screen/setting/AdminSettingScreen";
 import StaffHomeScreen from "../screen/staff/StaffHomeScreen";
-import AdminHomeScreen from "../screen/homeScreen/AdminHomeScreen";
 
 
 const Tab = createBottomTabNavigator();

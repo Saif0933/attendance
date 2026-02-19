@@ -125,13 +125,13 @@ const ProfileScreen = () => {
       icon: 'person', 
       iconColor: '#007AFF' 
     },
-    { 
-      id: '2', 
-      title: 'Company Shifts', 
-      type: 'navigation', 
-      icon: 'time', 
-      iconColor: '#FF9500' 
-    },
+    // { 
+    //   id: '2', 
+    //   title: 'Company Shifts', 
+    //   type: 'navigation', 
+    //   icon: 'time', 
+    //   iconColor: '#FF9500' 
+    // },
     { 
       id: '3', 
       title: 'Payroll Configurations', 
@@ -182,13 +182,13 @@ const ProfileScreen = () => {
       icon: 'location',
       iconColor: '#00C7BE'
     },
-    { 
-      id: '9', 
-      title: 'Geo Fencing Locations', 
-      type: 'navigation', 
-      icon: 'map', 
-      iconColor: '#30B0C7' 
-    },
+    // { 
+    //   id: '9', 
+    //   title: 'Geo Fencing Locations', 
+    //   type: 'navigation', 
+    //   icon: 'map', 
+    //   iconColor: '#30B0C7' 
+    // },
     {
       id: '10',
       title: 'Custom Daywise Salary',

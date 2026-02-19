@@ -1,43 +1,29 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGetAttendance } from '../src/employee/hook/useAttendance';
 import { Attendance } from '../src/employee/type/attendance.type';
+import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
 
 const { width } = Dimensions.get('window');
 
 const AttendanceDashboardScreen: React.FC = () => {
-  const [employeeId, setEmployeeId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadEmployeeData = async () => {
-      try {
-        const storedData = await AsyncStorage.getItem('employeeData');
-        if (storedData) {
-          const employee = JSON.parse(storedData);
-          setEmployeeId(employee.id);
-        }
-      } catch (error) {
-        console.error('Error loading employee data:', error);
-      }
-    };
-    loadEmployeeData();
-  }, []);
+  const { employee } = useEmployeeAuthStore();
+  const employeeId = employee?.id || '';
 
   const { data: attendanceHistory, isLoading, error, refetch } = useGetAttendance({
-    employeeId: employeeId || '',
+    employeeId: employeeId,
   });
 
   const [refreshing, setRefreshing] = useState(false);
@@ -169,8 +155,8 @@ const AttendanceDashboardScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#2D9CDB']}
-            tintColor="#2D9CDB"
+            colors={['#4b43f0']}
+            tintColor="#4b43f0"
           />
         }
       >
@@ -200,7 +186,7 @@ const AttendanceDashboardScreen: React.FC = () => {
           
           <View style={styles.listContainer}>
             {isLoading ? (
-              <ActivityIndicator size="large" color="#2D9CDB" style={{ marginTop: 20 }} />
+              <ActivityIndicator size="large" color="#4b43f0" style={{ marginTop: 20 }} />
             ) : error ? (
               <Text style={styles.errorText}>Failed to load attendance history</Text>
             ) : attendanceHistory?.data?.length > 0 ? (

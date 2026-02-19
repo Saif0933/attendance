@@ -50,10 +50,12 @@ import { useAuthStore } from '../../../src/store/useAuthStore';
 
 const { width } = Dimensions.get('window');
 
-const DARK_BLUE = '#0A2540';
+const DARK_BLUE = '#0F172A';
+const CARD_BG = '#1E293B';
+const BORDER_COLOR = '#334155';
 const WHITE = '#FFFFFF';
 const ORANGE = '#FF9500';
-const LIGHT_GRAY = '#B0B3B8';
+const LIGHT_GRAY = '#94A3B8';
 const LIGHT_BLACK = '#060505ff';
 
 const months = [
@@ -121,7 +123,8 @@ const AdminWork: React.FC = () => {
   // --- DECISION STATE & HOOKS ---
   const { data: decisionsData, isLoading: isLoadingDecisions, refetch: refetchDecisions } = useGetAllDecisions(companyId, {
     page: 1,
-    limit: 50
+    limit: 50,
+    ...filterState
   });
   const decisions = decisionsData?.decisions || [];
   const createDecisionMutation = useCreateDecision();
@@ -362,7 +365,7 @@ const AdminWork: React.FC = () => {
           </View>
           <View style={styles.taskHeaderRight}>
             <TouchableOpacity onPress={() => handleEditTask(item)} style={styles.actionIconButton}>
-              <Pencil size={18} color={DARK_BLUE} strokeWidth={2.5} />
+              <Pencil size={18} color={WHITE} strokeWidth={2.5} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleDeleteTask(item.id || '')} style={[styles.actionIconButton, { backgroundColor: '#FFEEED' }]}>
               <Trash2 size={18} color="#FF3B30" strokeWidth={2.5} />
@@ -429,7 +432,7 @@ const AdminWork: React.FC = () => {
               }}
               style={styles.actionIconButton}
             >
-              <Eye size={18} color={DARK_BLUE} strokeWidth={2.5} />
+              <Eye size={18} color={WHITE} strokeWidth={2.5} />
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={() => handleEditDecision(item)}
@@ -825,63 +828,65 @@ const styles = StyleSheet.create({
   headerDark: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: DARK_BLUE },
   titleWhite: { fontSize: 25, fontWeight: '800', padding: 5, color: WHITE },
   orangeDot: { fontSize: 34, color: ORANGE, marginLeft: 4 },
-  tabContainerDark: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: DARK_BLUE, borderBottomWidth: 1, borderBottomColor: '#1B3555' },
+  tabContainerDark: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: DARK_BLUE, borderBottomWidth: 1, borderBottomColor: BORDER_COLOR },
   tabWrapper: { alignItems: 'center' },
   tabWhite: { fontSize: 17, fontWeight: '400', color: LIGHT_GRAY },
   activeTabWhite: { color: WHITE, fontWeight: '600' },
   activeLine: { marginTop: 4, height: 3, width: 40, backgroundColor: ORANGE, borderRadius: 2 },
-  contentContainer: { flex: 1, backgroundColor: '#F4F7FA' },
-  contentPage: { flex: 1, backgroundColor: '#F4F7FA' },
-  contentTextGray: { fontSize: 15, color: LIGHT_BLACK, textAlign: 'center', lineHeight: 24, marginTop: 10 },
+  contentContainer: { flex: 1, backgroundColor: DARK_BLUE },
+  contentPage: { flex: 1, backgroundColor: DARK_BLUE },
+  contentTextGray: { fontSize: 15, color: LIGHT_GRAY, textAlign: 'center', lineHeight: 24, marginTop: 10 },
   taskList: { padding: 16, paddingBottom: 100 },
-  taskCard: { backgroundColor: WHITE, borderRadius: 20, marginBottom: 16, elevation: 4, shadowColor: '#64748B', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 12, flexDirection: 'row', overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9' },
+  taskCard: { backgroundColor: CARD_BG, borderRadius: 20, marginBottom: 16, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, flexDirection: 'row', overflow: 'hidden', borderWidth: 1, borderColor: BORDER_COLOR },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: WHITE,
+    backgroundColor: DARK_BLUE,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     maxHeight: '80%',
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
   },
   priorityAccent: { width: 6, height: '100%' },
   taskCardContent: { flex: 1, padding: 16 },
   taskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
   taskHeaderLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
-  taskTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', letterSpacing: -0.5 },
+  taskTitle: { fontSize: 18, fontWeight: '800', color: WHITE, letterSpacing: -0.5 },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
   priorityText: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  taskDescription: { fontSize: 14, color: '#475569', marginBottom: 15, lineHeight: 20, fontWeight: '400' },
-  taskFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+  taskDescription: { fontSize: 14, color: LIGHT_GRAY, marginBottom: 15, lineHeight: 20, fontWeight: '400' },
+  taskFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5, paddingTop: 12, borderTopWidth: 1, borderTopColor: BORDER_COLOR },
   taskFooterLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   taskAssignee: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  assigneeAvatar: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#94A3B8', justifyContent: 'center', alignItems: 'center' },
-  assigneeText: { fontSize: 12, color: '#64748B', fontWeight: '600' },
+  assigneeAvatar: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#475569', justifyContent: 'center', alignItems: 'center' },
+  assigneeText: { fontSize: 12, color: LIGHT_GRAY, fontWeight: '600' },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   statusText: { fontSize: 11, color: WHITE, fontWeight: '800', textTransform: 'uppercase' },
-  actionIconButton: { width: 34, height: 34, borderRadius: 10, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', marginLeft: 8, borderWidth: 1, borderColor: '#F1F5F9' },
+  actionIconButton: { width: 34, height: 34, borderRadius: 10, backgroundColor: '#1E293B', justifyContent: 'center', alignItems: 'center', marginLeft: 8, borderWidth: 1, borderColor: BORDER_COLOR },
   fab: { position: 'absolute', bottom: 30, right: 24, width: 65, height: 65, borderRadius: 22, backgroundColor: ORANGE, justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: ORANGE, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 15 },
-  dueDateRow: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F0F9FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  dueDateText: { fontSize: 11, color: '#0369A1', fontWeight: '700' },
+  dueDateRow: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#1E293B', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  dueDateText: { fontSize: 11, color: '#38BDF8', fontWeight: '700' },
   modalHeaderTitle: { flexDirection: 'row', alignItems: 'center' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 15, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 15, borderBottomWidth: 1, borderBottomColor: BORDER_COLOR },
   modalTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: DARK_BLUE,
+    color: WHITE,
   },
-  inputLabel: { fontSize: 14, fontWeight: '600', color: DARK_BLUE, marginBottom: 8, marginTop: 12 },
-  input: { backgroundColor: '#F8F9FA', borderRadius: 10, padding: 12, fontSize: 14, color: DARK_BLUE, borderWidth: 1, borderColor: '#E9ECEF' },
+  inputLabel: { fontSize: 14, fontWeight: '600', color: WHITE, marginBottom: 8, marginTop: 12 },
+  input: { backgroundColor: '#1E293B', borderRadius: 10, padding: 12, fontSize: 14, color: WHITE, borderWidth: 1, borderColor: BORDER_COLOR },
   pickerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  pickerButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#E9ECEF', backgroundColor: '#F8F9FA' },
-  pickerText: { fontSize: 12, fontWeight: '600', color: '#6C757D' },
+  pickerButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: BORDER_COLOR, backgroundColor: '#1E293B' },
+  pickerText: { fontSize: 12, fontWeight: '600', color: LIGHT_GRAY },
   employeePicker: { marginBottom: 20 },
-  employeeItem: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F8F9FA', marginRight: 10, borderWidth: 1, borderColor: '#E9ECEF' },
+  employeeItem: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#1E293B', marginRight: 10, borderWidth: 1, borderColor: BORDER_COLOR },
   employeeItemSelected: { backgroundColor: DARK_BLUE, borderColor: DARK_BLUE },
-  employeeItemText: { fontSize: 13, color: DARK_BLUE },
+  employeeItemText: { fontSize: 13, color: WHITE },
   createButton: { backgroundColor: ORANGE, borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 20, marginBottom: 20 },
   createButtonText: { color: WHITE, fontSize: 16, fontWeight: '700' },
   taskHeaderRight: { flexDirection: 'row', alignItems: 'center' },
@@ -889,7 +894,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#1B3555',
+    backgroundColor: '#1E293B',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -908,7 +913,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1B3555',
+    backgroundColor: '#1E293B',
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 40,
@@ -932,21 +937,22 @@ const styles = StyleSheet.create({
   },
   monthModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   monthPickerContainer: {
-    backgroundColor: WHITE,
+    backgroundColor: DARK_BLUE,
     width: '90%',
     borderRadius: 20,
     padding: 24,
-    elevation: 10,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
   },
   monthPickerHeader: {
     fontSize: 20,
     fontWeight: '800',
-    color: DARK_BLUE,
+    color: WHITE,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -968,7 +974,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#1E293B',
   },
   yearGrid: {
     flexDirection: 'row',
@@ -979,14 +985,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#1E293B',
   },
   activeOption: {
-    backgroundColor: DARK_BLUE,
+    backgroundColor: ORANGE,
   },
   optionText: {
     fontSize: 14,
-    color: DARK_BLUE,
+    color: LIGHT_GRAY,
     fontWeight: '600',
   },
   activeOptionText: {
@@ -1025,12 +1031,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: BORDER_COLOR,
+    backgroundColor: '#0F172A',
   },
   detailsSection: {
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: BORDER_COLOR,
   },
   creatorSubText: {
     fontSize: 12,
@@ -1040,19 +1047,19 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 14,
-    color: '#475569',
+    color: LIGHT_GRAY,
     lineHeight: 22,
   },
   participantRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#1E293B',
     padding: 12,
     borderRadius: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: BORDER_COLOR,
   },
   participantInfo: {
     flex: 1,
@@ -1061,11 +1068,11 @@ const styles = StyleSheet.create({
   participantName: {
     fontSize: 14,
     fontWeight: '700',
-    color: DARK_BLUE,
+    color: WHITE,
   },
   participantComment: {
     fontSize: 12,
-    color: '#64748B',
+    color: LIGHT_GRAY,
     fontStyle: 'italic',
     marginTop: 2,
   },

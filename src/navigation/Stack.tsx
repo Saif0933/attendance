@@ -49,6 +49,7 @@ import VerificationScreen from '../../Admin/src/auth/VerificationScreen';
 import BottomTabNavigation from '../../Admin/src/navigation/BottomTabNavigation';
 import { AdminWork } from '../../Admin/src/screen/AdminWork';
 import AllRequestsScreen from '../../Admin/src/screen/AllRequestsScreen';
+import AdminHolidaysScreen from '../../Admin/src/screen/holidayScreen/AdminHolidayScreen';
 import PermissionsScreen from '../../Admin/src/screen/homeScreen/PermissionsScreen';
 import AdminSettingScreen from '../../Admin/src/screen/setting/AdminSettingScreen';
 import AddStaffScreen from '../../Admin/src/screen/staff/AddStaffScreen';
@@ -57,7 +58,6 @@ import NewCategoryScreen from '../../Admin/src/screen/staff/NewCategoryScreen';
 import SearchStaff from '../../Admin/src/screen/staff/SearchStaff';
 import StaffHomeScreen from '../../Admin/src/screen/staff/StaffHomeScreen';
 import TodaysAbsentScreen from '../../Admin/src/screen/staff/TodaysAbsentScreen';
-import AdminHolidaysScreen from '../../Admin/src/screen/holidayScreen/AdminHolidayScreen';
 
 export type RootStackParamList = {
   Auth: undefined;

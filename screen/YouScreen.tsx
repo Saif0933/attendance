@@ -1,24 +1,26 @@
 import LottieView from 'lottie-react-native';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGetAttendance } from '../src/employee/hook/useAttendance';
 import { Attendance } from '../src/employee/type/attendance.type';
 import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
+import { useTheme } from '../src/theme/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 const AttendanceDashboardScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
   const { employee } = useEmployeeAuthStore();
   const employeeId = employee?.id || '';
 
@@ -97,7 +99,7 @@ const AttendanceDashboardScreen: React.FC = () => {
          />
       </View>
       <View style={styles.bannerTextContainer}>
-        <Text style={styles.bannerMonth}>
+        <Text style={[styles.bannerMonth, { color: colors.text }]}>
           {item.month} <Text style={styles.bannerYear}>• {item.year}</Text>
         </Text>
       </View>
@@ -110,9 +112,9 @@ const AttendanceDashboardScreen: React.FC = () => {
     const isLeave = item.status === 'ON_LEAVE';
 
     return (
-      <View key={item.id || index} style={styles.rowContainer}>
+      <View key={item.id || index} style={[styles.rowContainer, { borderBottomColor: isDark ? colors.border : '#F5F5F5' }]}>
         <View style={styles.dateColumn}>
-          <Text style={styles.dayText}>{formatDay(item.date)}</Text>
+          <Text style={[styles.dayText, { color: colors.text }]}>{formatDay(item.date)}</Text>
           <Text style={styles.dateText}>{formatDate(item.date)}</Text>
         </View>
 
@@ -122,14 +124,14 @@ const AttendanceDashboardScreen: React.FC = () => {
               <View style={styles.timeColumn}>
                 <Text style={styles.labelIn}>IN</Text>
                 <View style={styles.timeRow}>
-                  <Text style={styles.timeText}>{formatTime(item.checkIn)}</Text>
+                  <Text style={[styles.timeText, { color: colors.textSecondary }]}>{formatTime(item.checkIn)}</Text>
                   {isLate && <Text style={styles.lateTag}> L</Text>}
                 </View>
               </View>
 
               <View style={styles.timeColumn}>
                 <Text style={styles.labelOut}>OUT</Text>
-                <Text style={styles.timeText}>{formatTime(item.checkOut)}</Text>
+                <Text style={[styles.timeText, { color: colors.textSecondary }]}>{formatTime(item.checkOut)}</Text>
               </View>
             </>
           ) : (
@@ -145,8 +147,8 @@ const AttendanceDashboardScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
       <ScrollView 
         contentContainerStyle={styles.scrollContent} 
@@ -161,11 +163,11 @@ const AttendanceDashboardScreen: React.FC = () => {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Attendance Dashboard</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Attendance Dashboard</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Previous Reports</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Previous Reports</Text>
           <Text style={styles.sectionSubtitle}>View your last 3 sessions</Text>
           
           <FlatList
@@ -181,7 +183,7 @@ const AttendanceDashboardScreen: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your current analytics</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Your current analytics</Text>
           <Text style={styles.sectionSubtitle}>Based on your current monthly data</Text>
           
           <View style={styles.listContainer}>
@@ -269,7 +271,6 @@ const styles = StyleSheet.create({
   bannerMonth: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#000',
   },
   bannerYear: {
     fontSize: 16,

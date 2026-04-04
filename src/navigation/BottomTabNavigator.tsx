@@ -2,6 +2,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useTheme } from "../theme/ThemeContext";
 
 // Screens
 import PunchScreen from "../../screen/PunchScreen";
@@ -36,15 +37,19 @@ function getTabBarIcon(routeName: string, color: string, size: number) {
 }
 
 export default function BottomTabNavigator() {
+  const { colors, isDark } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#4b43f0",
-        tabBarInactiveTintColor: "#999",
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: isDark ? "#94A3B8" : "#999",
         tabBarStyle: {
           height: 60,
           paddingBottom: 5,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
         },
         tabBarIcon: ({ color, size }) =>
           getTabBarIcon(route.name, color, size),

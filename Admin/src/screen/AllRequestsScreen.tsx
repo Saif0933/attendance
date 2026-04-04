@@ -2,33 +2,35 @@
 // export default AllRequestsScreen;
 
 import {
-  Calendar,
-  ClipboardList,
-  FileText,
-  Pencil,
-  RefreshCw,
-  Search,
-  Tag,
-  X
+    Calendar,
+    ClipboardList,
+    FileText,
+    Pencil,
+    RefreshCw,
+    Search,
+    Tag,
+    X
 } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useGetLeaves, useUpdateLeaveStatus } from '../../../api/hook/leaves/hook/useLeave';
 import { Leave, LeaveStatus } from '../../../api/hook/leaves/type';
 import { useAuthStore } from '../../../src/store/useAuthStore';
+import { useTheme } from '../../../src/theme/ThemeContext';
 
 const AllRequestsScreen = () => {
+  const { colors, isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<'All' | 'PENDING' | 'APPROVED' | 'REJECTED'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeaveId, setSelectedLeaveId] = useState<string | null>(null);
@@ -102,19 +104,19 @@ const AllRequestsScreen = () => {
   };
 
   const renderLeaveItem = ({ item }: { item: Leave }) => (
-    <View style={styles.leaveCard}>
+    <View style={[styles.leaveCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.leaveHeader}>
         <View style={styles.employeeInfo}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
+          <View style={[styles.avatar, { backgroundColor: isDark ? colors.background : '#E2E8F0' }]}>
+            <Text style={[styles.avatarText, { color: colors.text }]}>
               {item.employee?.firstname?.[0]}{item.employee?.lastname?.[0]}
             </Text>
           </View>
           <View>
-            <Text style={styles.employeeName}>
+            <Text style={[styles.employeeName, { color: colors.text }]}>
               {item.employee?.firstname} {item.employee?.lastname}
             </Text>
-            <Text style={styles.employeeCode}>{item.employee?.employeeCode} • {item.employee?.designation}</Text>
+            <Text style={[styles.employeeCode, { color: colors.textSecondary }]}>{item.employee?.employeeCode} • {item.employee?.designation}</Text>
           </View>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
@@ -124,19 +126,19 @@ const AllRequestsScreen = () => {
 
       <View style={styles.leaveDetails}>
         <View style={styles.detailRow}>
-          <Calendar size={16} color="#94A3B8" />
-          <Text style={styles.detailText}>
+          <Calendar size={16} color={colors.textSecondary} />
+          <Text style={[styles.detailText, { color: colors.text }]}>
             {formatDate(item.startDate)} - {formatFullDate(item.endDate)}
           </Text>
         </View>
         <View style={styles.detailRow}>
-          <Tag size={16} color="#94A3B8" />
-          <Text style={styles.detailText}>{item.type}</Text>
+          <Tag size={16} color={colors.textSecondary} />
+          <Text style={[styles.detailText, { color: colors.text }]}>{item.type}</Text>
         </View>
         {item.reason && (
-          <View style={styles.reasonContainer}>
-            <Text style={styles.reasonLabel}>Reason:</Text>
-            <Text style={styles.reasonText} numberOfLines={2}>{item.reason}</Text>
+          <View style={[styles.reasonContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]}>
+            <Text style={[styles.reasonLabel, { color: colors.textSecondary }]}>Reason:</Text>
+            <Text style={[styles.reasonText, { color: colors.text }]} numberOfLines={2}>{item.reason}</Text>
           </View>
         )}
       </View>
@@ -180,12 +182,12 @@ const AllRequestsScreen = () => {
           </View>
         ) : (
           <TouchableOpacity 
-            style={[styles.actionButton, styles.updateStatusButton]}
+            style={[styles.actionButton, styles.updateStatusButton, { borderColor: colors.primary, backgroundColor: colors.primary + '10' }]}
             onPress={() => setSelectedLeaveId(item.id)}
             disabled={updateStatusMutation.isPending}
           >
-            <Pencil size={20} color="#3B82F6" />
-            <Text style={[styles.actionButtonText, { color: '#3B82F6', marginLeft: 8 }]}>Update Status</Text>
+            <Pencil size={20} color={colors.primary} />
+            <Text style={[styles.actionButtonText, { color: colors.primary, marginLeft: 8 }]}>Update Status</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -196,41 +198,41 @@ const AllRequestsScreen = () => {
   console.log(company)
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar translucent backgroundColor="transparent" barStyle={isDark ? "light-content" : "dark-content"} />
       
-      <View style={styles.backgroundLayer} />
+      <View style={[styles.backgroundLayer, { backgroundColor: colors.surface }]} />
 
       <View style={styles.mainContent}>
         {/* --- Header --- */}
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <ClipboardList size={28} color="#fff" strokeWidth={2.5} style={{ marginRight: 10 }} />
-            <Text style={styles.headerTitle}>All Requests.</Text>
+            <ClipboardList size={28} color={colors.text} strokeWidth={2.5} style={{ marginRight: 10 }} />
+            <Text style={[styles.headerTitle, { color: colors.text }]}>All Requests.</Text>
           </View>
           <TouchableOpacity onPress={() => refetch()} activeOpacity={0.7}>
-            <RefreshCw size={22} color="#fff" />
+            <RefreshCw size={22} color={colors.text} />
           </TouchableOpacity>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* --- Statistics Card --- */}
-          <View style={styles.statsCard}>
+          <View style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.statsRow}>
-              <StatItem label="Total" count={stats.total.toString()} color="#29B6F6" />
-              <StatItem label="Pending" count={stats.pending.toString()} color="#FFCA28" />
-              <StatItem label="Approved" count={stats.approved.toString()} color="#66BB6A" />
-              <StatItem label="Rejected" count={stats.rejected.toString()} color="#FF7043" />
+              <StatItem label="Total" count={stats.total.toString()} color={colors.primary} />
+              <StatItem label="Pending" count={stats.pending.toString()} color="#FFB300" />
+              <StatItem label="Approved" count={stats.approved.toString()} color="#43A047" />
+              <StatItem label="Rejected" count={stats.rejected.toString()} color="#E53935" />
             </View>
           </View>
 
           {/* --- Search Bar --- */}
-          <View style={styles.searchContainer}>
-            <Search size={20} color="#94A3B8" style={styles.searchIcon} />
+          <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Search size={20} color={colors.textSecondary} style={styles.searchIcon} />
             <TextInput
               placeholder="Search by name, reason or type..."
-              placeholderTextColor="#94A3B8"
-              style={styles.searchInput}
+              placeholderTextColor={colors.textSecondary}
+              style={[styles.searchInput, { color: colors.text }]}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
@@ -252,12 +254,12 @@ const AllRequestsScreen = () => {
 
           {/* --- Leave Requests Section --- */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Leave Requests</Text>
-            <Text style={styles.resultsCount}>{filteredLeaves.length} results</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Leave Requests</Text>
+            <Text style={[styles.resultsCount, { color: colors.textSecondary }]}>{filteredLeaves.length} results</Text>
           </View>
 
           {isLoading ? (
-            <ActivityIndicator size="large" color="#fff" style={{ marginTop: 20 }} />
+            <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
           ) : isError ? (
             <View style={styles.emptyStateContainer}>
               <Text style={styles.emptyStateText}>Error fetching requests</Text>
@@ -295,32 +297,42 @@ const getStatusColor = (status: LeaveStatus) => {
 
 // --- Reusable Components ---
 
-const StatItem = ({ label, count, color }: { label: string, count: string, color: string }) => (
-  <View style={styles.statItem}>
-    <View style={styles.statLabelRow}>
-      <View style={[styles.dot, { backgroundColor: color }]} />
-      <Text style={[styles.statLabel, { color: color }]}>{label}</Text>
+const StatItem = ({ label, count, color }: { label: string, count: string, color: string }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.statItem}>
+      <View style={styles.statLabelRow}>
+        <View style={[styles.dot, { backgroundColor: color }]} />
+        <Text style={[styles.statLabel, { color: color }]}>{label}</Text>
+      </View>
+      <Text style={[styles.statCount, { color: colors.text }]}>{count}</Text>
+      <Text style={[styles.statSubText, { color: colors.textSecondary }]}>requests</Text>
     </View>
-    <Text style={styles.statCount}>{count}</Text>
-    <Text style={styles.statSubText}>requests</Text>
-  </View>
-);
+  );
+};
 
-const FilterTab = ({ label, active, onPress }: { label: string, active: boolean, onPress: () => void }) => (
-  <TouchableOpacity 
-    style={[styles.tab, active ? styles.activeTab : styles.inactiveTab]} 
-    onPress={onPress}
-  >
-    <Text style={[styles.tabText, active ? styles.activeTabText : styles.inactiveTabText]}>
-      {label}
-    </Text>
-  </TouchableOpacity>
-);
+const FilterTab = ({ label, active, onPress }: { label: string, active: boolean, onPress: () => void }) => {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity 
+      style={[
+        styles.tab, 
+        active 
+          ? [styles.activeTab, { backgroundColor: colors.text, borderColor: colors.text }] 
+          : [styles.inactiveTab, { backgroundColor: colors.surface, borderColor: colors.border }]
+      ]} 
+      onPress={onPress}
+    >
+      <Text style={[styles.tabText, active ? [styles.activeTabText, { color: colors.background }] : [styles.inactiveTabText, { color: colors.textSecondary }]]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
   },
   backgroundLayer: {
     ...StyleSheet.absoluteFillObject,

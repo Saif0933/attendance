@@ -16,8 +16,10 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useGetPublicHolidays } from "../../api/hook/holiday/useHoliday";
 import { Holiday } from "../../api/hook/type/holiday";
 import { useEmployeeAuthStore } from "../store/useEmployeeAuthStore";
+import { useTheme } from "../theme/ThemeContext";
 
 const HolidaysScreen = ({ navigation }: any) => {
+  const { colors, isDark } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const { company } = useEmployeeAuthStore();
 
@@ -32,11 +34,11 @@ const HolidaysScreen = ({ navigation }: any) => {
   };
 
   const renderHolidayItem = ({ item }: { item: Holiday }) => (
-    <View style={styles.holidayCard}>
+    <View style={[styles.holidayCard, { backgroundColor: colors.surface }]}>
       <View style={styles.holidayHeader}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.holidayName}>{item.name}</Text>
-          <Text style={styles.holidayDate}>
+          <Text style={[styles.holidayName, { color: colors.text }]}>{item.name}</Text>
+          <Text style={[styles.holidayDate, { color: colors.textSecondary }]}>
             {new Date(item.date).toLocaleDateString("en-US", { 
               weekday: 'long', 
               year: 'numeric', 
@@ -48,12 +50,12 @@ const HolidaysScreen = ({ navigation }: any) => {
       </View>
       
       {item.description ? (
-        <Text style={styles.holidayDesc}>{item.description}</Text>
+        <Text style={[styles.holidayDesc, { color: colors.textSecondary }]}>{item.description}</Text>
       ) : null}
       
       <View style={styles.badgeRow}>
-        <View style={[styles.paidBadge, { backgroundColor: item.isPaid ? "#E8F5E9" : "#FFEBEE" }]}>
-          <Text style={[styles.paidBadgeText, { color: item.isPaid ? "#2E7D32" : "#C62828" }]}>
+        <View style={[styles.paidBadge, { backgroundColor: item.isPaid ? (isDark ? "#064E3B" : "#E8F5E9") : (isDark ? "#7F1D1D" : "#FFEBEE") }]}>
+          <Text style={[styles.paidBadgeText, { color: item.isPaid ? (isDark ? "#6EE7B7" : "#2E7D32") : (isDark ? "#FCA5A5" : "#C62828") }]}>
             {item.isPaid ? "Paid Holiday" : "Unpaid Holiday"}
           </Text>
         </View>
@@ -62,11 +64,11 @@ const HolidaysScreen = ({ navigation }: any) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#FF8A3D" barStyle="light-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar backgroundColor={colors.primary} barStyle="light-content" />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
@@ -81,16 +83,17 @@ const HolidaysScreen = ({ navigation }: any) => {
       <View style={styles.flexContainer}>
         {isLoading ? (
           <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#FF8A3D" />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : holidays.length === 0 ? (
           <View style={styles.content}>
             <FontAwesome5
               name="umbrella-beach"
               size={80}
-              color="#FFCCBC"
+              color={isDark ? colors.surface : "#FFCCBC"}
+              style={{ opacity: isDark ? 0.3 : 1 }}
             />
-            <Text style={styles.emptyText}>No holidays found</Text>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No holidays found</Text>
           </View>
         ) : (
           <FlatList
@@ -99,7 +102,7 @@ const HolidaysScreen = ({ navigation }: any) => {
             renderItem={renderHolidayItem}
             contentContainerStyle={styles.listContent}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#FF8A3D"]} />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
             }
           />
         )}
@@ -113,7 +116,6 @@ export default HolidaysScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F6F8",
   },
   flexContainer: {
     flex: 1,
@@ -125,7 +127,6 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 56,
-    backgroundColor: "#FF8A3D",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
@@ -149,11 +150,9 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 12,
     fontSize: 16,
-    color: "#9E9E9E",
     fontWeight: "500",
   },
   holidayCard: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -171,17 +170,14 @@ const styles = StyleSheet.create({
   holidayName: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#333",
   },
   holidayDate: {
     fontSize: 14,
-    color: "#666",
     marginTop: 2,
     fontWeight: "500",
   },
   holidayDesc: {
     fontSize: 14,
-    color: "#777",
     marginTop: 10,
     lineHeight: 20,
   },

@@ -13,58 +13,60 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../navigation/Stack';
+import { useTheme } from '../theme/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const DesignationsScreen = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation<NavigationProp>();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* --- Status Bar --- */}
-      <StatusBar barStyle="light-content" backgroundColor="#0284C7" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.surface} />
 
       {/* --- Header Section --- */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
           style={styles.backButton}
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={24} color="#FFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Designations</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Designations</Text>
       </View>
 
       {/* --- Main Content (Empty State) --- */}
       <View style={styles.contentContainer}>
         
         {/* Circle Illustration */}
-        <View style={styles.circleIllustration} />
+        <View style={[styles.circleIllustration, { backgroundColor: colors.surface }]} />
 
         {/* Empty State Text */}
-        <Text style={styles.emptyTitle}>No Designations Found</Text>
-        <Text style={styles.emptySubtitle}>
+        <Text style={[styles.emptyTitle, { color: colors.text }]}>No Designations Found</Text>
+        <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
           Create your first designation to get started
         </Text>
 
         {/* Middle Pill Button */}
         <TouchableOpacity 
-          style={styles.middleButton} 
+          style={[styles.middleButton, { backgroundColor: colors.surface, borderColor: colors.primary, borderWidth: 1 }]} 
           activeOpacity={0.8}
           onPress={() => navigation.navigate('AddDesignationsScreen')}
         >
-          <Text style={styles.middleButtonText}>+ Add First Designation</Text>
+          <Text style={[styles.middleButtonText, { color: colors.primary }]}>+ Add First Designation</Text>
         </TouchableOpacity>
 
       </View>
 
       {/* --- Bottom Action Button --- */}
-      <View style={styles.footerContainer}>
+      <View style={[styles.footerContainer, { borderTopColor: colors.border, borderTopWidth: 1 }]}>
         <TouchableOpacity 
-          style={styles.bottomButton} 
+          style={[styles.bottomButton, { backgroundColor: colors.primary }]} 
           activeOpacity={0.8}
           onPress={() => navigation.navigate('AddDesignationsScreen')}
         >
@@ -80,12 +82,10 @@ const DesignationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Dark Slate Background
   },
   
   // --- Header Styles ---
   header: {
-    backgroundColor: '#0284C7', // Bright Blue Header (Matches Image)
     height: Platform.OS === 'android' ? 60 : 50,
     flexDirection: 'row',
     alignItems: 'center',

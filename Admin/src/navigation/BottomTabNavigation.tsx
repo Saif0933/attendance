@@ -60,6 +60,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useTheme } from "../../../src/theme/ThemeContext";
 import { AdminWork } from "../screen/AdminWork";
 import AllRequestsScreen from "../screen/AllRequestsScreen";
 import AdminHomeScreen from "../screen/homeScreen/AdminHomeScreen";
@@ -89,20 +90,19 @@ function getTabBarIcon(routeName: string, color: string, size: number) {
 }
 
 export default function BottomTabNavigation() {
+  const { colors, isDark } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        // UPDATED: Active color matches the Blue accent used in other screens
-        tabBarActiveTintColor: "#3B82F6", 
-        // UPDATED: Inactive color matches the Slate text used in other screens
-        tabBarInactiveTintColor: "#94A3B8", 
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: isDark ? "#94A3B8" : "#999",
         tabBarStyle: {
           height: 60,
           paddingBottom: 5,
-          // UPDATED: Dark Slate Background matching the app theme
-          backgroundColor: '#1E293B', 
-          borderTopColor: '#334155', // Subtle border separator
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
         },
         tabBarIcon: ({ color, size }) =>

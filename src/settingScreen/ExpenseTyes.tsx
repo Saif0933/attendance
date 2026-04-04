@@ -1,24 +1,26 @@
 
 import React, { useState } from 'react';
 import {
+  Dimensions,
+  Modal,
+  StatusBar,
   StyleSheet,
   Text,
-  View,
-  TouchableOpacity,
-  Modal,
   TextInput,
-  StatusBar,
-  Dimensions,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 // Standard UI Icons
-import Ionicons from 'react-native-vector-icons/Ionicons'; 
+import Ionicons from 'react-native-vector-icons/Ionicons';
 // New "Attractive" Icon Package
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { useTheme } from '../theme/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
 const App = ({ navigation }: any) => { // Assuming navigation is passed
+  const { colors, isDark } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [expenseType, setExpenseType] = useState('');
   const [isFocused, setIsFocused] = useState(false); // For attractive input animation
@@ -35,18 +37,18 @@ const App = ({ navigation }: any) => { // Assuming navigation is passed
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F2F2F7" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
       {/* --- Main Screen Header with Back Button --- */}
-      <View style={styles.mainHeader}>
+      <View style={[styles.mainHeader, { backgroundColor: colors.background }]}>
         <TouchableOpacity 
           style={styles.mainBackButton} 
           onPress={() => navigation?.goBack()} // Functional Back Button
         >
-          <Ionicons name="arrow-back" size={28} color="#000" />
+          <Ionicons name="arrow-back" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitleText}>Expense Types</Text>
+        <Text style={[styles.headerTitleText, { color: colors.text }]}>Expense Types</Text>
       </View>
 
       {/* --- Attractive Background Watermark Icon --- */}
@@ -54,14 +56,14 @@ const App = ({ navigation }: any) => { // Assuming navigation is passed
         <FontAwesome5 
           name="file-invoice-dollar" 
           size={180} 
-          color="#E5E5EA" // Very subtle gray
-          style={{ opacity: 0.5 }}
+          color={isDark ? colors.surface : "#E5E5EA"} 
+          style={{ opacity: isDark ? 0.2 : 0.5 }}
         />
       </View>
 
       {/* Floating Action Button (FAB) + */}
       <TouchableOpacity 
-        style={styles.fab} 
+        style={[styles.fab, { backgroundColor: colors.primary }]} 
         onPress={openAddSheet}
         activeOpacity={0.8}
       >
@@ -75,35 +77,36 @@ const App = ({ navigation }: any) => { // Assuming navigation is passed
         visible={modalVisible}
         onRequestClose={closeAddSheet} 
       >
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           {/* Header: Back Arrow | Title | Save Button */}
-          <View style={styles.modalHeader}>
+          <View style={[styles.modalHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
             <TouchableOpacity onPress={closeAddSheet} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color="#000" />
+              <Ionicons name="arrow-back" size={24} color={colors.text} />
             </TouchableOpacity>
 
-            <Text style={styles.modalTitle}>Add Expense Type</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Add Expense Type</Text>
 
-            <TouchableOpacity style={styles.saveButton} onPress={closeAddSheet}>
-              <Text style={styles.saveButtonText}>Save</Text>
+            <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.primary }]} onPress={closeAddSheet}>
+              <Text style={[styles.saveButtonText, { color: '#fff' }]}>Save</Text>
             </TouchableOpacity>
           </View>
 
           {/* Form Content - New Attractive Input */}
           <View style={styles.formContainer}>
-            <Text style={styles.inputLabel}>New Category Name</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>New Category Name</Text>
             
             <View style={[
               styles.inputWrapper, 
-              isFocused && styles.inputWrapperFocused // Change style when clicked
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              isFocused && [styles.inputWrapperFocused, { borderColor: colors.primary, backgroundColor: isDark ? colors.background : '#F0F8FF' }] // Change style when clicked
             ]}>
               {/* Icon inside Input */}
-              <FontAwesome5 name="tag" size={18} color={isFocused ? "#007AFF" : "#8E8E93"} style={styles.inputIcon} />
+              <FontAwesome5 name="tag" size={18} color={isFocused ? colors.primary : colors.textSecondary} style={styles.inputIcon} />
               
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="e.g. Travel, Food"
-                placeholderTextColor="#C7C7CC"
+                placeholderTextColor={isDark ? "#4B5563" : "#C7C7CC"}
                 value={expenseType}
                 onChangeText={setExpenseType}
                 autoFocus={true} 
@@ -121,7 +124,6 @@ const App = ({ navigation }: any) => { // Assuming navigation is passed
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7', 
   },
   // --- New Main Header Styles ---
   mainHeader: {
@@ -129,7 +131,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 15,
     paddingVertical: 15,
-    backgroundColor: '#F2F2F7',
     zIndex: 10, // Ensure header is above background icon
   },
   mainBackButton: {
@@ -138,7 +139,6 @@ const styles = StyleSheet.create({
   headerTitleText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
   },
   
   // --- Background Watermark Style ---
@@ -172,7 +172,6 @@ const styles = StyleSheet.create({
   // Modal Styles
   modalContainer: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -181,8 +180,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 15,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#C6C6C8',
-    backgroundColor: '#F2F2F7',
   },
   backButton: {
     padding: 5,
@@ -190,10 +187,8 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#000',
   },
   saveButton: {
-    backgroundColor: '#FFFFFF',
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -204,7 +199,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   saveButtonText: {
-    color: '#000',
     fontWeight: '600',
     fontSize: 14,
   },
@@ -217,7 +211,6 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6e6e6e',
     marginBottom: 10,
     marginLeft: 4,
   },
@@ -225,12 +218,10 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     paddingHorizontal: 15,
     paddingVertical: 4, // Padding for the View, TextInput has its own padding
     borderWidth: 1.5,
-    borderColor: '#E5E5EA', // Default Light Border
     // Shadow for attractiveness
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -240,8 +231,6 @@ const styles = StyleSheet.create({
   },
   // Focused state for the input container
   inputWrapperFocused: {
-    borderColor: '#007AFF', // Blue border when active
-    backgroundColor: '#F0F8FF', // Very light blue tint
     shadowOpacity: 0.1,
   },
   inputIcon: {
@@ -251,7 +240,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     paddingVertical: 12,
-    color: '#000',
   },
 });
 

@@ -23,8 +23,8 @@ import SalaryScreen from '../../../../screen/SalaryScreen';
 import { useGetAttendance } from '../../../../src/employee/hook/useAttendance';
 import { useDeleteEmployee, useGetEmployeeById } from '../../../../src/employee/hook/useEmployee';
 import { Attendance } from '../../../../src/employee/type/attendance.type';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 import { showError, showSuccess } from '../../../../src/utils/meesage';
-
 
 const { width } = Dimensions.get('window');
 
@@ -64,6 +64,7 @@ const monthNames = [
 
 /* ===================== CUSTOM CALENDAR ===================== */
 const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void, onClose: () => void }) => {
+  const { colors, isDark } = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
@@ -71,8 +72,6 @@ const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void,
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-
-
 
   const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -94,25 +93,25 @@ const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void,
           onClose();
         }}
       >
-        <Text style={styles.calendarDayText}>{i}</Text>
+        <Text style={[styles.calendarDayText, { color: colors.text }]}>{i}</Text>
       </TouchableOpacity>
     );
   }
 
   return (
-    <View style={styles.customCalendarContainer}>
+    <View style={[styles.customCalendarContainer, { backgroundColor: colors.surface }]}>
       <View style={styles.calendarHeader}>
         <TouchableOpacity onPress={handlePrevMonth}>
-          <Ionicons name="chevron-back" size={24} color="#FFF" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.calendarMonthYear}>{monthNames[month]} {year}</Text>
+        <Text style={[styles.calendarMonthYear, { color: colors.text }]}>{monthNames[month]} {year}</Text>
         <TouchableOpacity onPress={handleNextMonth}>
-          <Ionicons name="chevron-forward" size={24} color="#FFF" />
+          <Ionicons name="chevron-forward" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
       <View style={styles.calendarWeekRow}>
         {DAYS_OF_WEEK_SHORT.map((day, index) => (
-          <Text key={index} style={styles.calendarWeekDayText}>{day}</Text>
+          <Text key={index} style={[styles.calendarWeekDayText, { color: colors.textSecondary }]}>{day}</Text>
         ))}
       </View>
       <View style={styles.calendarDaysGrid}>
@@ -123,6 +122,7 @@ const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void,
 };
 
 const EmployeeDetailsScreen = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { employeeId } = route.params || {};
@@ -138,7 +138,6 @@ const EmployeeDetailsScreen = () => {
   // --- Fetch Employee Details ---
   const { data: employeeDetails, isLoading: isLoadingEmployee, isError: isErrorEmployee, refetch: refetchEmployee } = useGetEmployeeById(employeeId || '');
   
-  // Adjusted data extraction to handle different API wrapper structures
   const employee = useMemo(() => {
     if (!employeeDetails) return null;
     return employeeDetails.employee || employeeDetails.data || employeeDetails;
@@ -160,7 +159,11 @@ const EmployeeDetailsScreen = () => {
     endDate: dateRange.endDate,
   });
 
-  const attendanceRecords = attendanceData?.data?.records || [];
+  // Handle multiple possible API response shapes
+  const attendanceRecords = attendanceData?.data?.records 
+    || attendanceData?.records 
+    || attendanceData?.data 
+    || [];
 
   // --- Action Handlers ---
   const handleCall = () => {
@@ -169,7 +172,7 @@ const EmployeeDetailsScreen = () => {
 
   const handleWhatsApp = () => {
     if (employee?.phoneNumber) {
-      const phone = employee.phoneNumber.replace('+', '');
+      const phone = employee.phoneNumber.replace(/[^0-9]/g, '');
       Linking.openURL(`whatsapp://send?phone=${phone}`);
     }
   };
@@ -215,7 +218,12 @@ const EmployeeDetailsScreen = () => {
     
     attendanceRecords.forEach((record: Attendance) => {
       try {
-        const day = new Date(record.date).getDate().toString();
+        // Directly take the date portion from ISO string to avoid timezone shifting
+        // e.g. "2026-02-21T18:30:00.000Z" → "2026-02-21"
+        const dateKey = record.date.includes('T')
+          ? record.date.split('T')[0]        // ISO format: "2026-02-21T..."
+          : record.date.split(' ')[0];        // Space format: "2026-02-21 ..."
+
         let status: 'present' | 'absent' | 'halfday' | 'leave' = 'present';
         
         switch (record.status) {
@@ -235,7 +243,7 @@ const EmployeeDetailsScreen = () => {
           default:
             status = 'present';
         }
-        map[day] = status;
+        map[dateKey] = status;
       } catch (e) {
         console.warn("Invalid record date:", record.date);
       }
@@ -260,31 +268,22 @@ const EmployeeDetailsScreen = () => {
     return { present, absent, halfDay, leaves };
   }, [attendanceRecords]);
 
-  // --- Dynamic Calendar Generation ---
   const renderCalendarDays = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-    
-    // Get total days in month
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    // Get starting day of week (0 = Sun, 1 = Mon...)
-    const firstDayOfWeek = new Date(year, month, 1).getDay();
+    const daysInMonthCnt = new Date(year, month + 1, 0).getDate();
+    const firstDayOfWeekCnt = new Date(year, month, 1).getDay();
 
     const days = [];
-
-    // Empty slots for previous month
-    for (let i = 0; i < firstDayOfWeek; i++) {
+    for (let i = 0; i < firstDayOfWeekCnt; i++) {
       days.push(<DateCell key={`empty-${i}`} day="" isEmpty />);
     }
-
-    // Actual Days
-    for (let i = 1; i <= daysInMonth; i++) {
-      const dateKey = `${i}`;
+    for (let i = 1; i <= daysInMonthCnt; i++) {
+      // Use full YYYY-MM-DD key to match attendanceMap
+      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const status = attendanceMap[dateKey];
-      
       const currentDayOfWeek = new Date(year, month, i).getDay();
       const isWeekend = currentDayOfWeek === 0 || currentDayOfWeek === 6;
-
       days.push(
         <DateCell 
           key={i} 
@@ -301,54 +300,41 @@ const EmployeeDetailsScreen = () => {
 
   if (isLoadingEmployee) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text style={{ color: '#94A3B8', marginTop: 10 }}>Loading employee details...</Text>
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ color: colors.textSecondary, marginTop: 10 }}>Loading employee details...</Text>
       </View>
     );
   }
 
   if (isErrorEmployee || !employee) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: '#EF4444' }}>Failed to load employee details</Text>
         <TouchableOpacity style={styles.tabButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.tabText}>Go Back</Text>
+          <Text style={[styles.tabText, { color: colors.primary }]}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       {/* --- TOP SECTION --- */}
-      <View style={styles.topSection}>
-        
-        {/* Header Nav Icons */}
+      <View style={[styles.topSection, { backgroundColor: colors.background }]}>
         <View style={styles.headerNav}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="close" size={24} color="#FFF" />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backButtonCircle, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Ionicons name="chevron-back" size={22} color={colors.text} />
           </TouchableOpacity>
-          <View style={styles.rightIcons}>
-            <TouchableOpacity 
-                style={styles.iconButton}
-                onPress={() => refetchAttendance()}
-            >
-              <Ionicons name="refresh-outline" size={22} color="#FFF" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="create-outline" size={22} color="#FFF" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton} onPress={handleDeleteEmployee}>
-              <Ionicons name="trash-outline" size={22} color="#FFF" />
-            </TouchableOpacity>
-          </View>
+          <Text style={[styles.headerTitleText, { color: colors.text }]}>Employee Details</Text>
+          <TouchableOpacity onPress={handleDeleteEmployee} style={[styles.backButtonCircle, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+          </TouchableOpacity>
         </View>
 
-        {/* Profile Info */}
-        <View style={styles.profileContainer}>
+        <View style={[styles.profileContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.avatarWrapper}>
             {employee?.profilePicture?.url ? (
               <Image 
@@ -357,35 +343,35 @@ const EmployeeDetailsScreen = () => {
                     ? employee.profilePicture.url 
                     : `${IMAGE_BASE_URL}${employee.profilePicture.url}` 
                 }} 
-                style={styles.avatar} 
+                style={[styles.avatar, { borderColor: colors.primary }]} 
               />
             ) : (
-              <View style={[styles.avatar, { backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#FFF' }}>
+              <View style={[styles.avatar, { backgroundColor: isDark ? colors.background : '#F1F5F9', justifyContent: 'center', alignItems: 'center', borderColor: colors.primary }]}>
+                <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.primary }}>
                   {(employee?.firstname || '?').charAt(0).toUpperCase()}
                 </Text>
               </View>
             )}
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{employee?.payrollConfiguration === 'DAY_WISE' ? 'Daily' : 'Monthly'}</Text>
-            </View>
+            <View style={[styles.statusDotIndicator, { borderColor: colors.surface }]} />
           </View>
           <View style={styles.infoWrapper}>
-            <Text style={styles.name}>{employee?.firstname} {employee?.lastname}</Text>
-            <Text style={styles.phone}>{employee?.phoneNumber || 'No phone'}</Text>
-            <Text style={styles.role}>{employee?.designation || 'Staff'}</Text>
+            <Text style={[styles.nameText, { color: colors.text }]}>{employee?.firstname} {employee?.lastname}</Text>
+            <View style={styles.metaRow}>
+              <Text style={[styles.designationText, { color: colors.primary }]}>{employee?.designation || 'Staff'}</Text>
+              <View style={[styles.dotSeparator, { backgroundColor: colors.border }]} />
+              <Text style={[styles.payrollBadge, { color: colors.textSecondary }]}>{employee?.payrollConfiguration === 'DAY_WISE' ? 'Daily' : 'Monthly'}</Text>
+            </View>
+            <Text style={[styles.phoneText, { color: colors.textSecondary }]}>{employee?.phoneNumber || 'No phone'}</Text>
           </View>
         </View>
 
-        {/* Action Buttons Grid */}
-        <View style={styles.actionGrid}>
+        <View style={[styles.actionGrid, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <ActionButton icon="call-outline" label="Call" isIonicons onPress={handleCall} />
           <ActionButton icon="chatbubble-ellipses-outline" label="Msg" isIonicons onPress={handleMessage} />
           <ActionButton icon="mail-outline" label="Email" isIonicons onPress={handleEmail} />
           <ActionButton icon="logo-whatsapp" label="WhatsApp" isIonicons onPress={handleWhatsApp} />
         </View>
 
-        {/* Tab Navigation */}
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false} 
@@ -400,114 +386,104 @@ const EmployeeDetailsScreen = () => {
             >
               <Text style={[
                 styles.tabText, 
-                activeTab === tab && styles.activeTabText
+                { color: colors.textSecondary },
+                activeTab === tab && [styles.activeTabText, { color: colors.primary }]
               ]}>
                 {tab}
               </Text>
-              {activeTab === tab && <View style={styles.activeTabUnderline} />}
+              {activeTab === tab && <View style={[styles.activeTabUnderline, { backgroundColor: colors.primary }]} />}
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
 
       {/* --- BOTTOM SECTION --- */}
-      <View style={styles.bottomSection}>
-        
-        {/* Attendance Header Strip */}
+      <View style={[styles.bottomSection, { backgroundColor: isDark ? colors.background : '#F8FAFC' }]}>
         {activeTab === 'Attendance' && (
           <View style={styles.attendanceHeader}>
-            <Text style={styles.attendanceTitle}>Attendance For</Text>
-            <TouchableOpacity style={styles.datePicker} onPress={() => setCalendarVisible(true)}>
-              <Feather name="calendar" size={16} color="#555" />
-              <Text style={styles.dateText}>
+            <Text style={[styles.attendanceTitle, { color: colors.text }]}>Attendance For</Text>
+            <TouchableOpacity style={[styles.datePicker, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setCalendarVisible(true)}>
+              <Feather name="calendar" size={16} color={colors.textSecondary} />
+              <Text style={[styles.dateText, { color: colors.text }]}>
                  {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
               </Text>
             </TouchableOpacity>
           </View>
         )}
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          
-          {/* Stats Cards */}
-          <View>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.statsScrollContent}
-            >
-              <StatCard label="Present" count={`${stats.present} days`} color="#689F38" />
-              <StatCard label="Absent" count={`${stats.absent} times`} color="#E65100" />
-              <StatCard label="Half Day" count={`${stats.halfDay} times`} color="#0288D1" />
-              <StatCard label="Casual Leave" count={`${stats.leaves} times`} color="#FBC02D" />
-              <StatCard label="Holiday" count="0 times" color="#0097A7" />
-            </ScrollView>
-          </View>
-
-          {/* Calendar Grid */}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           {activeTab === 'Attendance' && (
-            <View style={styles.calendarContainer}>
-              <View style={styles.weekRow}>
-                {DAYS_OF_WEEK.map((day, index) => (
-                  <Text key={index} style={styles.weekDayText}>{day}</Text>
-                ))}
+            <>
+              <View style={styles.statsContainer}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.statsScrollContent}
+                >
+                  <StatCard label="Present" count={`${stats.present} days`} color="#10B981" />
+                  <StatCard label="Absent" count={`${stats.absent} times`} color="#EF4444" />
+                  <StatCard label="Half Day" count={`${stats.halfDay} times`} color="#F59E0B" />
+                  <StatCard label="Casual Leave" count={`${stats.leaves} times`} color="#8B5CF6" />
+                  <StatCard label="Holiday" count="0 times" color="#0EA5E9" />
+                </ScrollView>
               </View>
 
-              <ScrollView 
-                horizontal 
-                pagingEnabled 
-                showsHorizontalScrollIndicator={false}
-                style={styles.calendarScroll}
-              >
+              <View style={[styles.calendarContainer, { backgroundColor: colors.surface, marginHorizontal: 16, borderRadius: 24, padding: 16, marginTop: 10, borderWidth: 1, borderColor: colors.border }]}>
+                <View style={styles.weekRow}>
+                  {DAYS_OF_WEEK.map((day, index) => (
+                    <Text key={index} style={[styles.weekDayText, { color: colors.textSecondary }]}>{day}</Text>
+                  ))}
+                </View>
                 <View style={styles.datesGrid}>
                   {renderCalendarDays()}
                 </View>
-              </ScrollView>
-            </View>
+              </View>
+            </>
           )}
 
           {activeTab === 'Salary' && (
-            <View style={{ padding: 20 }}>
+            <View style={{ padding: 16 }}>
               <SalaryScreen employeeId={employeeId} hideHeader />
             </View>
           )}
 
-          <View style={{height: 100}} /> 
+          {['Incentive', 'Expense', 'Loan/Adv'].includes(activeTab) && (
+             <View style={{ padding: 40, alignItems: 'center' }}>
+                <MaterialCommunityIcons name="timer-sand" size={60} color={colors.border} />
+                <Text style={{ color: colors.textSecondary, marginTop: 16, fontSize: 16, fontWeight: '600' }}>Coming Soon</Text>
+             </View>
+          )}
         </ScrollView>
 
-        {/* Footer Buttons */}
-        <View style={styles.footerContainer}>
-          <TouchableOpacity style={styles.footerButton}>
-            <Feather name="download" size={16} color="#333" />
-            <Text style={styles.footerBtnText}>Monthly Report</Text>
+        <View style={[styles.footerContainer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+          <TouchableOpacity style={[styles.footerButton, { backgroundColor: isDark ? colors.background : '#F1F5F9', borderColor: colors.border }]}>
+            <Feather name="download" size={16} color={colors.text} />
+            <Text style={[styles.footerBtnText, { color: colors.text }]}>Monthly</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.footerButton}>
-            <Feather name="download" size={16} color="#333" />
-            <Text style={styles.footerBtnText}>Odometer Report</Text>
+          <TouchableOpacity style={[styles.footerButton, { backgroundColor: isDark ? colors.background : '#F1F5F9', borderColor: colors.border }]}>
+            <Feather name="download" size={16} color={colors.text} />
+            <Text style={[styles.footerBtnText, { color: colors.text }]}>Odometer</Text>
           </TouchableOpacity>
         </View>
-
       </View>
 
-      {/* Calendar Modal */}
       <Modal transparent visible={calendarVisible} animationType="fade" onRequestClose={() => setCalendarVisible(false)}>
         <TouchableOpacity 
           style={styles.modalOverlay} 
           activeOpacity={1} 
           onPress={() => setCalendarVisible(false)}
         >
-          <View style={styles.calendarModalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Date</Text>
+          <View style={[styles.calendarModalContent, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Select Month</Text>
               <TouchableOpacity onPress={() => setCalendarVisible(false)}>
-                <Ionicons name="close" size={24} color="#FFF" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <CustomCalendar 
-                onSelect={(date) => setCurrentMonth(date)} 
-                onClose={() => setCalendarVisible(false)} 
-              />
-            </ScrollView>
+            <CustomCalendar 
+              onSelect={(date) => setCurrentMonth(date)} 
+              onClose={() => setCalendarVisible(false)} 
+            />
           </View>
         </TouchableOpacity>
       </Modal>
@@ -517,61 +493,80 @@ const EmployeeDetailsScreen = () => {
 
 // --- Helper Components ---
 
-const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, isMaterial, isIonicons, onPress }) => (
-  <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
-    <View style={styles.actionIconCircle}>
-      {isIonicons ? (
-        <Ionicons name={icon} size={20} color="#FFF" />
-      ) : isMaterial ? (
-        <MaterialCommunityIcons name={icon} size={20} color="#FFF" />
-      ) : (
-        <Feather name={icon} size={20} color="#FFF" />
-      )}
-    </View>
-    <Text style={styles.actionLabel}>{label}</Text>
-  </TouchableOpacity>
-);
+const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, isMaterial, isIonicons, onPress }) => {
+  const { colors, isDark } = useTheme();
+  return (
+    <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
+      <View style={[styles.actionIconCircle, { backgroundColor: isDark ? colors.background : '#F8FAFC', borderColor: colors.border }]}>
+        {isIonicons ? (
+          <Ionicons name={icon} size={18} color={isDark ? colors.text : colors.primary} />
+        ) : isMaterial ? (
+          <MaterialCommunityIcons name={icon} size={18} color={isDark ? colors.text : colors.primary} />
+        ) : (
+          <Feather name={icon} size={18} color={isDark ? colors.text : colors.primary} />
+        )}
+      </View>
+      <Text style={[styles.actionLabel, { color: colors.textSecondary }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+};
 
-const StatCard: React.FC<StatCardProps> = ({ label, count, color }) => (
-  <View style={styles.statCard}>
-    <View style={[styles.statAccent, { backgroundColor: color }]} />
-    <View style={styles.statContent}>
-      <Text style={styles.statLabel} numberOfLines={1}>{label}</Text>
-      <Text style={styles.statCount}>{count}</Text>
+const StatCard: React.FC<StatCardProps> = ({ label, count, color }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.statAccent, { backgroundColor: color }]} />
+      <View style={styles.statContent}>
+        <Text style={[styles.statLabel, { color: colors.textSecondary }]} numberOfLines={1}>{label}</Text>
+        <Text style={[styles.statCount, { color: colors.text }]}>{count}</Text>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const DateCell: React.FC<DateCellProps> = ({ day, isWeekend, status, isSelected, onPress, isEmpty }) => {
+  const { colors, isDark } = useTheme();
+  
   if (isEmpty) {
     return <View style={styles.dateCell} />;
   }
 
-  let bgColor = 'transparent';
-  let textColor = '#FFF';
+  let bgColor = isDark ? 'rgba(255,255,255,0.05)' : '#F8FAFC';
+  let textColor = isWeekend ? colors.textSecondary : colors.text;
+  let borderColor = 'transparent';
 
-  if (isSelected) {
-    bgColor = '#3B82F6';
-    textColor = '#FFF'; 
+  if (isSelected && !status) {
+    bgColor = colors.primary;
+    textColor = '#FFF';
+    borderColor = colors.primary;
   } else if (status === 'present') {
     bgColor = '#10B981';
+    textColor = '#FFFFFF';
+    borderColor = '#059669';
   } else if (status === 'absent') {
     bgColor = '#EF4444';
+    textColor = '#FFFFFF';
+    borderColor = '#DC2626';
   } else if (status === 'halfday') {
     bgColor = '#F59E0B';
+    textColor = '#FFFFFF';
+    borderColor = '#D97706';
   } else if (status === 'leave') {
     bgColor = '#8B5CF6';
+    textColor = '#FFFFFF';
+    borderColor = '#7C3AED';
   }
-
-  if (isWeekend && !isSelected && !status) textColor = '#94A3B8';
 
   return (
     <TouchableOpacity 
-      style={[styles.dateCell, { backgroundColor: bgColor }]}
+      style={[styles.dateCell, { backgroundColor: bgColor, borderColor: borderColor, borderWidth: status ? 0 : 1 }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
       <Text style={[styles.dateTextNum, { color: textColor }]}>{day}</Text>
+      {isSelected && status && (
+        <View style={[styles.selectedIndicator, { backgroundColor: '#FFF' }]} />
+      )}
     </TouchableOpacity>
   );
 };
@@ -579,92 +574,100 @@ const DateCell: React.FC<DateCellProps> = ({ day, isWeekend, status, isSelected,
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
   },
   topSection: {
-    backgroundColor: '#0F172A',
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 15,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   headerNav: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
-  rightIcons: {
-    flexDirection: 'row',
-    gap: 15,
+  backButtonCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
   },
-  iconButton: {
-    padding: 4, 
+  headerTitleText: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    padding: 15,
-    borderRadius: 20,
+    marginBottom: 16,
+    padding: 12,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
   },
   avatarWrapper: {
-    marginRight: 15,
-    alignItems: 'center',
+    marginRight: 16,
+    position: 'relative',
   },
   avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 72,
+    height: 72,
+    borderRadius: 24,
     borderWidth: 2,
-    borderColor: '#3B82F6',
   },
-  badge: {
+  statusDotIndicator: {
     position: 'absolute',
-    bottom: -8,
-    backgroundColor: '#3B82F6', 
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
-  },
-  badgeText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    bottom: -2,
+    right: -2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#10B981',
+    borderWidth: 3,
   },
   infoWrapper: {
-    justifyContent: 'center',
+    flex: 1,
   },
-  name: {
-    color: '#FFF',
+  nameText: {
     fontSize: 22,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
-  phone: {
-    color: '#94A3B8',
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  designationText: {
     fontSize: 14,
-    marginTop: 2,
+    fontWeight: '700',
   },
-  role: {
-    color: '#3B82F6',
-    fontSize: 13,
+  dotSeparator: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginHorizontal: 8,
+  },
+  payrollBadge: {
+    fontSize: 12,
     fontWeight: '600',
-    marginTop: 2,
+    textTransform: 'uppercase',
+  },
+  phoneText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   actionGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    marginBottom: 20,
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
   actionBtn: {
     alignItems: 'center',
@@ -672,225 +675,202 @@ const styles = StyleSheet.create({
   },
   actionIconCircle: {
     marginBottom: 6,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    width: 42,
+    height: 42,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
   },
   actionLabel: {
-    color: '#E2E8F0',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   tabsContainer: {
     flexDirection: 'row',
-    marginBottom: 0,
   },
   tabsContent: {
     alignItems: 'center',
     paddingLeft: 4,
   },
   tabButton: {
-    marginRight: 25,
-    paddingBottom: 8,
+    marginRight: 28,
+    paddingBottom: 12,
     alignItems: 'center',
   },
   tabText: {
-    color: '#64748B',
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   activeTabText: {
-    color: '#3B82F6',
   },
   activeTabUnderline: {
     position: 'absolute',
     bottom: 0,
-    width: '100%',
+    width: 16,
     height: 3,
-    backgroundColor: '#3B82F6',
     borderRadius: 2,
   },
   bottomSection: {
     flex: 1,
-    backgroundColor: '#1E293B',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    overflow: 'hidden',
-    marginTop: -10,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingTop: 16,
   },
   attendanceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(59, 130, 246, 0.05)', 
     paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    paddingVertical: 10,
   },
   attendanceTitle: {
-    color: '#F8FAFC',
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '900',
   },
   datePicker: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#334155',
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 10,
+    paddingVertical: 8,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#475569',
   },
   dateText: {
     marginLeft: 8,
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  statsContainer: {
+    marginTop: 10,
   },
   statsScrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 15,
     gap: 12, 
     paddingBottom: 10,
   },
   statCard: {
-    width: width / 3.6,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    minHeight: 55,
+    width: width / 3.4,
+    borderRadius: 20,
+    minHeight: 65,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.03)',
     flexDirection: 'row',
     overflow: 'hidden',
   },
   statAccent: {
-    width: 3,
+    width: 4,
     height: '100%',
   },
   statContent: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     justifyContent: 'center',
     flex: 1,
   },
   statLabel: {
-    color: '#94A3B8',
     fontSize: 9,
-    marginBottom: 2,
+    marginBottom: 4,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
   statCount: {
-    color: '#FFF',
     fontSize: 14,
     fontWeight: '800',
   },
   calendarContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: 16,
   },
   weekRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
-    paddingHorizontal: 5,
+    marginBottom: 12,
   },
   weekDayText: {
-    color: '#64748B',
-    width: (width - 40 - (5 * 6)) / 7,
+    width: (width - 72 - 24) / 7,
     textAlign: 'center',
-    fontWeight: '700',
-    fontSize: 13,
+    fontWeight: '800',
+    fontSize: 12,
+    textTransform: 'uppercase',
   },
   datesGrid: {
-    width: width - 40,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    gap: 5,
-  },
-  calendarScroll: {
-    marginTop: 5,
+    gap: 4,
   },
   dateCell: {
-    width: (width - 40 - (5 * 6)) / 7,
-    height: 42,
+    width: (width - 72 - 24) / 7,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 12,
-    marginBottom: 5,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.03)',
+    marginBottom: 4,
+    borderWidth: 1.5,
   },
   dateTextNum: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+  selectedIndicator: {
+    position: 'absolute',
+    bottom: 4,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
   footerContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#0F172A',
     flexDirection: 'row',
-    padding: 20,
-    paddingBottom: 30,
+    padding: 16,
+    paddingBottom: 32,
     justifyContent: 'space-between',
-    gap: 15,
+    gap: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
   },
   footerButton: {
     flex: 1,
-    backgroundColor: '#1E293B',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: '#334155',
+    borderRadius: 18,
+    borderWidth: 1.5,
   },
   footerBtnText: {
-    marginLeft: 10,
-    color: '#F8FAFC',
+    marginLeft: 8,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
   },
   calendarModalContent: {
-    width: width * 0.9,
-    backgroundColor: '#1E293B',
-    borderRadius: 24,
+    width: '100%',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     padding: 24,
+    paddingBottom: 40,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderBottomWidth: 0,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 25,
+    marginBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
     paddingBottom: 15,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#FFF',
+    fontWeight: '900',
   },
   customCalendarContainer: {
-    backgroundColor: '#1E293B',
   },
   calendarHeader: {
     flexDirection: 'row',
@@ -901,7 +881,6 @@ const styles = StyleSheet.create({
   calendarMonthYear: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#FFF',
   },
   calendarWeekRow: {
     flexDirection: 'row',
@@ -910,8 +889,7 @@ const styles = StyleSheet.create({
   },
   calendarWeekDayText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#64748B',
+    fontWeight: '800',
     width: 35,
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -933,8 +911,7 @@ const styles = StyleSheet.create({
   },
   calendarDayText: {
     fontSize: 15,
-    color: '#E2E8F0',
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
 

@@ -19,9 +19,11 @@ import { IMAGE_BASE_URL } from '../../api/api';
 import { useGetEmployeeById, useUpdateEmployee } from '../employee/hook/useEmployee';
 import { useDeleteProfilePicture, useUploadProfilePicture } from '../employee/hook/useProfilePicture';
 import { useEmployeeAuthStore } from '../store/useEmployeeAuthStore';
+import { useTheme } from '../theme/ThemeContext';
 import { showSuccess } from '../utils/meesage';
 
 const PersonalDetails = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   const { employee, company,token } = useEmployeeAuthStore();
   const employeeId = employee?.id;
@@ -179,8 +181,8 @@ const PersonalDetails = () => {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#FF9F00" />
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -235,18 +237,19 @@ const PersonalDetails = () => {
   const profileImageUrl = getProfileImageUrl();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.surface} />
       
       {/* --- Header Section --- */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="close" size={28} color="#000" />
+          <Icon name="close" size={28} color={colors.text} />
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={[
             styles.saveButton, 
+            { backgroundColor: colors.primary },
             (updateEmployeeMutation.isPending || uploadPhotoMutation.isPending) && styles.disabledButton
           ]} 
           onPress={handleUpdate}
@@ -303,20 +306,20 @@ const PersonalDetails = () => {
         
         {/* Row for First and Last Name */}
         <View style={styles.row}>
-          <View style={[styles.inputWrapper, { flex: 1, marginRight: 10 }]}>
-            <Text style={styles.floatingLabel}>First Name</Text>
+          <View style={[styles.inputWrapper, { flex: 1, marginRight: 10, borderColor: colors.border }]}>
+            <Text style={[styles.floatingLabel, { backgroundColor: colors.background, color: colors.textSecondary }]}>First Name</Text>
             <TextInput 
-              style={styles.input} 
+              style={[styles.input, { color: colors.text }]} 
               value={formData.firstname} 
               onChangeText={(text) => setFormData({ ...formData, firstname: text })}
               editable={true}
             />
           </View>
 
-          <View style={[styles.inputWrapper, { flex: 1 }]}>
-            <Text style={styles.floatingLabel}>Last Name</Text>
+          <View style={[styles.inputWrapper, { flex: 1, borderColor: colors.border }]}>
+            <Text style={[styles.floatingLabel, { backgroundColor: colors.background, color: colors.textSecondary }]}>Last Name</Text>
             <TextInput 
-              style={styles.input} 
+              style={[styles.input, { color: colors.text }]} 
               value={formData.lastname} 
               onChangeText={(text) => setFormData({ ...formData, lastname: text })}
               editable={true}
@@ -325,30 +328,30 @@ const PersonalDetails = () => {
         </View>
 
         {/* Phone Number */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.floatingLabel}>Phone Number</Text>
+        <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+          <Text style={[styles.floatingLabel, { backgroundColor: colors.background, color: colors.textSecondary }]}>Phone Number</Text>
           <TextInput 
-            style={[styles.input, styles.disabledText]} 
+            style={[styles.input, { color: colors.text }, styles.disabledText]} 
             value={formData.phoneNumber} 
             editable={false} 
           />
         </View>
 
         {/* Pay Type */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.floatingLabel}>Pay Type</Text>
+        <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+          <Text style={[styles.floatingLabel, { backgroundColor: colors.background, color: colors.textSecondary }]}>Pay Type</Text>
           <TextInput 
-            style={[styles.input, styles.disabledText]} 
+            style={[styles.input, { color: colors.text }, styles.disabledText]} 
             value={formData.salaryType} 
             editable={false}
           />
         </View>
 
         {/* Monthly Salary */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.floatingLabel}>Monthly Salary</Text>
+        <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+          <Text style={[styles.floatingLabel, { backgroundColor: colors.background, color: colors.textSecondary }]}>Monthly Salary</Text>
           <TextInput 
-            style={[styles.input, styles.disabledText]} 
+            style={[styles.input, { color: colors.text }, styles.disabledText]} 
             value={formData.salary ? `₹ ${formData.salary}` : ''} 
             editable={false}
           />
@@ -362,7 +365,6 @@ const PersonalDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   center: {
     justifyContent: 'center',
@@ -374,7 +376,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
   },
   saveButton: {
     backgroundColor: '#FF9F00', 
@@ -433,7 +434,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: -10,
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#EF4444',
     padding: 6,
     borderRadius: 20,
     borderWidth: 2,
@@ -446,7 +447,6 @@ const styles = StyleSheet.create({
   inputWrapper: {
     position: 'relative',
     borderWidth: 1,
-    borderColor: '#D1D5DB', 
     borderRadius: 8,
     marginBottom: 24, 
     paddingHorizontal: 12,
@@ -458,19 +458,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -10, 
     left: 10,
-    backgroundColor: '#fff', 
     paddingHorizontal: 4,
     fontSize: 12,
-    color: '#9CA3AF', 
   },
   input: {
     fontSize: 16,
-    color: '#1F2937', 
     paddingVertical: 0, 
     height: '100%',
   },
   disabledText: {
-    color: '#9CA3AF', 
+    opacity: 0.6,
   }
 });
 

@@ -21,6 +21,7 @@ import { IMAGE_BASE_URL } from '../api/api';
 import { useGetAttendance } from '../src/employee/hook/useAttendance';
 import { useGetEmployeeById } from '../src/employee/hook/useEmployee';
 import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
+import { useTheme } from '../src/theme/ThemeContext';
 
 const { height, width } = Dimensions.get('window');
 
@@ -30,6 +31,7 @@ interface SalaryScreenProps {
 }
 
 const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId, hideHeader }) => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   
   // Use the employee data directly from the store if available
@@ -199,17 +201,17 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
   }
 
   const content = (
-      <View style={[styles.container, hideHeader && { backgroundColor: 'transparent' }]}>
+      <View style={[styles.container, hideHeader && { backgroundColor: 'transparent' }, { backgroundColor: colors.background }]}>
       
       {/* --- HEADER --- */}
       {!hideHeader && (
-        <View style={styles.navHeader}>
+        <View style={[styles.navHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="chevron-back" size={26} color="#000" />
+              <Icon name="chevron-back" size={26} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.navTitle}>Salary Details</Text>
+          <Text style={[styles.navTitle, { color: colors.text }]}>Salary Details</Text>
           <TouchableOpacity>
-              <Icon name="eye-outline" size={24} color="#000" />
+              <Icon name="eye-outline" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
       )}
@@ -225,70 +227,70 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
         
         {/* --- PROFILE CARD --- */}
         {!hideHeader && (
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.profileRow}>
                   {profileImageUrl ? (
                     <Image source={{ uri: profileImageUrl }} style={styles.profileImage} />
                   ) : (
-                    <View style={[styles.profileImage, { backgroundColor: '#E1E1E1', justifyContent: 'center', alignItems: 'center' }]}>
-                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#888' }}>
+                    <View style={[styles.profileImage, { backgroundColor: isDark ? colors.background : '#E1E1E1', justifyContent: 'center', alignItems: 'center' }]}>
+                      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.textSecondary }}>
                         {emp?.firstname ? emp.firstname.charAt(0).toUpperCase() : 'U'}
                       </Text>
                     </View>
                   )}
                   <View style={styles.profileInfo}>
-                      <Text style={styles.profileName}>{fullName}</Text>
+                      <Text style={[styles.profileName, { color: colors.text }]}>{fullName}</Text>
                       <Text style={styles.profileRole}>{designation}</Text>
-                      <Text style={styles.profileId}>EMP-ID: {empIdDisplay}</Text>
+                      <Text style={[styles.profileId, { color: colors.textSecondary }]}>EMP-ID: {empIdDisplay}</Text>
                   </View>
               </View>
           </View>
         )}
 
         {/* --- PAYROLL PERIOD SELECTOR --- */}
-        <Text style={styles.sectionLabel}>Payroll Period</Text>
+        <Text style={[styles.sectionLabel, { color: colors.text }]}>Payroll Period</Text>
         <TouchableOpacity 
-          style={styles.dateSelector} 
+          style={[styles.dateSelector, { backgroundColor: colors.surface, borderColor: colors.border }]} 
           onPress={() => setShowDatePicker(true)}
         >
-          <Text style={styles.dateSelectorText}>{selectedDateDisplay}</Text>
-          <Icon name="chevron-down" size={20} color="#2a568f" />
+          <Text style={[styles.dateSelectorText, { color: colors.text }]}>{selectedDateDisplay}</Text>
+          <Icon name="chevron-down" size={20} color={colors.primary} />
         </TouchableOpacity>
 
         {/* --- EARNINGS CARD --- */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.cardHeader}>
-                <Icon name="cash-outline" size={20} color="#2089dc" />
-                <Text style={styles.cardTitle}>Earnings & CTC</Text>
+                <Icon name="cash-outline" size={20} color={colors.primary} />
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Earnings & CTC</Text>
             </View>
             
             <View style={styles.row}>
                 <Text style={styles.labelBlue}>Monthly CTC</Text>
-                <Text style={styles.value}>₹{salary.toLocaleString()}</Text>
+                <Text style={[styles.value, { color: colors.text }]}>₹{salary.toLocaleString()}</Text>
             </View>
             <View style={[styles.row, { marginTop: 10 }]}>
                 <Text style={styles.labelBlue}>Daily Rate</Text>
-                <Text style={styles.value}>₹{dailyRate.toFixed(2)}</Text>
+                <Text style={[styles.value, { color: colors.text }]}>₹{dailyRate.toFixed(2)}</Text>
             </View>
             <View style={[styles.row, { marginTop: 10 }]}>
                 <Text style={styles.labelBlue}>Regular Earnings</Text>
-                <Text style={styles.value}>₹{regularEarnings.toFixed(2)}</Text>
+                <Text style={[styles.value, { color: colors.text }]}>₹{regularEarnings.toFixed(2)}</Text>
             </View>
         </View>
 
         {/* --- ATTENDANCE SUMMARY CARD --- */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.cardHeader}>
-                <Icon name="calendar-outline" size={20} color="#2089dc" />
-                <Text style={styles.cardTitle}>Attendance Summary</Text>
-                {isLoadingAttendance && <ActivityIndicator size="small" color="#2089dc" style={{ marginLeft: 10 }} />}
+                <Icon name="calendar-outline" size={20} color={colors.primary} />
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Attendance Summary</Text>
+                {isLoadingAttendance && <ActivityIndicator size="small" color={colors.primary} style={{ marginLeft: 10 }} />}
             </View>
 
             <View style={styles.attendanceContainer}>
                 {/* Total Box */}
-                <View style={styles.attendBox}>
+                <View style={[styles.attendBox, { backgroundColor: isDark ? colors.background : '#F5F5F5' }]}>
                     <Text style={styles.boxLabel}>TOTAL</Text>
-                    <Text style={styles.boxValue}>{attendanceSummary.totalDays}</Text>
+                    <Text style={[styles.boxValue, { color: colors.text }]}>{attendanceSummary.totalDays}</Text>
                 </View>
 
                 {/* Payable Box */}
@@ -306,10 +308,10 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
         </View>
 
         {/* --- DEDUCTIONS CARD --- */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.cardHeader}>
-                <Icon name="cut-outline" size={20} color="#d32f2f" style={{transform: [{rotate: '90deg'}]}} />
-                <Text style={styles.cardTitle}>Deductions</Text>
+                <Icon name="cut-outline" size={20} color="#EF4444" style={{transform: [{rotate: '90deg'}]}} />
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Deductions</Text>
             </View>
             <View style={styles.row}>
                 <Text style={styles.labelBlue}>Absent Day Deductions</Text>
@@ -324,31 +326,31 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
         </TouchableOpacity>
 
         {/* --- FOOTER INFO --- */}
-        <View style={styles.footerContainer}>
+        <View style={[styles.footerContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
              {/* Note: Blurred effect simulation or just grey text */}
              <View style={styles.row}>
-                <Text style={styles.footerLabel}>Salary Paid</Text>
-                <Text style={styles.footerValueFaded}>₹{salaryPaid.toFixed(2)}</Text>
+                <Text style={[styles.footerLabel, { color: colors.textSecondary }]}>Salary Paid</Text>
+                <Text style={[styles.footerValueFaded, { color: colors.textSecondary, opacity: 0.5 }]}>₹{salaryPaid.toFixed(2)}</Text>
              </View>
              
-             <View style={[styles.divider, { marginVertical: 10 }]} />
+             <View style={[styles.divider, { marginVertical: 10, backgroundColor: colors.border }]} />
              
              <View style={styles.row}>
                 <Text style={styles.labelBlue}>Payment Mode</Text>
-                <Text style={styles.value}>{emp?.bankName ? `Transfer to ${emp.bankName}` : 'Bank Transfer'}</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{emp?.bankName ? `Transfer to ${emp.bankName}` : 'Bank Transfer'}</Text>
              </View>
 
              <View style={[styles.row, { marginTop: 15, alignItems: 'center' }]}>
-                <Text style={styles.bigTotalLabel}>Remaining Balance</Text>
+                <Text style={[styles.bigTotalLabel, { color: colors.text }]}>Remaining Balance</Text>
                 <View style={{alignItems: 'flex-end'}}>
-                    <Text style={styles.bigTotalValue}>₹{remainingBalance.toFixed(2)}</Text>
+                    <Text style={[styles.bigTotalValue, { color: colors.primary }]}>₹{remainingBalance.toFixed(2)}</Text>
                     {remainingBalance <= 0 && (
-                      <View style={styles.settledBadge}>
-                          <Text style={styles.settledText}>SETTLED</Text>
+                      <View style={[styles.settledBadge, { backgroundColor: isDark ? colors.background : '#E8F5E9' }]}>
+                          <Text style={[styles.settledText, { color: '#10B981' }]}>SETTLED</Text>
                       </View>
                     )}
                     {remainingBalance > 0 && (
-                      <View style={[styles.settledBadge, { backgroundColor: '#FFF3E0' }]}>
+                      <View style={[styles.settledBadge, { backgroundColor: isDark ? colors.background : '#FFF3E0' }]}>
                           <Text style={[styles.settledText, { color: '#F57C00' }]}>PENDING</Text>
                       </View>
                     )}
@@ -367,8 +369,8 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
       >
         <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Select Salary Month</Text>
+            <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Select Salary Month</Text>
               <View style={styles.modalListContainer}>
                 <FlatList
                   data={availableDates}
@@ -378,16 +380,18 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
                     <TouchableOpacity 
                       style={[
                         styles.modalItem, 
-                        item === selectedDateDisplay && styles.modalItemSelected
+                        item === selectedDateDisplay && [styles.modalItemSelected, { backgroundColor: colors.background }],
+                        { borderBottomColor: colors.border }
                       ]}
                       onPress={() => handleSelectDate(item)}
                     >
                       <Text style={[
                         styles.modalItemText,
-                        item === selectedDateDisplay && styles.modalItemTextSelected
+                        { color: colors.text },
+                        item === selectedDateDisplay && [styles.modalItemTextSelected, { color: colors.primary }]
                       ]}>{item}</Text>
                       {item === selectedDateDisplay && (
-                        <Icon name="checkmark-circle" size={20} color="#2a568f" />
+                        <Icon name="checkmark-circle" size={20} color={colors.primary} />
                       )}
                     </TouchableOpacity>
                   )}
@@ -410,7 +414,7 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
   if (hideHeader) return content;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
         {content}
     </SafeAreaView>
   );

@@ -1,16 +1,17 @@
 import { Fingerprint } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Alert,
-  Dimensions,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Dimensions,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import ReactNativeBiometrics from "react-native-biometrics";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../../../src/theme/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -25,6 +26,7 @@ const AdminPunching = () => {
 };
 
 const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
+  const { colors, isDark } = useTheme();
   // Fingerprint + PIN/Password enabled
   const rnBiometrics = new ReactNativeBiometrics({
     allowDeviceCredentials: true,
@@ -60,14 +62,14 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top", "left", "right"]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greetingText}>Hello, Md. Saif</Text>
-          <Text style={styles.subText}>Mark your attendance</Text>
+          <Text style={[styles.greetingText, { color: colors.text }]}>Hello, Md. Saif</Text>
+          <Text style={[styles.subText, { color: colors.textSecondary }]}>Mark your attendance</Text>
         </View>
         <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
           {/* <RefreshCw size={20} color="#fff" /> */}
@@ -79,12 +81,12 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
         <View
           style={[
             styles.scannerCircle,
-            { borderColor: activeColor, borderStyle: "dashed" },
+            { borderColor: activeColor, borderStyle: "dashed", backgroundColor: colors.surface },
           ]}
         >
           <Fingerprint size={100} color={activeColor} />
-          <Text style={styles.visualHint}>Touch Sensor</Text>
-          <Text style={styles.subVisualHint}>
+          <Text style={[styles.visualHint, { color: colors.text }]}>Touch Sensor</Text>
+          <Text style={[styles.subVisualHint, { color: colors.textSecondary }]}>
             Use Fingerprint or Enter PIN
           </Text>
         </View>
@@ -92,8 +94,8 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
 
       {/* Punch Type */}
       <View style={styles.punchTypeContainer}>
-        <Text style={styles.punchLabel}>Action Type:</Text>
-        <View style={styles.switchContainer}>
+        <Text style={[styles.punchLabel, { color: colors.textSecondary }]}>Action Type:</Text>
+        <View style={[styles.switchContainer, { backgroundColor: colors.surface }]}>
           <TouchableOpacity
             style={[
               styles.switchBtn,
@@ -143,7 +145,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
           </View>
         </TouchableOpacity>
 
-        <Text style={styles.footerNote}>
+        <Text style={[styles.footerNote, { color: colors.textSecondary }]}>
           Current Shift: 09:00 AM - 06:00 PM
         </Text>
       </View>

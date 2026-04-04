@@ -1,28 +1,48 @@
-
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Dimensions,
-  Modal,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Modal,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 
 // Import popup screens
 import AdminPunching from './AdminPunching';
 import Others from './Others';
 
-const { width, height } = Dimensions.get('window');
+const WHITE = '#FFFFFF';
+const DARK_MAP_STYLE = [
+  { "elementType": "geometry", "stylers": [{ "color": "#242f3e" }] },
+  { "elementType": "labels.text.fill", "stylers": [{ "color": "#746855" }] },
+  { "elementType": "labels.text.stroke", "stylers": [{ "color": "#242f3e" }] },
+  { "featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [{ "color": "#d59563" }] },
+  { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#d59563" }] },
+  { "featureType": "poi.park", "elementType": "geometry", "stylers": [{ "color": "#263c3f" }] },
+  { "featureType": "poi.park", "elementType": "labels.text.fill", "stylers": [{ "color": "#6b9a76" }] },
+  { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#38414e" }] },
+  { "featureType": "road", "elementType": "geometry.stroke", "stylers": [{ "color": "#212a37" }] },
+  { "featureType": "road", "elementType": "labels.text.fill", "stylers": [{ "color": "#9ca5b3" }] },
+  { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#746855" }] },
+  { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#1f2835" }] },
+  { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{ "color": "#f3d19c" }] },
+  { "featureType": "transit", "elementType": "geometry", "stylers": [{ "color": "#2f3948" }] },
+  { "featureType": "transit.station", "elementType": "labels.text.fill", "stylers": [{ "color": "#d59563" }] },
+  { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#17263c" }] },
+  { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#515c6d" }] },
+  { "featureType": "water", "elementType": "labels.text.stroke", "stylers": [{ "color": "#17263c" }] }
+];
 
 const AdminHomeScreen = () => {
+  const { colors, isDark } = useTheme();
   const [othersModalVisible, setOthersModalVisible] = useState(false);
   const [punchingModalVisible, setPunchingModalVisible] = useState(false);
   const navigation = useNavigation<any>();
@@ -89,8 +109,8 @@ const AdminHomeScreen = () => {
 
 
   return (
-    <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar translucent backgroundColor="transparent" barStyle={isDark ? "light-content" : "dark-content"} />
 
       <SafeAreaView style={{ flex: 1, position: 'relative' }}>
         {/* MAP */}
@@ -98,6 +118,7 @@ const AdminHomeScreen = () => {
           ref={mapRef}
           provider={PROVIDER_GOOGLE}
           style={styles.map}
+          customMapStyle={isDark ? DARK_MAP_STYLE : []}
           initialRegion={{
             latitude: 23.3441,
             longitude: 85.3096,
@@ -113,26 +134,26 @@ const AdminHomeScreen = () => {
 
         {/* ROUTINE */}
         <View style={styles.topLeftContainer}>
-          <TouchableOpacity style={styles.starterCard}>
+          <TouchableOpacity style={[styles.starterCard, { backgroundColor: colors.surface }]}>
             <Ionicons
               name="calendar-outline"
               size={16}
-              color="#333"
+              color={colors.text}
               style={styles.cardIcon}
             />
-            <Text style={styles.starterText}>Routine</Text>
+            <Text style={[styles.starterText, { color: colors.text }]}>Routine</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.topRightContainer}>
           <TouchableOpacity 
-            style={[styles.circleButton, styles.navButton]}
+            style={[styles.circleButton, styles.navButton, { backgroundColor: colors.surface }]}
             onPress={handleRecenter}
           >
             <Ionicons
               name="navigate-outline"
               size={18}
-              color="#fff"
+              color={colors.primary}
             />
           </TouchableOpacity>
         </View>
@@ -140,28 +161,28 @@ const AdminHomeScreen = () => {
         {/* OTHERS */}
         <View style={styles.bottomLeftContainer}>
           <TouchableOpacity
-            style={styles.othersCard}
+            style={[styles.othersCard, { backgroundColor: colors.surface }]}
             onPress={() => setOthersModalVisible(true)}
           >
             <Ionicons
               name="people-outline"
               size={20}
-              color="#333"
+              color={colors.text}
             />
-            <Text style={styles.othersText}>Others</Text>
+            <Text style={[styles.othersText, { color: colors.text }]}>Others</Text>
           </TouchableOpacity>
         </View>
 
         {/* PUNCH */}
         <View style={styles.bottomRightContainer}>
           <TouchableOpacity
-            style={styles.handButton}
+            style={[styles.handButton, { backgroundColor: colors.primary }]}
             onPress={handlePunchPress}
           >
             <Ionicons
               name="finger-print"
               size={24}
-              color="#fff"
+              color={WHITE}
             />
           </TouchableOpacity>
         </View>
@@ -170,7 +191,7 @@ const AdminHomeScreen = () => {
       {/* OTHERS MODAL */}
       <Modal transparent visible={othersModalVisible} animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <Others onClose={() => setOthersModalVisible(false)} />
           </View>
         </View>
@@ -179,12 +200,12 @@ const AdminHomeScreen = () => {
       {/* PUNCH MODAL */}
       <Modal transparent visible={punchingModalVisible}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContentDark}>
+          <View style={[styles.modalContentDark, { backgroundColor: colors.background }]}>
             <TouchableOpacity
-              style={styles.modalCloseButtonDark}
+              style={[styles.modalCloseButtonDark, { backgroundColor: colors.surface }]}
               onPress={() => setPunchingModalVisible(false)}
             >
-              <Ionicons name="close" size={22} color="#fff" />
+              <Ionicons name="close" size={22} color={colors.text} />
             </TouchableOpacity>
             <AdminPunching />
           </View>

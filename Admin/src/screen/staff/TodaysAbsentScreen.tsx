@@ -13,6 +13,8 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { IMAGE_BASE_URL } from '../../../../api/api';
 import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
+import { useAuthStore } from '../../../../src/store/useAuthStore';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 
 
 interface TodaysAbsentScreenProps {
@@ -23,6 +25,9 @@ interface TodaysAbsentScreenProps {
 type TabType = 'Absent' | 'Present' | 'Heads';
 
 const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initialTab = 'Absent' }) => {
+  const { colors, isDark } = useTheme();
+  const { company } = useAuthStore();
+  const companyId = company?.id;
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
   // Fetch employees data
@@ -34,7 +39,8 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
     isFetchingNextPage,
     refetch
   } = useGetAllEmployeesWithInfiniteQuery({
-    limit: 50 // Fetch more at once for the status list
+    limit: 50, // Fetch more at once for the status list
+    companyId: companyId
   });
 
   const allEmployees = useMemo(() => {
@@ -64,8 +70,8 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
             style={styles.avatarImage}
           />
         ) : (
-          <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarInitials}>
+          <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? colors.surface : '#E2E8F0' }]}>
+            <Text style={[styles.avatarInitials, { color: colors.text }]}>
               {(item.firstname || '?').charAt(0).toUpperCase()}
             </Text>
           </View>
@@ -74,8 +80,10 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
 
       {/* Name & Role */}
       <View style={styles.infoContainer}>
-        <Text style={styles.nameText}>{item.firstname} {item.lastname}</Text>
-        <Text style={[styles.roleText, { color: '#94A3B8' }]}>
+        <Text style={[styles.nameText, { color: colors.text }]}>
+          {item.firstname || ''} {item.lastname || ''}
+        </Text>
+        <Text style={[styles.roleText, { color: colors.textSecondary }]}>
           {item.designation || 'Staff'}
         </Text>
       </View>
@@ -85,20 +93,20 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
         <View style={[
           styles.statusBadge,
           {
-            backgroundColor: item.attendances.length > 0 && ['PRESENT', 'LATE', 'HALF_DAY'].includes(item.attendances[0].status)
-              ? '#065F46'
-              : '#1E293B'
+            backgroundColor: item.attendances && item.attendances.length > 0 && ['PRESENT', 'LATE', 'HALF_DAY'].includes(item.attendances[0].status)
+              ? (isDark ? '#065F46' : '#D1FAE5')
+              : (isDark ? '#1E293B' : '#F1F5F9')
           }
         ]}>
           <Text style={[
             styles.statusText,
             {
-              color: item.attendances.length > 0 && ['PRESENT', 'LATE', 'HALF_DAY'].includes(item.attendances[0].status)
-                ? '#34D399'
-                : '#94A3B8'
+              color: item.attendances && item.attendances.length > 0 && ['PRESENT', 'LATE', 'HALF_DAY'].includes(item.attendances[0].status)
+                ? (isDark ? '#34D399' : '#059669')
+                : colors.textSecondary
             }
           ]}>
-            {item.attendances.length > 0 ? item.attendances[0].status : 'Not marked'}
+            {item.attendances && item.attendances.length > 0 ? item.attendances[0].status : 'Not marked'}
           </Text>
         </View>
       </View>
@@ -108,36 +116,36 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
   const tabs: TabType[] = ['Absent', 'Present', 'Heads'];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar translucent backgroundColor="transparent" barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
         <TouchableOpacity style={styles.backButton} onPress={onClose}>
-          <Ionicons name="arrow-back-outline" size={24} color="#fff" />
+          <Ionicons name="arrow-back-outline" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Staff Attendance</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Staff Attendance</Text>
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { borderBottomColor: colors.border, backgroundColor: colors.background }]}>
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab}
-            style={[styles.tabItem, activeTab === tab && styles.activeTabItem]}
+            style={[styles.tabItem]}
             onPress={() => setActiveTab(tab)}
           >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+            <Text style={[styles.tabText, { color: colors.textSecondary }, activeTab === tab && [styles.activeTabText, { color: colors.primary }]]}>
               {tab}
             </Text>
-            {activeTab === tab && <View style={styles.tabIndicator} />}
+            {activeTab === tab && <View style={[styles.tabIndicator, { backgroundColor: colors.primary }]} />}
           </TouchableOpacity>
         ))}
       </View>
 
       {isLoading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
@@ -145,7 +153,7 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
           renderItem={renderItem}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
           onRefresh={refetch}
           refreshing={isLoading}
           onEndReached={() => {
@@ -154,12 +162,12 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
           onEndReachedThreshold={0.5}
           ListFooterComponent={() => (
             isFetchingNextPage ? (
-              <ActivityIndicator size="small" color="#3B82F6" style={{ marginVertical: 20 }} />
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 20 }} />
             ) : <View style={{ height: 40 }} />
           )}
           ListEmptyComponent={() => (
             <View style={styles.centerContainer}>
-              <Text style={styles.emptyText}>No staff found in this category.</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No staff found in this category.</Text>
             </View>
           )}
         />
@@ -171,7 +179,6 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
   },
   header: {
     flexDirection: 'row',
@@ -179,7 +186,6 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#0F172A',
   },
   backButton: {
     marginRight: 15,
@@ -187,14 +193,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
   },
   tabContainer: {
     flexDirection: 'row',
     paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
-    backgroundColor: '#0F172A',
   },
   tabItem: {
     flex: 1,
@@ -203,23 +206,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   activeTabItem: {
-    // backgroundColor: 'rgba(59, 130, 246, 0.1)',
   },
   tabIndicator: {
     position: 'absolute',
     bottom: 0,
     width: '40%',
     height: 3,
-    backgroundColor: '#3B82F6',
     borderRadius: 3,
   },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748B',
   },
   activeTabText: {
-    color: '#3B82F6',
   },
   listContent: {
     paddingHorizontal: 20,
@@ -242,14 +241,12 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#334155',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitials: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
   },
   infoContainer: {
     flex: 1,
@@ -258,7 +255,6 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff',
     marginBottom: 4,
   },
   roleText: {
@@ -280,7 +276,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: '#1E293B',
     marginLeft: 65,
   },
   centerContainer: {
@@ -290,7 +285,6 @@ const styles = StyleSheet.create({
     paddingTop: 100,
   },
   emptyText: {
-    color: '#94A3B8',
     fontSize: 14,
   },
 });

@@ -7,6 +7,7 @@ import {
   NativeSyntheticEvent,
   RefreshControl,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,10 +17,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '../theme/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 const PayrollConfiguration = ({ navigation }: any) => {
+  const { colors, isDark } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'Benefits' | 'Deductions'>('Benefits');
   
@@ -70,19 +73,23 @@ const PayrollConfiguration = ({ navigation }: any) => {
         >
           <View style={styles.emptyStateContainer}>
             {/* Attractive Circular Icon Background */}
-            <View style={[styles.iconCircle, isBenefit ? styles.iconBgBlue : styles.iconBgOrange]}>
+            <View style={[
+              styles.iconCircle, 
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              isBenefit ? { shadowColor: colors.primary } : { shadowColor: '#D97706' }
+            ]}>
               <Icon 
                 // Using different icons for better context
                 name={isBenefit ? "hand-holding-usd" : "file-invoice-dollar"} 
                 size={50} 
-                color={isBenefit ? "#335C8D" : "#D97706"} 
+                color={isBenefit ? colors.primary : "#D97706"} 
               />
             </View>
             
-            <Text style={styles.emptyTitle}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
               {isBenefit ? 'No Benefits Added' : 'No Deductions Added'}
             </Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
               {isBenefit 
                 ? 'Add employee benefits like allowances, bonuses, and other perks to manage salary structure.'
                 : 'Add standard deductions like taxes, insurance, and provident funds.'}
@@ -94,34 +101,43 @@ const PayrollConfiguration = ({ navigation }: any) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.surface} />
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
         <TouchableOpacity 
-          style={styles.backButton} 
+          style={[styles.backButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]} 
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color="#FFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Payroll Configuration</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Payroll Configuration</Text>
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { backgroundColor: colors.surface }]}>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'Benefits' && styles.activeTab]}
           onPress={() => handleTabPress('Benefits')}
         >
-          <Text style={[styles.tabText, activeTab === 'Benefits' && styles.activeTabText]}>Benefits</Text>
-          {activeTab === 'Benefits' && <View style={styles.activeLine} />}
+          <Text style={[
+            styles.tabText, 
+            { color: colors.textSecondary },
+            activeTab === 'Benefits' && [styles.activeTabText, { color: colors.primary }]
+          ]}>Benefits</Text>
+          {activeTab === 'Benefits' && <View style={[styles.activeLine, { backgroundColor: colors.primary }]} />}
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'Deductions' && styles.activeTab]}
           onPress={() => handleTabPress('Deductions')}
         >
-          <Text style={[styles.tabText, activeTab === 'Deductions' && styles.activeTabText]}>Deductions</Text>
-          {activeTab === 'Deductions' && <View style={styles.activeLine} />}
+          <Text style={[
+            styles.tabText, 
+            { color: colors.textSecondary },
+            activeTab === 'Deductions' && [styles.activeTabText, { color: colors.primary }]
+          ]}>Deductions</Text>
+          {activeTab === 'Deductions' && <View style={[styles.activeLine, { backgroundColor: colors.primary }]} />}
         </TouchableOpacity>
       </View>
 
@@ -136,16 +152,20 @@ const PayrollConfiguration = ({ navigation }: any) => {
         contentContainerStyle={{ width: width * 2 }} // Ensure width fits 2 screens
       >
         {/* Screen 1: Benefits */}
-        {renderEmptyState('Benefits')}
+        <View style={[styles.pageContainer, { backgroundColor: colors.background }]}>
+          {renderEmptyState('Benefits')}
+        </View>
 
         {/* Screen 2: Deductions */}
-        {renderEmptyState('Deductions')}
+        <View style={[styles.pageContainer, { backgroundColor: colors.background }]}>
+          {renderEmptyState('Deductions')}
+        </View>
       </ScrollView>
 
       {/* Footer Button - Dynamic Text */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
         <TouchableOpacity 
-          style={styles.addButton}
+          style={[styles.addButton, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
           onPress={() => navigation.navigate('AddPayrollHead', { type: activeTab })}
         >
           <Icon name="plus" size={16} color="#FFF" />
@@ -161,10 +181,8 @@ const PayrollConfiguration = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A2540',
   },
   header: {
-    backgroundColor: '#0A2540',
     paddingVertical: 18,
     paddingHorizontal: 20,
     flexDirection: 'row',
@@ -175,7 +193,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -188,7 +205,6 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#0A2540',
     paddingBottom: 5,
   },
   tab: {
@@ -202,12 +218,10 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 15,
-    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '600',
     letterSpacing: 0.5,
   },
   activeTabText: {
-    color: '#FFFFFF',
     fontWeight: '800',
   },
   activeLine: {
@@ -215,13 +229,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 40,
     height: 4,
-    backgroundColor: '#FF9500',
     borderRadius: 2,
   },
   pageContainer: {
     width: width,
     flex: 1,
-    backgroundColor: '#F4F7FA',
     overflow: 'hidden',
   },
   scrollViewContent: {
@@ -241,12 +253,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 25,
-    backgroundColor: '#FFFFFF',
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 15,
     elevation: 8,
+    borderWidth: 1.5,
   },
   iconBgBlue: {
     borderWidth: 1,
@@ -259,31 +270,25 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#0F172A',
     marginBottom: 12,
     textAlign: 'center',
   },
   emptySubtitle: {
     textAlign: 'center',
-    color: '#64748B',
     fontSize: 15,
     lineHeight: 24,
     fontWeight: '400',
   },
   footer: {
     padding: 20,
-    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
   },
   addButton: {
-    backgroundColor: '#0A2540',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
     borderRadius: 12,
-    shadowColor: "#0A2540",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
     shadowRadius: 15,

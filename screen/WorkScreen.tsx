@@ -35,6 +35,7 @@ import { Decision } from '../api/hook/type/decision';
 import { Task } from '../api/hook/type/task';
 import { useGetAllEmployees } from '../src/employee/hook/useEmployee';
 import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
+import { useTheme } from '../src/theme/ThemeContext';
 
 const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -51,6 +52,7 @@ const LIGHT_GRAY = '#B0B3B8';
 const LIGHT_BLACK = '#060505ff';
 
 const WorkScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<'Tasks' | 'Decisions' | 'Clients'>('Tasks');
   const scrollViewRef = useRef<ScrollView>(null);
@@ -153,17 +155,17 @@ const WorkScreen: React.FC = () => {
   };
 
   const renderTaskItem = ({ item }: { item: Task }) => (
-    <View style={styles.taskCard}>
+    <View style={[styles.taskCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={[styles.priorityAccent, { backgroundColor: getPriorityColor(item.priority || '') }]} />
       <View style={styles.taskCardContent}>
         <View style={styles.taskHeader}>
-          <Text style={styles.taskTitle}>{item.title}</Text>
+          <Text style={[styles.taskTitle, { color: colors.text }]}>{item.title}</Text>
           <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(item.priority || '') + '15' }]}>
             <Text style={[styles.priorityText, { color: getPriorityColor(item.priority || '') }]}>{item.priority}</Text>
           </View>
         </View>
 
-        {item.description ? <Text style={styles.taskDescription} numberOfLines={2}>{item.description}</Text> : null}
+        {item.description ? <Text style={[styles.taskDescription, { color: colors.textSecondary }]} numberOfLines={2}>{item.description}</Text> : null}
 
         <View style={styles.taskFooter}>
           <View style={styles.dueDateRow}>
@@ -226,12 +228,12 @@ const WorkScreen: React.FC = () => {
   };
 
   const renderDecisionItem = ({ item }: { item: Decision }) => (
-    <View style={styles.taskCard}>
+    <View style={[styles.taskCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={[styles.priorityAccent, { backgroundColor: getStatusColor(item.status) }]} />
       <View style={styles.taskCardContent}>
         <View style={styles.taskHeader}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.taskTitle}>{item.title}</Text>
+            <Text style={[styles.taskTitle, { color: colors.text }]}>{item.title}</Text>
             <View style={[styles.priorityBadge, { backgroundColor: getStatusColor(item.status) + '15', alignSelf: 'flex-start', marginTop: 4 }]}>
               <Text style={[styles.priorityText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
             </View>
@@ -241,13 +243,13 @@ const WorkScreen: React.FC = () => {
               setSelectedDecisionId(item.id);
               setDetailsModalVisible(true);
             }}
-            style={styles.actionIconButton}
+            style={[styles.actionIconButton, { backgroundColor: colors.background }]}
           >
-            <Eye size={18} color={DARK_BLUE} strokeWidth={2.5} />
+            <Eye size={18} color={colors.primary} strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
 
-        {item.description ? <Text style={styles.taskDescription} numberOfLines={2}>{item.description}</Text> : null}
+        {item.description ? <Text style={[styles.taskDescription, { color: colors.textSecondary }]} numberOfLines={2}>{item.description}</Text> : null}
 
         <View style={styles.taskFooter}>
           <View style={styles.dueDateRow}>
@@ -275,16 +277,16 @@ const WorkScreen: React.FC = () => {
   );
 
   const renderPlaceholderContent = (title: string, isError: boolean = false) => (
-    <View style={[styles.contentPage, { width: width }]}>
+    <View style={[styles.contentPage, { width: width, backgroundColor: colors.background }]}>
       {isError ? (
         <ServerOff size={60} color={ORANGE} />
       ) : (
         <Calendar size={60} color="#CBD5E1" />
       )}
-      <Text style={[styles.contentTextGray, { fontWeight: '700', fontSize: 18, color: '#0F172A', marginTop: 20 }]}>
+      <Text style={[styles.contentTextGray, { fontWeight: '700', fontSize: 18, color: colors.text, marginTop: 20 }]}>
         {isError ? "Connection Problem" : `${title} Not Available`}
       </Text>
-      <Text style={styles.contentTextGray}>
+      <Text style={[styles.contentTextGray, { color: colors.textSecondary }]}>
         {isError 
           ? "We could not connect to the server. Please check your internet or try again later." 
           : `Your firm has not enabled ${title} Management. Please contact your administrator.`}
@@ -298,31 +300,31 @@ const WorkScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.containerDark}>
-      <StatusBar barStyle="dark-content" backgroundColor={WHITE} />
+    <SafeAreaView style={[styles.containerDark, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
       {/* Header */}
-      <View style={styles.headerDark}>
+      <View style={[styles.headerDark, { backgroundColor: colors.background }]}>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.titleWhite}>Work Dashboard</Text>
+          <Text style={[styles.titleWhite, { color: colors.text }]}>Work Dashboard</Text>
           <Text style={styles.orangeDot}>•</Text>
         </View>
         <TouchableOpacity 
           onPress={() => setIsFilterVisible(!isFilterVisible)}
-          style={[styles.filterToggle, isFilterVisible && styles.filterToggleActive]}
+          style={[styles.filterToggle, isFilterVisible && [styles.filterToggleActive, { backgroundColor: colors.primary }], { backgroundColor: isDark ? colors.surface : '#F8FAFC' }]}
         >
-          <Filter size={20} color={isFilterVisible ? WHITE : DARK_BLUE} strokeWidth={2.5} />
+          <Filter size={20} color={isFilterVisible ? WHITE : colors.primary} strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 
       {isFilterVisible && (
-        <View style={styles.filterBar}>
+        <View style={[styles.filterBar, { backgroundColor: colors.background }]}>
           <TouchableOpacity 
             onPress={() => setIsMonthModalVisible(true)}
-            style={styles.datePickerBtn}
+            style={[styles.datePickerBtn, { backgroundColor: isDark ? colors.surface : '#F8FAFC' }]}
           >
-            <Calendar size={16} color={DARK_BLUE} />
-            <Text style={styles.datePickerBtnText}>
+            <Calendar size={16} color={colors.primary} />
+            <Text style={[styles.datePickerBtnText, { color: colors.text }]}>
               {filterState.startDate ? `${months[selectedMonth]} ${selectedYear}` : 'Select Month'}
             </Text>
           </TouchableOpacity>
@@ -330,15 +332,15 @@ const WorkScreen: React.FC = () => {
             onPress={() => {
               setFilterState({ startDate: '', endDate: '' });
             }}
-            style={styles.clearBtn}
+            style={[styles.clearBtn, { backgroundColor: isDark ? colors.surface : '#F1F5F9' }]}
           >
-            <Text style={styles.clearBtnText}>Clear</Text>
+            <Text style={[styles.clearBtnText, { color: colors.primary }]}>Clear</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* Tabs */}
-      <View style={styles.tabContainerDark}>
+      <View style={[styles.tabContainerDark, { backgroundColor: colors.background, borderBottomColor: isDark ? colors.border : '#F1F5F9' }]}>
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab}
@@ -349,12 +351,13 @@ const WorkScreen: React.FC = () => {
             <Text
               style={[
                 styles.tabWhite,
-                activeTab === tab && styles.activeTabWhite,
+                { color: isDark ? colors.textSecondary : '#000000' },
+                activeTab === tab && [styles.activeTabWhite, { color: colors.text }],
               ]}
             >
               {tab}
             </Text>
-            {activeTab === tab && <View style={styles.activeLine} />}
+            {activeTab === tab && <View style={[styles.activeLine, { backgroundColor: colors.primary }]} />}
           </TouchableOpacity>
         ))}
       </View>
@@ -366,10 +369,10 @@ const WorkScreen: React.FC = () => {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleScroll}
-        style={styles.contentContainer}
+        style={[styles.contentContainer, { backgroundColor: colors.background }]}
       >
         {/* Content for Tasks */}
-        <View style={{ width: width, flex: 1 }}>
+        <View style={{ width: width, flex: 1, backgroundColor: colors.background }}>
           {isLoadingTasks ? (
             <ActivityIndicator size="large" color={ORANGE} style={{ marginTop: 50 }} />
           ) : (
@@ -387,7 +390,7 @@ const WorkScreen: React.FC = () => {
         </View>
 
         {/* Content for Decisions */}
-        <View style={{ width: width, flex: 1 }}>
+        <View style={{ width: width, flex: 1, backgroundColor: colors.background }}>
           {isLoadingDecisions ? (
             <ActivityIndicator size="large" color={ORANGE} style={{ marginTop: 50 }} />
           ) : (
@@ -422,32 +425,32 @@ const WorkScreen: React.FC = () => {
       {/* Create Decision Modal */}
       <Modal visible={isCreateModalVisible} animationType="slide" transparent={true} onRequestClose={() => setCreateModalVisible(false)}>
         <View style={styles.monthModalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Create New Decision</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Create New Decision</Text>
               <TouchableOpacity onPress={() => setCreateModalVisible(false)}>
-                <XCircle size={28} color="#CBD5E1" strokeWidth={2} />
+                <XCircle size={28} color={isDark ? colors.border : "#CBD5E1"} strokeWidth={2} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.formGroup}>
-                <Text style={styles.pickerLabel}>Decision Title</Text>
+                <Text style={[styles.pickerLabel, { color: colors.text }]}>Decision Title</Text>
                 <TextInput 
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: isDark ? colors.background : '#F8FAFC', color: colors.text, borderColor: colors.border }]}
                   placeholder="Enter title..."
-                  placeholderTextColor={LIGHT_GRAY}
+                  placeholderTextColor={colors.textSecondary}
                   value={createDecisionData.title}
                   onChangeText={(text) => setCreateDecisionData({ ...createDecisionData, title: text })}
                 />
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.pickerLabel}>Description</Text>
+                <Text style={[styles.pickerLabel, { color: colors.text }]}>Description</Text>
                 <TextInput 
-                  style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                  style={[styles.input, { height: 100, textAlignVertical: 'top', backgroundColor: isDark ? colors.background : '#F8FAFC', color: colors.text, borderColor: colors.border }]}
                   placeholder="Enter description..."
-                  placeholderTextColor={LIGHT_GRAY}
+                  placeholderTextColor={colors.textSecondary}
                   multiline
                   value={createDecisionData.description}
                   onChangeText={(text) => setCreateDecisionData({ ...createDecisionData, description: text })}
@@ -455,20 +458,22 @@ const WorkScreen: React.FC = () => {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.pickerLabel}>Select Participants</Text>
+                <Text style={[styles.pickerLabel, { color: colors.text }]}>Select Participants</Text>
                 <View style={styles.participantList}>
                   {employees.map((emp) => (
                     <TouchableOpacity 
                       key={emp.id} 
                       style={[
                         styles.participantChip, 
-                        createDecisionData.participantIds.includes(emp.id) && styles.participantChipActive
+                        { backgroundColor: isDark ? colors.background : '#F1F5F9' },
+                        createDecisionData.participantIds.includes(emp.id) && [styles.participantChipActive, { backgroundColor: colors.primary }]
                       ]}
                       onPress={() => toggleParticipant(emp.id)}
                     >
                       <Text style={[
                         styles.participantChipText,
-                        createDecisionData.participantIds.includes(emp.id) && styles.participantChipTextActive
+                        { color: colors.text },
+                        createDecisionData.participantIds.includes(emp.id) && [styles.participantChipTextActive, { color: WHITE }]
                       ]}>
                         {emp.firstname} {emp.lastname}
                       </Text>
@@ -496,8 +501,8 @@ const WorkScreen: React.FC = () => {
       {/* Month Selection Modal */}
       <Modal visible={isMonthModalVisible} transparent animationType="fade">
         <View style={styles.monthModalOverlay}>
-          <View style={styles.monthPickerContainer}>
-            <Text style={styles.monthPickerHeader}>Select Month & Year</Text>
+          <View style={[styles.monthPickerContainer, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.monthPickerHeader, { color: colors.text }]}>Select Month & Year</Text>
             
             <View style={styles.pickerSection}>
               <Text style={styles.pickerLabel}>Month</Text>
@@ -554,51 +559,51 @@ const WorkScreen: React.FC = () => {
       {/* Decision Details Modal */}
       <Modal visible={isDetailsModalVisible} animationType="fade" transparent={true} onRequestClose={() => setDetailsModalVisible(false)}>
         <View style={styles.monthModalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalHeader, { borderBottomWidth: 0 }]}>
               <View style={{ flex: 1 }}>
                 {isLoadingDecisionDetails ? (
                   <ActivityIndicator size="small" color={ORANGE} />
                 ) : (
                   <>
-                    <Text style={styles.modalTitle}>{displayDecision?.title || 'Decision Details'}</Text>
-                    <Text style={styles.creatorSubText}>
+                    <Text style={[styles.modalTitle, { color: colors.text }]}>{displayDecision?.title || 'Decision Details'}</Text>
+                    <Text style={[styles.creatorSubText, { color: colors.textSecondary }]}>
                       Created by: {displayDecision?.creator ? `${displayDecision?.creator?.firstname} ${displayDecision?.creator?.lastname}` : 'Admin'}
                     </Text>
                   </>
                 )}
               </View>
               <TouchableOpacity onPress={() => { setDetailsModalVisible(false); setSelectedDecisionId(null); }}>
-                <XCircle size={28} color="#CBD5E1" strokeWidth={2} />
+                <XCircle size={28} color={isDark ? colors.border : "#CBD5E1"} strokeWidth={2} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 500 }}>
               {!displayDecision && isLoadingDecisionDetails ? (
                 <View style={{ padding: 40, alignItems: 'center' }}>
-                  <ActivityIndicator size="large" color={ORANGE} />
-                  <Text style={{ marginTop: 10, color: LIGHT_GRAY }}>Fetching details...</Text>
+                  <ActivityIndicator size="large" color={colors.primary} />
+                  <Text style={{ marginTop: 10, color: colors.textSecondary }}>Fetching details...</Text>
                 </View>
               ) : !displayDecision ? (
                 <View style={{ padding: 40, alignItems: 'center' }}>
-                  <Text style={{ color: LIGHT_GRAY }}>Decision not found.</Text>
+                  <Text style={{ color: colors.textSecondary }}>Decision not found.</Text>
                 </View>
               ) : (
                 <>
-                  <View style={styles.detailsSection}>
-                    <Text style={styles.pickerLabel}>Description</Text>
-                    <Text style={styles.descriptionText}>{displayDecision.description || 'No description provided.'}</Text>
+                  <View style={[styles.detailsSection, { borderBottomColor: colors.border }]}>
+                    <Text style={[styles.pickerLabel, { color: colors.text }]}>Description</Text>
+                    <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>{displayDecision.description || 'No description provided.'}</Text>
                   </View>
 
-                  <View style={styles.detailsSection}>
-                    <Text style={styles.pickerLabel}>Participants Status</Text>
-                    {displayDecision.participants?.map((p) => (
+                  <View style={[styles.detailsSection, { borderBottomColor: colors.border }]}>
+                    <Text style={[styles.pickerLabel, { color: colors.text }]}>Participants Status</Text>
+                    {displayDecision.participants?.map((p: any) => (
                       <View key={p.id} style={styles.participantRow}>
                         <View style={styles.participantInfo}>
-                          <Text style={styles.participantName}>
+                          <Text style={[styles.participantName, { color: colors.text }]}>
                             {p.employee?.firstname || 'Unknown'} {p.employee?.lastname || ''}
                           </Text>
-                          {p.comment ? <Text style={styles.participantComment}>"{p.comment}"</Text> : null}
+                          {p.comment ? <Text style={[styles.participantComment, { color: colors.textSecondary }]}>"{p.comment}"</Text> : null}
                         </View>
                         <View style={[styles.statusBadgeSmall, { backgroundColor: getStatusColor(p.status) }]}>
                           <Text style={styles.statusTextSmall}>{p.status}</Text>
@@ -606,17 +611,17 @@ const WorkScreen: React.FC = () => {
                       </View>
                     ))}
                     {!displayDecision.participants || displayDecision.participants.length === 0 ? (
-                      <Text style={[styles.descriptionText, { fontStyle: 'italic', opacity: 0.6 }]}>No participants listed.</Text>
+                      <Text style={[styles.descriptionText, { fontStyle: 'italic', opacity: 0.6, color: colors.textSecondary }]}>No participants listed.</Text>
                     ) : null}
                   </View>
 
                   <View style={[styles.detailsSection, { borderBottomWidth: 0, marginTop: 10 }]}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                      <Text style={styles.pickerLabel}>Your Action</Text>
-                      {displayDecision.participants?.find(p => p.employee?.id === employee?.id || p.employee?.id === employee?.userId) && (
-                        <View style={[styles.statusBadgeSmall, { backgroundColor: getStatusColor(displayDecision.participants.find(p => p.employee?.id === employee?.id || p.employee?.id === employee?.userId)?.status || 'PENDING') }]}>
+                      <Text style={[styles.pickerLabel, { color: colors.text }]}>Your Action</Text>
+                      {displayDecision.participants?.find((p: any) => p.employee?.id === employee?.id || p.employee?.id === employee?.userId) && (
+                        <View style={[styles.statusBadgeSmall, { backgroundColor: getStatusColor(displayDecision.participants.find((p: any) => p.employee?.id === employee?.id || p.employee?.id === employee?.userId)?.status || 'PENDING') }]}>
                           <Text style={styles.statusTextSmall}>
-                            {displayDecision.participants.find(p => p.employee?.id === employee?.id || p.employee?.id === employee?.userId)?.status}
+                            {displayDecision.participants.find((p: any) => p.employee?.id === employee?.id || p.employee?.id === employee?.userId)?.status}
                           </Text>
                         </View>
                       )}
@@ -625,7 +630,7 @@ const WorkScreen: React.FC = () => {
                     <View style={styles.modalActionRow}>
                       <TouchableOpacity 
                         style={[styles.actionBtn, { backgroundColor: '#10B981' }]}
-                        onPress={() => handleParticipantApproval(displayDecision.id, 'APPROVED')}
+                        onPress={() => displayDecision && handleParticipantApproval(displayDecision.id, 'APPROVED')}
                         disabled={participantApprovalMutation.isPending}
                       >
                         {participantApprovalMutation.isPending ? (
@@ -639,7 +644,7 @@ const WorkScreen: React.FC = () => {
                       </TouchableOpacity>
                       <TouchableOpacity 
                         style={[styles.actionBtn, { backgroundColor: '#EF4444' }]}
-                        onPress={() => handleParticipantApproval(displayDecision.id, 'REJECTED')}
+                        onPress={() => displayDecision && handleParticipantApproval(displayDecision.id, 'REJECTED')}
                         disabled={participantApprovalMutation.isPending}
                       >
                         {participantApprovalMutation.isPending ? (
@@ -666,7 +671,6 @@ const WorkScreen: React.FC = () => {
 const styles = StyleSheet.create({
   containerDark: {
     flex: 1,
-    backgroundColor: WHITE,
   },
   headerTitleContainer: {
     flexDirection: 'row',
@@ -678,13 +682,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: WHITE,
   },
   titleWhite: {
     fontSize: 25,
     fontWeight: '800',
     padding: 5,
-    color: '#000000',
   },
   orangeDot: {
     fontSize: 34,
@@ -696,9 +698,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: WHITE,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
   },
   tabWrapper: {
     alignItems: 'center',
@@ -706,23 +706,19 @@ const styles = StyleSheet.create({
   tabWhite: {
     fontSize: 17,
     fontWeight: '400',
-    color: '#000000',
   },
   activeTabWhite: {
-    color: '#000000',
     fontWeight: '600',
   },
   activeLine: {
     marginTop: 4,
     height: 3,
     width: 40,
-    backgroundColor: ORANGE,
     borderRadius: 2,
   },
   // New container style for the scroll view area
   contentContainer: {
     flex: 1,
-    backgroundColor: WHITE,
   },
   // Style for individual pages inside the scroll view
   contentPage: {
@@ -730,11 +726,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
-    backgroundColor: WHITE,
   },
   contentTextGray: {
     fontSize: 15,
-    color: LIGHT_BLACK,
     textAlign: 'center',
     lineHeight: 24,
     marginTop: 10,
@@ -744,7 +738,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   taskCard: {
-    backgroundColor: WHITE,
     borderRadius: 20,
     marginBottom: 16,
     elevation: 4,
@@ -755,28 +748,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
   },
   priorityAccent: { width: 6, height: '100%' },
   taskCardContent: { flex: 1, padding: 16 },
   taskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  taskTitle: { fontSize: 17, fontWeight: '800', color: '#0F172A', flex: 1, marginRight: 8 },
+  taskTitle: { fontSize: 17, fontWeight: '800', flex: 1, marginRight: 8 },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
   priorityText: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  taskDescription: { fontSize: 14, color: '#475569', marginBottom: 12, lineHeight: 20 },
-  taskFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+  taskDescription: { fontSize: 14, marginBottom: 12, lineHeight: 20 },
+  taskFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 10, borderTopWidth: 1 },
   dueDateRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  dueDateText: { fontSize: 12, color: '#64748B', fontWeight: '600' },
+  dueDateText: { fontSize: 12, fontWeight: '600' },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   statusText: { fontSize: 11, color: WHITE, fontWeight: '800', textTransform: 'uppercase' },
-  filterToggle: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
-  filterToggleActive: { backgroundColor: DARK_BLUE },
-  filterBar: { backgroundColor: WHITE, paddingHorizontal: 16, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  filterToggle: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  filterToggleActive: { },
+  filterBar: { paddingHorizontal: 16, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 8 },
   filterInputGroup: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 10, height: 40 },
   filterInput: { flex: 1, color: '#0F172A', fontSize: 12, fontWeight: '600', padding: 0 },
-  clearBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: '#F1F5F9' },
-  clearBtnText: { color: DARK_BLUE, fontSize: 12, fontWeight: '700' },
-  paginationContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: WHITE, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+  clearBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  clearBtnText: { fontSize: 12, fontWeight: '700' },
+  paginationContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderTopWidth: 1 },
   pageBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, backgroundColor: DARK_BLUE },
   pageBtnText: { color: WHITE, fontSize: 14, fontWeight: '700' },
   pageInfo: { fontSize: 14, fontWeight: '600', color: '#64748B' },
@@ -784,7 +776,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 40,
@@ -797,12 +788,11 @@ const styles = StyleSheet.create({
   },
   monthModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   monthPickerContainer: {
-    backgroundColor: WHITE,
     width: '90%',
     borderRadius: 20,
     padding: 24,
@@ -833,7 +823,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: '#F1F5F9',
   },
   yearGrid: {
     flexDirection: 'row',
@@ -844,7 +833,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: '#F1F5F9',
   },
   activeOption: {
     backgroundColor: DARK_BLUE,
@@ -883,7 +871,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -899,7 +886,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: WHITE,
     width: '90%',
     borderRadius: 24,
     padding: 24,
@@ -919,22 +905,18 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#0F172A',
     marginBottom: 4,
   },
   creatorSubText: {
     fontSize: 13,
-    color: '#64748B',
     fontWeight: '500',
   },
   detailsSection: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
   },
   descriptionText: {
     fontSize: 15,
-    color: '#334155',
     lineHeight: 22,
   },
   participantRow: {
@@ -949,11 +931,9 @@ const styles = StyleSheet.create({
   participantName: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1E293B',
   },
   participantComment: {
     fontSize: 12,
-    color: '#64748B',
     fontStyle: 'italic',
     marginTop: 2,
   },
@@ -1006,12 +986,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     borderRadius: 12,
     padding: 14,
-    color: '#0F172A',
     fontSize: 15,
     fontWeight: '500',
   },
@@ -1025,9 +1002,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: '#F1F5F9',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   participantChipActive: {
     backgroundColor: DARK_BLUE,

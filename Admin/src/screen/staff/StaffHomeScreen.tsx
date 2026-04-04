@@ -457,25 +457,27 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    FlatList,
-    Image,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useGetDailyAttendanceSummary } from '../../../../src/employee/hook/useAttendance';
 import { useDeleteCategory, useGetAllCategories } from '../../../../src/employee/hook/useCategory';
 import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
 import { Category } from '../../../../src/employee/type/category';
+import { useAuthStore } from '../../../../src/store/useAuthStore';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 import { showError, showSuccess } from '../../../../src/utils/meesage';
 import AddStaffScreen from './AddStaffScreen';
 import NewCategoryScreen from './NewCategoryScreen';
@@ -485,12 +487,15 @@ import TodaysAbsentScreen from './TodaysAbsentScreen';
 const { width } = Dimensions.get('window');
 
 // API Base URL for images
-const IMAGE_BASE_URL = "http://192.168.1.7:5000";
+const IMAGE_BASE_URL = "http://192.168.1.5:5000";
 
 
 /* ===================== SCREEN ===================== */
 
 const StaffHomeScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
+  const { company } = useAuthStore();
+  const companyId = company?.id;
   const navigation = useNavigation<any>();
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
@@ -556,8 +561,9 @@ const StaffHomeScreen: React.FC = () => {
     isFetchingNextPage,
     refetch
   } = useGetAllEmployeesWithInfiniteQuery({ 
-    limit: 10,
-    categoryId: selectedCategoryId 
+    limit: 100, // Increased limit to ensure all employees are seen if small count
+    categoryId: selectedCategoryId,
+    companyId: companyId
   });
 
   const employees = data?.pages?.flatMap(page => page.data.employees) || [];
@@ -567,24 +573,24 @@ const StaffHomeScreen: React.FC = () => {
     <>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greetingText}>Good morning.</Text>
-        <View style={styles.headerDot} />
+        <Text style={[styles.greetingText, { color: colors.text }]}>Good morning.</Text>
+        <View style={[styles.headerDot, { backgroundColor: colors.textSecondary }]} />
       </View>
 
       {/* Stats Card */}
-      <View style={styles.statsCard}>
+      <View style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.statsHeader}>
           <View>
-            <Text style={styles.statsTitle}>Attendance Statistics</Text>
-            <Text style={styles.statsSubtitle}>Based on {new Date().toLocaleDateString()}</Text>
+            <Text style={[styles.statsTitle, { color: colors.text }]}>Attendance Statistics</Text>
+            <Text style={[styles.statsSubtitle, { color: colors.textSecondary }]}>Based on {new Date().toLocaleDateString()}</Text>
           </View>
 
           <TouchableOpacity
-            style={styles.dateButton}
+            style={[styles.dateButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]}
             onPress={() => setCalendarVisible(true)}
           >
-            <Ionicons name="calendar-outline" size={18} color="#fff" />
-            <Text style={styles.dateButtonText}>Today</Text>
+            <Ionicons name="calendar-outline" size={18} color={colors.text} />
+            <Text style={[styles.dateButtonText, { color: colors.text }]}>Today</Text>
           </TouchableOpacity>
         </View>
 
@@ -624,13 +630,13 @@ const StaffHomeScreen: React.FC = () => {
 
       {/* Search */}
       <TouchableOpacity 
-        style={styles.searchContainer}
+        style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}
         onPress={() => setSearchStaffModalVisible(true)}
         activeOpacity={0.7}
       >
-        <Ionicons name="search-outline" size={22} color="#A0A0A0" />
-        <Text style={styles.searchPlaceholder}>Search</Text>
-        <Ionicons name="filter-outline" size={22} color="#A0A0A0" />
+        <Ionicons name="search-outline" size={22} color={colors.textSecondary} />
+        <Text style={[styles.searchPlaceholder, { color: colors.textSecondary }]}>Search</Text>
+        <Ionicons name="filter-outline" size={22} color={colors.textSecondary} />
       </TouchableOpacity>
 
       {/* Filter + Add */}
@@ -641,21 +647,21 @@ const StaffHomeScreen: React.FC = () => {
           contentContainerStyle={styles.filterScroll}
         >
           <TouchableOpacity 
-            style={selectedCategoryId === undefined ? styles.filterPillActive : styles.filterPillInactive}
+            style={selectedCategoryId === undefined ? [styles.filterPillActive, { backgroundColor: colors.text }] : [styles.filterPillInactive, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => setSelectedCategoryId(undefined)}
           >
-            <Text style={selectedCategoryId === undefined ? styles.filterPillTextActive : styles.filterPillTextInactive}>All</Text>
+            <Text style={selectedCategoryId === undefined ? [styles.filterPillTextActive, { color: colors.background }] : [styles.filterPillTextInactive, { color: colors.textSecondary }]}>All</Text>
           </TouchableOpacity>
 
           {categories.map((cat: Category) => (
             <TouchableOpacity 
               key={cat.id}
-              style={selectedCategoryId === cat.id ? styles.filterPillActive : styles.filterPillInactive}
+              style={selectedCategoryId === cat.id ? [styles.filterPillActive, { backgroundColor: colors.text }] : [styles.filterPillInactive, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={() => setSelectedCategoryId(cat.id)}
               onLongPress={() => handleLongPressCategory(cat)}
               delayLongPress={500}
             >
-              <Text style={selectedCategoryId === cat.id ? styles.filterPillTextActive : styles.filterPillTextInactive}>
+              <Text style={selectedCategoryId === cat.id ? [styles.filterPillTextActive, { color: colors.background }] : [styles.filterPillTextInactive, { color: colors.textSecondary }]}>
                 {cat.name}
               </Text>
             </TouchableOpacity>
@@ -672,16 +678,16 @@ const StaffHomeScreen: React.FC = () => {
 
       {/* Employees Header */}
       <View style={styles.listHeader}>
-        <Text style={styles.listTitle}>Employees</Text>
-        <Text style={styles.listSubtitle}>Current Company Staff</Text>
+        <Text style={[styles.listTitle, { color: colors.text }]}>Employees</Text>
+        <Text style={[styles.listSubtitle, { color: colors.textSecondary }]}>Current Company Staff</Text>
       </View>
     </>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-      <View style={styles.backgroundLayer} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar translucent backgroundColor="transparent" barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={[styles.backgroundLayer, { backgroundColor: colors.background }]} />
 
       <FlatList
         data={employees}
@@ -696,7 +702,7 @@ const StaffHomeScreen: React.FC = () => {
         onRefresh={refetch}
         renderItem={({ item: emp }) => (
           <TouchableOpacity 
-            style={styles.employeeCard}
+            style={[styles.employeeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => navigation.navigate('EmployeeDetailsScreen', { employeeId: emp.id })}
             activeOpacity={0.7}
           >
@@ -707,8 +713,8 @@ const StaffHomeScreen: React.FC = () => {
                   style={styles.avatarImage} 
                 />
               ) : (
-                <View style={[styles.avatarImage, styles.avatarPlaceholder]}>
-                  <Text style={styles.avatarText}>
+                <View style={[styles.avatarImage, styles.avatarPlaceholder, { backgroundColor: isDark ? colors.background : '#E2E8F0' }]}>
+                  <Text style={[styles.avatarText, { color: colors.text }]}>
                     {(emp.firstname || '?').charAt(0).toUpperCase()}
                   </Text>
                 </View>
@@ -716,27 +722,29 @@ const StaffHomeScreen: React.FC = () => {
             </View>
 
             <View style={styles.employeeInfo}>
-              <Text style={styles.employeeName}>{emp.firstname} {emp.lastname}</Text>
-              <Text style={styles.employeeRole}>{emp.designation || 'Staff'}</Text>
+              <Text style={[styles.employeeName, { color: colors.text }]}>
+                {emp.firstname || ''} {emp.lastname || ''}
+              </Text>
+              <Text style={[styles.employeeRole, { color: colors.textSecondary }]}>{emp.designation || 'Staff'}</Text>
             </View>
 
             <View style={styles.statusContainer}>
-              {emp.attendances.length > 0 ? (
+              {emp.attendances && emp.attendances.length > 0 ? (
                 <>
                   <Text style={styles.statusInText}>{emp.attendances[0].status}</Text>
-                  <Text style={styles.timeText}>
+                  <Text style={[styles.timeText, { color: colors.text }]}>
                     {emp.attendances[0].checkIn ? new Date(emp.attendances[0].checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                   </Text>
                 </>
               ) : (
-                <Text style={styles.statusNotMarked}>Not marked</Text>
+                <Text style={[styles.statusNotMarked, { color: colors.textSecondary }]}>Not marked</Text>
               )}
             </View>
           </TouchableOpacity>
         )}
         ListFooterComponent={() => (
           isFetchingNextPage ? (
-            <ActivityIndicator size="small" color="#3B82F6" style={{ marginVertical: 20 }} />
+            <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 20 }} />
           ) : null
         )}
         ListEmptyComponent={() => (
@@ -749,18 +757,21 @@ const StaffHomeScreen: React.FC = () => {
       />
 
       {/* FAB */}
-      <TouchableOpacity style={styles.fab} onPress={() => setAddStaffModalVisible(true)}>
+      <TouchableOpacity 
+        style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.primary }]} 
+        onPress={() => setAddStaffModalVisible(true)}
+      >
         <Ionicons name="add-outline" size={28} color="#fff" />
       </TouchableOpacity>
 
       {/* Calendar Modal */}
       <Modal transparent visible={calendarVisible} animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.calendarContainer}>
+          <View style={[styles.calendarContainer, { backgroundColor: colors.surface }]}>
             <View style={{flexDirection: 'row', justifyContent:'space-between', alignItems:'center', marginBottom: 15}}>
-                <Text style={styles.calendarTitle}>Select Date</Text>
+                <Text style={[styles.calendarTitle, { color: colors.text }]}>Select Date</Text>
                 <TouchableOpacity onPress={() => setCalendarVisible(false)}>
-                    <Ionicons name="close" size={24} color="#333" />
+                    <Ionicons name="close" size={24} color={colors.text} />
                 </TouchableOpacity>
             </View>
             <CustomCalendar onSelect={(date) => {
@@ -774,7 +785,7 @@ const StaffHomeScreen: React.FC = () => {
       {/* Category Modal */}
       <Modal transparent visible={categoryModalVisible}>
         <View style={styles.categoryModalOverlay}>
-          <View style={styles.categoryModalContainer}>
+          <View style={[styles.categoryModalContainer, { backgroundColor: colors.surface }]}>
             <NewCategoryScreen onClose={() => {
               setCategoryModalVisible(false);
               refetch();
@@ -791,7 +802,7 @@ const StaffHomeScreen: React.FC = () => {
         onRequestClose={() => setAddStaffModalVisible(false)}
       >
         <View style={styles.addStaffModalOverlay}>
-          <View style={styles.addStaffModalContainer}>
+          <View style={[styles.addStaffModalContainer, { backgroundColor: colors.surface }]}>
             <AddStaffScreen onClose={() => {
               setAddStaffModalVisible(false);
               refetch();
@@ -812,8 +823,8 @@ const StaffHomeScreen: React.FC = () => {
           activeOpacity={1} 
           onPress={() => setOptionsModalVisible(false)}
         >
-          <View style={styles.optionsContainer}>
-            <Text style={styles.optionsTitle}>{selectedCategoryForAction?.name}</Text>
+          <View style={[styles.optionsContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.optionsTitle, { color: colors.text, borderBottomColor: colors.border }]}>{selectedCategoryForAction?.name}</Text>
             
             <TouchableOpacity 
               style={styles.optionItem} 
@@ -822,16 +833,16 @@ const StaffHomeScreen: React.FC = () => {
                 setEditModalVisible(true);
               }}
             >
-              <Ionicons name="create-outline" size={24} color="#fff" />
-              <Text style={styles.optionText}>Edit Category</Text>
+              <Ionicons name="create-outline" size={24} color={colors.text} />
+              <Text style={[styles.optionText, { color: colors.text }]}>Edit Category</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={[styles.optionItem, styles.optionItemDestructive]} 
               onPress={handleDeleteCategory}
             >
-              <Ionicons name="trash-outline" size={24} color="#F87171" />
-              <Text style={[styles.optionText, { color: '#F87171' }]}>Delete Category</Text>
+              <Ionicons name="trash-outline" size={24} color={colors.error} />
+              <Text style={[styles.optionText, { color: colors.error }]}>Delete Category</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -890,6 +901,7 @@ const StaffHomeScreen: React.FC = () => {
 /* ===================== CUSTOM CALENDAR ===================== */
 
 const CustomCalendar = ({ onSelect }: { onSelect: (date: string) => void }) => {
+  const { colors, isDark } = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
@@ -919,28 +931,28 @@ const CustomCalendar = ({ onSelect }: { onSelect: (date: string) => void }) => {
     days.push(
       <TouchableOpacity
         key={i}
-        style={[styles.calendarDay, isToday && styles.calendarDayToday]}
+        style={[styles.calendarDay, isToday && [styles.calendarDayToday, { backgroundColor: colors.primary }]]}
         onPress={() => onSelect(`${year}-${month + 1}-${i}`)}
       >
-        <Text style={[styles.calendarDayText, isToday && styles.calendarDayTextToday]}>{i}</Text>
+        <Text style={[styles.calendarDayText, { color: colors.textSecondary }, isToday && styles.calendarDayTextToday]}>{i}</Text>
       </TouchableOpacity>
     );
   }
 
   return (
-    <View style={styles.customCalendarContainer}>
+    <View style={[styles.customCalendarContainer, { backgroundColor: colors.surface }]}>
       <View style={styles.calendarHeader}>
         <TouchableOpacity onPress={handlePrevMonth}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.calendarMonthYear}>{monthNames[month]} {year}</Text>
+        <Text style={[styles.calendarMonthYear, { color: colors.text }]}>{monthNames[month]} {year}</Text>
         <TouchableOpacity onPress={handleNextMonth}>
-          <Ionicons name="chevron-forward" size={24} color="#333" />
+          <Ionicons name="chevron-forward" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
       <View style={styles.calendarWeekRow}>
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-          <Text key={index} style={styles.calendarWeekDayText}>{day}</Text>
+          <Text key={index} style={[styles.calendarWeekDayText, { color: colors.textSecondary }]}>{day}</Text>
         ))}
       </View>
       <View style={styles.calendarDaysGrid}>
@@ -959,120 +971,118 @@ type StatItemProps = {
   onPress?: () => void;
 };
 
-const StatItem: React.FC<StatItemProps> = ({ label, value, color, onPress }) => (
-  <TouchableOpacity style={styles.statItem} onPress={onPress} activeOpacity={0.7}>
-    <View style={[styles.statBar, { backgroundColor: color }]} />
-    <View>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label.replace('Staff ', '')}</Text>
-      {label.includes('Staff') && (
-        <Text style={styles.statLabelSmall}>Staff</Text>
-      )}
-    </View>
-  </TouchableOpacity>
-);
+const StatItem: React.FC<StatItemProps> = ({ label, value, color, onPress }) => {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity style={styles.statItem} onPress={onPress} activeOpacity={0.7}>
+      <View style={[styles.statBar, { backgroundColor: color }]} />
+      <View>
+        <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
+        <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label.replace('Staff ', '')}</Text>
+        {label.includes('Staff') && (
+          <Text style={[styles.statLabelSmall, { color: colors.textSecondary }]}>Staff</Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 /* ===================== STYLES ===================== */
 
 const styles = StyleSheet.create({
   // UPDATED: Modern Dark Blue/Black Theme (More attractive & Standard)
-  container: { flex: 1, backgroundColor: '#0F172A' }, // Slate 900
+  container: { flex: 1 }, 
   
   // UPDATED: Smoother overlay for depth
-  backgroundLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: '#1E293B', opacity: 0.5 },
+  backgroundLayer: { ...StyleSheet.absoluteFillObject, opacity: 0.5 },
 
   scrollContent: { paddingHorizontal: 20, paddingTop: 50, paddingBottom: 100 },
 
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  greetingText: { fontSize: 28, fontWeight: '700', color: '#fff', letterSpacing: 0.5 },
+  greetingText: { fontSize: 28, fontWeight: '700', letterSpacing: 0.5 },
   headerDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#EF4444', marginTop: 10 },
 
   // UPDATED: Cleaner Stats Card with subtle gradient feel
   statsCard: { 
-    backgroundColor: '#1E293B', // Slate 800
     borderRadius: 24, 
     padding: 20, 
     marginBottom: 25,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 4.65,
     elevation: 8,
+    borderWidth: 1,
   },
   statsHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
-  statsTitle: { fontSize: 18, fontWeight: '700', color: '#fff' },
-  statsSubtitle: { fontSize: 13, color: '#94A3B8', marginTop: 4 },
+  statsTitle: { fontSize: 18, fontWeight: '700' },
+  statsSubtitle: { fontSize: 13, marginTop: 4 },
 
   dateButton: { 
     flexDirection: 'row', 
     gap: 6, 
-    backgroundColor: 'rgba(255,255,255,0.1)', 
     paddingHorizontal: 12, 
     paddingVertical: 8, 
     borderRadius: 12,
     alignItems: 'center'
   },
-  dateButtonText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  dateButtonText: { fontSize: 13, fontWeight: '600' },
 
   statsGrid: { gap: 24 },
   statRow: { flexDirection: 'row', justifyContent: 'space-between' },
   statItem: { flexDirection: 'row', alignItems: 'center', width: '30%' },
   statBar: { width: 4, height: 38, borderRadius: 4, marginRight: 10 },
-  statValue: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
-  statLabel: { fontSize: 11, color: '#94A3B8', fontWeight: '500' },
-  statLabelSmall: { fontSize: 10, color: '#64748B' },
+  statValue: { fontSize: 20, fontWeight: 'bold' },
+  statLabel: { fontSize: 11, fontWeight: '500' },
+  statLabelSmall: { fontSize: 10 },
 
   // UPDATED: Modern Search Bar
   searchContainer: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#1E293B', // Slate 800
     borderRadius: 18, 
     height: 54, 
     paddingHorizontal: 16, 
     marginBottom: 25,
     borderWidth: 1,
-    borderColor: '#334155'
   },
-  searchPlaceholder: { flex: 1, color: '#94A3B8', fontSize: 16, marginLeft: 12 },
+  searchPlaceholder: { flex: 1, fontSize: 16, marginLeft: 12 },
 
   actionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, justifyContent: 'space-between' },
-  filterPillActive: { backgroundColor: '#fff', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 30, marginRight: 8 },
-  filterPillInactive: { backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30, marginRight: 8 },
-  filterPillTextActive: { fontWeight: '700', color: '#0F172A' },
-  filterPillTextInactive: { fontWeight: '600', color: '#94A3B8' },
+  filterPillActive: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: 30, marginRight: 8 },
+  filterPillInactive: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30, marginRight: 8, borderWidth: 1 },
+  filterPillTextActive: { fontWeight: '700' },
+  filterPillTextInactive: { fontWeight: '600' },
   filterScroll: { paddingRight: 10, alignItems: 'center' },
   addButtonSmall: { padding: 5, marginLeft: 5 },
 
   listHeader: { marginBottom: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  listTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
-  listSubtitle: { fontSize: 13, color: '#94A3B8' },
+  listTitle: { fontSize: 20, fontWeight: 'bold' },
+  listSubtitle: { fontSize: 13 },
 
   // UPDATED: Employee Card Design
   employeeCard: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     marginBottom: 16, 
-    backgroundColor: '#1E293B', 
     padding: 12, 
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#334155' // Subtle border
   },
   avatarContainer: { marginRight: 16 },
   avatarImage: { width: 50, height: 50, borderRadius: 25 },
-  avatarPlaceholder: { backgroundColor: '#475569', justifyContent: 'center', alignItems: 'center' },
-  avatarText: { color: '#fff', fontWeight: 'bold', fontSize: 20 },
+  avatarPlaceholder: { justifyContent: 'center', alignItems: 'center' },
+  avatarText: { fontWeight: 'bold', fontSize: 20 },
 
   employeeInfo: { flex: 1 },
-  employeeName: { color: '#fff', fontWeight: '600', fontSize: 16, marginBottom: 2 },
-  employeeRole: { color: '#94A3B8', fontSize: 13 },
+  employeeName: { fontWeight: '600', fontSize: 16, marginBottom: 2 },
+  employeeRole: { fontSize: 13 },
 
   statusContainer: { alignItems: 'flex-end' },
   statusInText: { color: '#4ADE80', fontWeight: '700', fontSize: 13 },
-  timeText: { color: '#E2E8F0', fontSize: 13, marginTop: 2 },
+  timeText: { fontSize: 13, marginTop: 2 },
   lateFlag: { color: '#F87171', fontWeight: '700' },
-  statusNotMarked: { color: '#64748B', fontSize: 13, fontStyle: 'italic' },
+  statusNotMarked: { fontSize: 13, fontStyle: 'italic' },
 
   // UPDATED: FAB Color
   fab: { 
@@ -1082,63 +1092,57 @@ const styles = StyleSheet.create({
     width: 60, 
     height: 60, 
     borderRadius: 20, 
-    backgroundColor: '#3B82F6', // Standard Blue
     justifyContent: 'center', 
     alignItems: 'center',
-    shadowColor: "#3B82F6",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 10,
   },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
-  calendarContainer: { width: width * 0.9, backgroundColor: '#fff', borderRadius: 24, padding: 24 },
-  calendarTitle: { fontSize: 20, fontWeight: 'bold', color: '#000', marginBottom: 10 },
+  calendarContainer: { width: width * 0.9, borderRadius: 24, padding: 24 },
+  calendarTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
 
   // Calendar Styles
   customCalendarContainer: { marginTop: 10 },
   calendarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  calendarMonthYear: { fontSize: 18, fontWeight: 'bold', color: '#0F172A' },
+  calendarMonthYear: { fontSize: 18, fontWeight: 'bold' },
   calendarWeekRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 10 },
-  calendarWeekDayText: { color: '#64748B', fontWeight: '600', width: 30, textAlign: 'center' },
+  calendarWeekDayText: { fontWeight: '600', width: 30, textAlign: 'center' },
   calendarDaysGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   calendarDay: { width: '14.28%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 20 },
   calendarDayEmpty: { width: '14.28%', aspectRatio: 1 },
-  calendarDayToday: { backgroundColor: '#3B82F6' },
-  calendarDayText: { color: '#334155', fontSize: 16, fontWeight: '500' },
+  calendarDayToday: { },
+  calendarDayText: { fontSize: 16, fontWeight: '500' },
   calendarDayTextToday: { color: '#fff', fontWeight: 'bold' },
 
   categoryModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  categoryModalContainer: { backgroundColor: '#1E293B', borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
+  categoryModalContainer: { borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
 
   addStaffModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  addStaffModalContainer: { backgroundColor: '#1E293B', borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
+  addStaffModalContainer: { borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
 
   todaysAbsentModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  todaysAbsentModalContainer: { backgroundColor: '#1E293B', borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
+  todaysAbsentModalContainer: { borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
 
   searchStaffModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  searchStaffModalContainer: { backgroundColor: '#1E293B', borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
+  searchStaffModalContainer: { borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
 
   // Options Modal Styles
   optionsContainer: {
-    backgroundColor: '#1E293B',
     width: width * 0.8,
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#334155',
   },
   optionsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
     paddingBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
   },
   optionItem: {
     flexDirection: 'row',
@@ -1153,7 +1157,6 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
   },
 });
 

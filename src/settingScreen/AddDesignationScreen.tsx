@@ -13,34 +13,36 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../navigation/Stack';
+import { useTheme } from '../theme/ThemeContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const AddDesignationScreen = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation<NavigationProp>();
   const [designationName, setDesignationName] = useState('');
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* --- Status Bar --- */}
-      <StatusBar barStyle="light-content" backgroundColor="#0284C7" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.surface} />
 
       {/* --- Header Section --- */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
         {/* Back Button */}
         <TouchableOpacity 
           onPress={() => navigation.goBack()} 
-          style={styles.backButton}
+          style={[styles.backButton, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#F1F5F9' }]}
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={24} color="#FFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
         {/* Title */}
-        <Text style={styles.headerTitle}>Add Designations</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Add Designations</Text>
 
         {/* Save Button (Header Action) */}
-        <TouchableOpacity style={styles.saveButton} activeOpacity={0.8}>
+        <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.primary }]} activeOpacity={0.8}>
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
       </View>
@@ -50,28 +52,28 @@ const AddDesignationScreen = () => {
         
         {/* Designation Name Field */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Designation Name</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Designation Name</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
             value={designationName}
             onChangeText={setDesignationName}
-            placeholder="" 
-            placeholderTextColor="#64748B"
-            selectionColor="#0284C7"
+            placeholder="Enter designation name" 
+            placeholderTextColor={colors.textSecondary}
+            selectionColor={colors.primary}
           />
         </View>
 
         {/* Permissions Section */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Permissions</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Permissions</Text>
           
           {/* Add Permission Button */}
           <TouchableOpacity 
-            style={styles.permissionButton} 
+            style={[styles.permissionButton, { backgroundColor: isDark ? colors.surface : '#F1F5F9', borderColor: colors.border, borderWidth: 1 }]} 
             activeOpacity={0.8}
             onPress={() => navigation.navigate('PopUpDesignationScreen')}
           >
-            <Text style={styles.permissionButtonText}>Add Permission +</Text>
+            <Text style={[styles.permissionButtonText, { color: colors.primary }]}>Add Permission +</Text>
           </TouchableOpacity>
         </View>
 
@@ -83,33 +85,30 @@ const AddDesignationScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Dark Slate Background
   },
   
   // --- Header Styles ---
   header: {
-    backgroundColor: '#0284C7', // Sky Blue Header
-    height: Platform.OS === 'android' ? 60 : 50,
+    height: Platform.OS === 'android' ? 70 : 60,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', // Spreads items out
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
   },
   backButton: {
-    padding: 4,
+    padding: 8,
+    borderRadius: 12,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#FFF',
-    flex: 1, // Takes up remaining space
-    marginLeft: 16, // Spacing from back arrow
+    fontWeight: '800',
+    flex: 1,
+    marginLeft: 16,
   },
   saveButton: {
-    backgroundColor: '#1E293B', // Dark Slate Button Background
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 20, // Pill Shape
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
   },
   saveButtonText: {
     color: '#FFF',
@@ -127,34 +126,28 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '800', // Bold Label
-    color: '#FFF',
+    fontWeight: '800',
     marginBottom: 10,
   },
   input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#475569', // Slate 600 Border
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    color: '#FFF',
+    height: 52,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: 'transparent', // Matches UI box
   },
 
   // --- Permission Button Styles ---
   permissionButton: {
-    backgroundColor: '#334155', // Slate 700 (Lighter than BG)
-    height: 50,
-    borderRadius: 25, // Fully rounded pill shape
+    height: 52,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 5,
   },
   permissionButtonText: {
-    color: '#FFF',
     fontSize: 16,
-    fontWeight: '700', // Bold Text
+    fontWeight: '700',
   },
 });
 

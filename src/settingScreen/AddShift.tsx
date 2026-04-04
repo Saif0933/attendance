@@ -18,10 +18,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useCreateShift, useUpdateShift } from '../../api/hook/company/shift/useShift';
 import { Shift } from '../../api/hook/type/shift';
+import { useTheme } from '../theme/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
 const AddShiftScreen = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   const route = useRoute();
   
@@ -33,7 +35,7 @@ const AddShiftScreen = () => {
   const { mutate: updateShift, isPending: isUpdating } = useUpdateShift();
 
   // Core State (Backend Fields)
-  const [name, setName] = useState(editingShift?.name || '');
+  const [name, setName] = useState(editingShift?.name || (editingShift as any)?.shiftName || '');
   const [startTime, setStartTime] = useState(editingShift?.startTime || '09:00');
   const [endTime, setEndTime] = useState(editingShift?.endTime || '18:00');
   const [lateLimit, setLateLimit] = useState(editingShift?.latePunchInLimit?.toString() || '0');
@@ -53,8 +55,9 @@ const AddShiftScreen = () => {
       return;
     }
 
-    const payload = {
+    const payload: any = {
       name,
+      shiftName: name, // Added for compatibility with different backend fields
       startTime,
       endTime,
       latePunchInLimit: parseInt(lateLimit) || 0,
@@ -105,8 +108,8 @@ const AddShiftScreen = () => {
   const isLoading = isCreating || isUpdating;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       {/* Time Picker Modal */}
       <Modal
@@ -116,22 +119,22 @@ const AddShiftScreen = () => {
         onRequestClose={() => setShowPicker(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.pickerContainer}>
-            <Text style={styles.pickerTitle}>Select {pickerType === 'start' ? 'Start' : 'End'} Time</Text>
+          <View style={[styles.pickerContainer, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.pickerTitle, { color: colors.text }]}>Select {pickerType === 'start' ? 'Start' : 'End'} Time</Text>
             
             <View style={styles.pickerRow}>
               {/* Hours Column */}
               <View style={styles.columnWrapper}>
-                <Text style={styles.columnLabel}>Hour</Text>
+                <Text style={[styles.columnLabel, { color: colors.textSecondary }]}>Hour</Text>
                 <FlatList
                   data={hours}
                   keyExtractor={(item) => `hour-${item}`}
                   renderItem={({ item }) => (
                     <TouchableOpacity 
-                      style={[styles.timeItem, tempHour === item && styles.selectedTimeItem]}
+                      style={[styles.timeItem, tempHour === item && [styles.selectedTimeItem, { backgroundColor: isDark ? colors.background : colors.primary + '10' }]]}
                       onPress={() => setTempHour(item)}
                     >
-                      <Text style={[styles.timeText, tempHour === item && styles.selectedTimeText]}>{item}</Text>
+                      <Text style={[styles.timeText, { color: colors.text }, tempHour === item && [styles.selectedTimeText, { color: colors.primary }]]}>{item}</Text>
                     </TouchableOpacity>
                   )}
                   showsVerticalScrollIndicator={false}
@@ -146,16 +149,16 @@ const AddShiftScreen = () => {
 
               {/* Minutes Column */}
               <View style={styles.columnWrapper}>
-                <Text style={styles.columnLabel}>Minute</Text>
+                <Text style={[styles.columnLabel, { color: colors.textSecondary }]}>Minute</Text>
                 <FlatList
                   data={minutes}
                   keyExtractor={(item) => `min-${item}`}
                   renderItem={({ item }) => (
                     <TouchableOpacity 
-                      style={[styles.timeItem, tempMinute === item && styles.selectedTimeItem]}
+                      style={[styles.timeItem, tempMinute === item && [styles.selectedTimeItem, { backgroundColor: isDark ? colors.background : colors.primary + '10' }]]}
                       onPress={() => setTempMinute(item)}
                     >
-                      <Text style={[styles.timeText, tempMinute === item && styles.selectedTimeText]}>{item}</Text>
+                      <Text style={[styles.timeText, { color: colors.text }, tempMinute === item && [styles.selectedTimeText, { color: colors.primary }]]}>{item}</Text>
                     </TouchableOpacity>
                   )}
                   showsVerticalScrollIndicator={false}
@@ -168,10 +171,10 @@ const AddShiftScreen = () => {
             </View>
 
             <View style={styles.pickerFooter}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowPicker(false)}>
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+              <TouchableOpacity style={[styles.cancelBtn, { borderColor: colors.border }]} onPress={() => setShowPicker(false)}>
+                <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.confirmBtn} onPress={confirmTime}>
+              <TouchableOpacity style={[styles.confirmBtn, { backgroundColor: colors.primary }]} onPress={confirmTime}>
                 <Text style={styles.confirmBtnText}>Confirm</Text>
               </TouchableOpacity>
             </View>
@@ -180,13 +183,13 @@ const AddShiftScreen = () => {
       </Modal>
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="close" size={28} color="#000" />
+          <Icon name="close" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{editingShift ? "Edit Shift" : "Add Shift"}</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{editingShift ? "Edit Shift" : "Add Shift"}</Text>
         <TouchableOpacity 
-          style={[styles.addButton, isLoading && { opacity: 0.7 }]} 
+          style={[styles.addButton, { backgroundColor: colors.primary }, isLoading && { opacity: 0.7 }]} 
           onPress={handleSave}
           disabled={isLoading}
         >
@@ -198,45 +201,47 @@ const AddShiftScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.contentContainer}>
         {/* Shift Name */}
         <View style={styles.section}>
-          <Text style={styles.labelBold}>Shift Name</Text>
+          <Text style={[styles.labelBold, { color: colors.text }]}>Shift Name</Text>
           <TextInput 
-            style={styles.standardInput} 
+            style={[styles.standardInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} 
             value={name}
             onChangeText={setName}
             placeholder="e.g. Morning Shift"
+            placeholderTextColor={colors.textSecondary}
           />
         </View>
 
         {/* Shift Start Time */}
         <View style={styles.section}>
-          <Text style={styles.labelBold}>Shift Start Time</Text>
-          <TouchableOpacity style={styles.timeSelectorInput} onPress={() => openPicker('start')}>
-            <Text style={styles.selectTimeText}>{startTime}</Text>
+          <Text style={[styles.labelBold, { color: colors.text }]}>Shift Start Time</Text>
+          <TouchableOpacity style={[styles.timeSelectorInput, { borderColor: colors.border }]} onPress={() => openPicker('start')}>
+            <Text style={[styles.selectTimeText, { color: colors.primary }]}>{startTime}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Shift End Time */}
         <View style={styles.section}>
-          <Text style={styles.labelBold}>Shift End Time</Text>
-          <TouchableOpacity style={styles.timeSelectorInput} onPress={() => openPicker('end')}>
-            <Text style={styles.selectTimeText}>{endTime}</Text>
+          <Text style={[styles.labelBold, { color: colors.text }]}>Shift End Time</Text>
+          <TouchableOpacity style={[styles.timeSelectorInput, { borderColor: colors.border }]} onPress={() => openPicker('end')}>
+            <Text style={[styles.selectTimeText, { color: colors.primary }]}>{endTime}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Late Cut Off Section -> Mapped to latePunchInLimit */}
         <View style={styles.section}>
-          <Text style={styles.labelBold}>Late Cut Off (Minutes)</Text>
-          <View style={styles.reddishContainer}>
-            <Text style={styles.subLabel}>Allowed late minutes before marked as Half Day:</Text>
+          <Text style={[styles.labelBold, { color: colors.text }]}>Late Cut Off (Minutes)</Text>
+          <View style={[styles.reddishContainer, { backgroundColor: isDark ? colors.surface : colors.primary + '10' }]}>
+            <Text style={[styles.subLabel, { color: colors.textSecondary }]}>Allowed late minutes before marked as Half Day:</Text>
             <TextInput
-              style={styles.standardInput}
+              style={[styles.standardInput, { backgroundColor: isDark ? colors.background : colors.surface, borderColor: colors.border, color: colors.text }]}
               value={lateLimit}
               onChangeText={setLateLimit}
               keyboardType="numeric"
               placeholder="10"
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
         </View>

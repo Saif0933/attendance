@@ -20,6 +20,7 @@ import { IMAGE_BASE_URL } from '../api/api';
 import { useGetEmployeeById } from '../src/employee/hook/useEmployee';
 import type { RootStackParamList } from '../src/navigation/Stack';
 import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
+import { useTheme } from '../src/theme/ThemeContext';
 
 const { height } = Dimensions.get('window');
 
@@ -38,6 +39,7 @@ interface MenuItemProps {
 }
 
 const ProfileScreen = () => {
+  const { colors, isDark, toggleTheme } = useTheme();
   // --- Navigation ---
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // --- State for Profile Image ---
@@ -182,6 +184,15 @@ const ProfileScreen = () => {
       icon: 'location',
       iconColor: '#00C7BE'
     },
+    {
+      id: 'dark-mode-toggle',
+      title: 'Dark Mode',
+      type: 'toggle',
+      value: isDark,
+      onToggle: toggleTheme,
+      icon: isDark ? 'moon' : 'sunny',
+      iconColor: colors.primary
+    },
     // { 
     //   id: '9', 
     //   title: 'Geo Fencing Locations', 
@@ -234,8 +245,12 @@ const ProfileScreen = () => {
   });
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"} 
+        backgroundColor="transparent" 
+        translucent 
+      />
 
       {/* Background with Overlay */}
       <View style={styles.backgroundContainer}>
@@ -245,7 +260,10 @@ const ProfileScreen = () => {
           resizeMode="cover"
           blurRadius={3} 
         >
-          <View style={styles.whiteOverlay} />
+          <View style={[
+            isDark ? styles.darkOverlay : styles.whiteOverlay,
+            { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255,255,255,0.85)' }
+          ]} />
         </ImageBackground>
       </View>
 
@@ -261,7 +279,7 @@ const ProfileScreen = () => {
         {/* --- Header Section (Profile Pic & Title) --- */}
         <View style={styles.headerContainer}>
           <Animated.View style={{ opacity: headerOpacity }}>
-            <Text style={styles.headerTitle}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
               Your Info.
             </Text>
           </Animated.View>
@@ -294,7 +312,7 @@ const ProfileScreen = () => {
           
           {/* USER NAME & ROLE - CENTERED */}
           <Animated.View style={{ opacity: headerOpacity, alignItems: 'center', width: '100%' }}>
-             <Text style={styles.userName}>{fullName}</Text>
+             <Text style={[styles.userName, { color: colors.text }]}>{fullName}</Text>
              {/* <Text style={styles.userRole}>Full Stack Developer</Text> */}
           </Animated.View>
         </View>
@@ -303,7 +321,10 @@ const ProfileScreen = () => {
         <Animated.View
           style={[
             styles.sheetContainer,
-            { transform: [{ translateY: slideAnim }] },
+            { 
+              backgroundColor: colors.surface,
+              transform: [{ translateY: slideAnim }] 
+            },
           ]}
         >
           {/* --- Menu Items List --- */}
@@ -347,14 +368,14 @@ const ProfileScreen = () => {
                   <Ionicons name={item.icon} size={18} color="#FFF" />
                 </View>
 
-                <Text style={styles.menuText}>{item.title}</Text>
+                <Text style={[styles.menuText, { color: colors.text }]}>{item.title}</Text>
 
                 <View style={styles.rightAction}>
                   {item.type === 'toggle' ? (
                     <Switch
-                      trackColor={{ false: '#D1D1D6', true: '#E0E0E0' }}
-                      thumbColor={item.value ? '#FFFFFF' : '#FFFFFF'}
-                      ios_backgroundColor="#D1D1D6"
+                      trackColor={{ false: isDark ? '#334155' : '#D1D1D6', true: colors.primary }}
+                      thumbColor="#FFFFFF"
+                      ios_backgroundColor={isDark ? '#334155' : '#D1D1D6'}
                       onValueChange={item.onToggle}
                       value={item.value}
                       style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }}
@@ -363,7 +384,7 @@ const ProfileScreen = () => {
                     <Ionicons
                       name="chevron-forward"
                       size={20}
-                      color="#C7C7CC"
+                      color={colors.textSecondary}
                     />
                   )}
                 </View>
@@ -413,6 +434,10 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(255,255,255,0.85)',
   },
+  darkOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+  },
   scrollContent: {
     paddingTop: 60,
     paddingBottom: 20,
@@ -427,7 +452,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#1C1C1E',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -479,7 +503,6 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#000',
     marginTop: 3,
     textAlign: 'center', // Explicit center alignment for text
   },
@@ -513,7 +536,6 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f1f1ff',
     paddingVertical: 18,
     paddingHorizontal: 20,
     height: 60,

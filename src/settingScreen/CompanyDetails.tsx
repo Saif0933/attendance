@@ -1,273 +1,23 @@
-// import { useNavigation } from '@react-navigation/native';
-// import React, { useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   TextInput,
-//   StyleSheet,
-//   TouchableOpacity,
-//   ScrollView,
-//   StatusBar,
-//   Dimensions,
-//   Platform,
-// } from 'react-native';
-// import Ionicons from 'react-native-vector-icons/Ionicons';
-
-// // Custom Component for the "Label on Border" Input style
-// interface OutlinedInputProps {
-//   label: string;
-//   value: string;
-//   onChangeText?: (text: string) => void;
-//   multiline?: boolean;
-//   keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
-// }
-
-// const OutlinedInput = ({ label, value, onChangeText, multiline = false, keyboardType = 'default' }: OutlinedInputProps) => {
-//   return (
-//     <View style={[styles.inputContainer, multiline && { height: 100 }]}>
-//       <View style={[styles.inputBorder, multiline && { height: 100, alignItems: 'flex-start' }]}>
-//         <TextInput
-//           style={[styles.textInput, multiline && { textAlignVertical: 'top', paddingTop: 15 }]}
-//           value={value}
-//           onChangeText={onChangeText}
-//           placeholderTextColor="#64748B"
-//           multiline={multiline}
-//           keyboardType={keyboardType}
-//         />
-//       </View>
-//       {/* The Label sits on top of the border */}
-//       <View style={styles.labelContainer}>
-//         <Text style={styles.labelText}>{label}</Text>
-//       </View>
-//     </View>
-//   );
-// };
-
-// const CompanyDetails = () => {
-//   const navigation = useNavigation();
-
-//   // Form State
-//   const [formData, setFormData] = useState({
-//     companyName: 'Symbosys',
-//     gstin: '',
-//     address: '',
-//     phone: '917992202650',
-//     email: '',
-//   });
-
-//   const handleChange = (key: string, val: string) => {
-//     setFormData({ ...formData, [key]: val });
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
-
-//       {/* --- Header --- */}
-//       <View style={styles.header}>
-//         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-//           <Ionicons name="arrow-back" size={24} color="#FFF" />
-//         </TouchableOpacity>
-        
-//         <Text style={styles.headerTitle}>Company Details</Text>
-
-//         <TouchableOpacity onPress={() => console.log('Update Pressed')}>
-//           <Text style={styles.updateText}>Update</Text>
-//         </TouchableOpacity>
-//       </View>
-
-//       <ScrollView contentContainerStyle={styles.content}>
-        
-//         {/* Company Name */}
-//         <OutlinedInput 
-//           label="Company Name" 
-//           value={formData.companyName} 
-//           onChangeText={(t) => handleChange('companyName', t)}
-//         />
-
-//         {/* GSTIN */}
-//         <OutlinedInput 
-//           label="GSTIN" 
-//           value={formData.gstin} 
-//           onChangeText={(t) => handleChange('gstin', t)}
-//         />
-
-//         {/* Address (Multiline) */}
-//         <OutlinedInput 
-//           label="Address" 
-//           value={formData.address} 
-//           onChangeText={(t) => handleChange('address', t)}
-//           multiline={true}
-//         />
-
-//         {/* Phone Number */}
-//         <OutlinedInput 
-//           label="Phone Number" 
-//           value={formData.phone} 
-//           onChangeText={(t) => handleChange('phone', t)}
-//           keyboardType="phone-pad"
-//         />
-
-//         {/* Email */}
-//         <OutlinedInput 
-//           label="Email" 
-//           value={formData.email} 
-//           onChangeText={(t) => handleChange('email', t)}
-//           keyboardType="email-address"
-//         />
-
-//         {/* --- Pay Period Section --- */}
-//         <View style={styles.payPeriodContainer}>
-//           <Text style={styles.sectionLabel}>Pay Period</Text>
-          
-//           {/* Dropdown Box */}
-//           <TouchableOpacity style={styles.dropdownBox} activeOpacity={0.8}>
-//             <Text style={styles.dropdownText}>Calendar Days (Week-offs Paid)</Text>
-//             <Ionicons name="caret-down" size={16} color="#FFF" />
-//           </TouchableOpacity>
-
-//           {/* Helper Text */}
-//           <Text style={styles.helperText}>
-//             Daily rate = Monthly salary ÷ Total calendar days.{'\n'}
-//             Week-offs are paid (30/31).
-//           </Text>
-//         </View>
-
-//       </ScrollView>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#0F172A', // Dark Slate Background
-//   },
-//   // --- Header Styles ---
-//   header: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     paddingHorizontal: 16,
-//     paddingVertical: 16,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#1E293B',
-//     marginTop: Platform.OS === 'android' ? 20 : 0,
-//   },
-//   backButton: {
-//     padding: 4,
-//   },
-//   headerTitle: {
-//     fontSize: 20,
-//     fontWeight: '700',
-//     color: '#FFF',
-//     flex: 1,
-//     marginLeft: 16,
-//   },
-//   updateText: {
-//     color: '#3B82F6', // Blue color
-//     fontSize: 16,
-//     fontWeight: '600',
-//   },
-//   content: {
-//     padding: 20,
-//     paddingTop: 30,
-//   },
-
-//   // --- Outlined Input Styles ---
-//   inputContainer: {
-//     marginBottom: 25,
-//     height: 56,
-//     justifyContent: 'center',
-//     position: 'relative',
-//   },
-//   inputBorder: {
-//     borderWidth: 1.5,
-//     borderColor: '#94A3B8', // Slate 400
-//     borderRadius: 8,
-//     height: '100%',
-//     justifyContent: 'center',
-//     paddingHorizontal: 16,
-//   },
-//   textInput: {
-//     color: '#FFF',
-//     fontSize: 16,
-//     fontWeight: '600',
-//     padding: 0, // Removes default Android padding
-//   },
-//   labelContainer: {
-//     position: 'absolute',
-//     top: -10,
-//     left: 12,
-//     backgroundColor: '#0F172A', // Matches background to hide border
-//     paddingHorizontal: 4,
-//     zIndex: 1,
-//   },
-//   labelText: {
-//     color: '#FFF', // White label
-//     fontSize: 14,
-//     fontWeight: '700',
-//   },
-
-//   // --- Pay Period Section Styles ---
-//   payPeriodContainer: {
-//     marginTop: 10,
-//   },
-//   sectionLabel: {
-//     fontSize: 18,
-//     fontWeight: '700',
-//     color: '#FFF',
-//     marginBottom: 12,
-//   },
-//   dropdownBox: {
-//     borderWidth: 1.5,
-//     borderColor: '#FFF',
-//     borderRadius: 8,
-//     height: 56,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     paddingHorizontal: 16,
-//     backgroundColor: 'transparent',
-//   },
-//   dropdownText: {
-//     color: '#FFF',
-//     fontSize: 16,
-//     fontWeight: '700',
-//   },
-//   helperText: {
-//     marginTop: 12,
-//     color: '#94A3B8', // Grey text
-//     fontSize: 13,
-//     lineHeight: 20,
-//     fontWeight: '500',
-//     fontStyle: 'italic', // Matches the slight italic look in image
-//   },
-// });
-
-// export default CompanyDetails;
-
-
-
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Modal,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Modal,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useGetCompanyById, useOnboardCompany } from '../../api/hook/company/onBoarding/useCompany';
 import { useAuthStore } from '../store/useAuthStore';
+import { useTheme } from '../theme/ThemeContext';
 import { showSuccess } from '../utils/meesage';
 
 // Custom Component for the "Label on Border" Input style
@@ -288,22 +38,24 @@ const OutlinedInput = ({
   keyboardType = 'default',
   editable = true 
 }: OutlinedInputProps) => {
+  const { colors } = useTheme();
   return (
     <View style={[styles.inputContainer, multiline && { height: 100 }]}>
       <View style={[
         styles.inputBorder, 
         multiline && { height: 100, alignItems: 'stretch' }, 
-        !editable && { opacity: 0.6 }
+        !editable && { opacity: 0.6 },
+        { borderColor: colors.border }
       ]}>
         <TextInput
           style={[
             styles.textInput, 
-            { flex: 1, width: '100%' },
+            { flex: 1, width: '100%', color: colors.text },
             multiline && { textAlignVertical: 'top', paddingTop: 12 }
           ]}
           value={value}
           onChangeText={onChangeText}
-          placeholderTextColor="#64748B"
+          placeholderTextColor={colors.textSecondary}
           multiline={multiline}
           keyboardType={keyboardType}
           editable={editable}
@@ -311,14 +63,15 @@ const OutlinedInput = ({
         />
       </View>
       {/* The Label sits on top of the border */}
-      <View style={styles.labelContainer}>
-        <Text style={styles.labelText}>{label}</Text>
+      <View style={[styles.labelContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.labelText, { color: colors.textSecondary }]}>{label}</Text>
       </View>
     </View>
   );
 };
 
 const CompanyDetails = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { company, setAuth, token } = useAuthStore();
@@ -359,7 +112,6 @@ const CompanyDetails = () => {
     const c = companyData?.company || companyData?.data || companyData;
     
     if (c && (c.id || c.name)) {
-      console.log('Syncing form data with:', c);
       setFormData({
         name: c.name || '',
         gstNumber: c.gstNumber || '',
@@ -382,18 +134,14 @@ const CompanyDetails = () => {
         ...formData,
         payPeriod: PAY_PERIOD_MAP[formData.payPeriod] || formData.payPeriod,
       };
-
-      console.log('Sending Update Payload:', payload);
       
       const response = await onboardMutation.mutateAsync(payload);
       
       if (response?.success && response?.company) {
-        // Update both store and query cache for instant reflected changes
         setAuth(token as string, response.company);
         queryClient.setQueryData(['company', company?.id], response);
         showSuccess('Company updated successfully');
       } else {
-        // Fallback for different response structures
         const updatedComp = response?.company || response?.data || response;
         if (updatedComp && (updatedComp.id || updatedComp.name)) {
           setAuth(token as string, updatedComp);
@@ -435,46 +183,44 @@ const CompanyDetails = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
       {/* --- Header --- */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#FFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         
-        <Text style={styles.headerTitle}>Company Details</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Company Details</Text>
 
         <TouchableOpacity 
           onPress={handleUpdate} 
           disabled={onboardMutation.isPending}
         >
           {onboardMutation.isPending ? (
-            <ActivityIndicator size="small" color="#3B82F6" />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={styles.updateText}>Update</Text>
+            <Text style={[styles.updateText, { color: colors.primary }]}>Update</Text>
           )}
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         
-        {/* Company Name */}
         <OutlinedInput 
           label="Company Name" 
           value={formData.name} 
           onChangeText={(t) => handleChange('name', t)}
         />
 
-        {/* Company Code (Read-only usually, or as needed) */}
         <OutlinedInput 
           label="Company Code" 
           value={formData.code} 
@@ -482,14 +228,12 @@ const CompanyDetails = () => {
           editable={false}
         />
 
-        {/* GSTIN */}
         <OutlinedInput 
           label="GSTIN" 
           value={formData.gstNumber} 
           onChangeText={(t) => handleChange('gstNumber', t)}
         />
 
-        {/* Address (Multiline) */}
         <OutlinedInput 
           label="Address" 
           value={formData.address} 
@@ -497,7 +241,6 @@ const CompanyDetails = () => {
           multiline={true}
         />
 
-        {/* Phone Number */}
         <OutlinedInput 
           label="Phone Number" 
           value={formData.phone} 
@@ -505,7 +248,6 @@ const CompanyDetails = () => {
           keyboardType="phone-pad"
         />
 
-        {/* Email */}
         <OutlinedInput 
           label="Email" 
           value={formData.email} 
@@ -513,29 +255,25 @@ const CompanyDetails = () => {
           keyboardType="email-address"
         />
 
-        {/* --- Pay Period Section --- */}
         <View style={styles.payPeriodContainer}>
-          <Text style={styles.sectionLabel}>Pay Period</Text>
+          <Text style={[styles.sectionLabel, { color: colors.text }]}>Pay Period</Text>
           
-          {/* Dropdown Box */}
           <TouchableOpacity 
-            style={styles.dropdownBox} 
+            style={[styles.dropdownBox, { borderColor: colors.border }]} 
             activeOpacity={0.7}
             onPress={() => setIsModalVisible(true)}
           >
-            <Text style={styles.dropdownText}>{formData.payPeriod}</Text>
-            <Ionicons name="caret-down" size={16} color="#FFF" />
+            <Text style={[styles.dropdownText, { color: colors.text }]}>{formData.payPeriod}</Text>
+            <Ionicons name="caret-down" size={16} color={colors.text} />
           </TouchableOpacity>
 
-          {/* Helper Text */}
-          <Text style={styles.helperText}>
+          <Text style={[styles.helperText, { color: colors.textSecondary }]}>
             {getHelperText(formData.payPeriod)}
           </Text>
         </View>
 
       </ScrollView>
 
-      {/* Pay Period Modal */}
       <Modal
         visible={isModalVisible}
         transparent={true}
@@ -547,11 +285,11 @@ const CompanyDetails = () => {
           activeOpacity={1} 
           onPress={() => setIsModalVisible(false)}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Pay Period</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Select Pay Period</Text>
               <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#FFF" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
             {payPeriodOptions.map((option, index) => (
@@ -559,18 +297,20 @@ const CompanyDetails = () => {
                 key={index}
                 style={[
                   styles.optionItem,
-                  formData.payPeriod === option && styles.selectedOption
+                  { backgroundColor: colors.background },
+                  formData.payPeriod === option && [styles.selectedOption, { borderColor: colors.primary }]
                 ]}
                 onPress={() => handlePayPeriodSelect(option)}
               >
                 <Text style={[
                   styles.optionText,
-                  formData.payPeriod === option && styles.selectedOptionText
+                  { color: colors.textSecondary },
+                  formData.payPeriod === option && [styles.selectedOptionText, { color: colors.text }]
                 ]}>
                   {option}
                 </Text>
                 {formData.payPeriod === option && (
-                  <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
+                  <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
                 )}
               </TouchableOpacity>
             ))}
@@ -584,9 +324,7 @@ const CompanyDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Dark Slate Background
   },
-  // --- Header Styles ---
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -594,7 +332,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
     marginTop: Platform.OS === 'android' ? 20 : 0,
   },
   backButton: {
@@ -603,12 +340,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFF',
     flex: 1,
     marginLeft: 16,
   },
   updateText: {
-    color: '#3B82F6', // Blue color
     fontSize: 16,
     fontWeight: '600',
   },
@@ -616,8 +351,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 30,
   },
-
-  // --- Outlined Input Styles ---
   inputContainer: {
     marginBottom: 25,
     height: 56,
@@ -626,45 +359,37 @@ const styles = StyleSheet.create({
   },
   inputBorder: {
     borderWidth: 1.5,
-    borderColor: '#94A3B8', // Slate 400
     borderRadius: 8,
     height: '100%',
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
   textInput: {
-    color: '#FFF',
     fontSize: 16,
     fontWeight: '600',
-    padding: 0, // Removes default Android padding
+    padding: 0,
   },
   labelContainer: {
     position: 'absolute',
     top: -10,
     left: 12,
-    backgroundColor: '#0F172A', // Matches background to hide border
     paddingHorizontal: 4,
     zIndex: 1,
   },
   labelText: {
-    color: '#FFF', // White label
     fontSize: 14,
     fontWeight: '700',
   },
-
-  // --- Pay Period Section Styles ---
   payPeriodContainer: {
     marginTop: 10,
   },
   sectionLabel: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFF',
     marginBottom: 12,
   },
   dropdownBox: {
     borderWidth: 1.5,
-    borderColor: '#FFF',
     borderRadius: 8,
     height: 56,
     flexDirection: 'row',
@@ -674,19 +399,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   dropdownText: {
-    color: '#FFF',
     fontSize: 16,
     fontWeight: '700',
   },
   helperText: {
     marginTop: 12,
-    color: '#94A3B8', // Grey text
     fontSize: 13,
     lineHeight: 20,
     fontWeight: '500',
-    fontStyle: 'italic', // Matches the slight italic look in image
+    fontStyle: 'italic',
   },
-  // --- Modal Styles ---
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -695,12 +417,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#1E293B',
     borderRadius: 16,
     width: '100%',
     padding: 20,
     borderWidth: 1,
-    borderColor: '#334155',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -711,7 +431,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFF',
   },
   optionItem: {
     flexDirection: 'row',
@@ -719,22 +438,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: '#0F172A',
   },
   selectedOption: {
-    backgroundColor: '#1E293B',
     borderWidth: 1,
-    borderColor: '#3B82F6',
   },
   optionText: {
     fontSize: 16,
-    color: '#94A3B8',
     fontWeight: '600',
   },
   selectedOptionText: {
-    color: '#FFF',
+    fontWeight: '700',
   },
 });
 

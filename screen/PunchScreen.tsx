@@ -21,6 +21,7 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCheckIn, useCheckOut } from "../src/employee/hook/useAttendance";
 import { useEmployeeAuthStore } from "../src/store/useEmployeeAuthStore";
+import { useTheme } from "../src/theme/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -35,6 +36,7 @@ const PunchScreen = () => {
 };
 
 const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation<any>();
   const { employee: hookEmployee } = useEmployeeAuthStore();
   const [punchType, setPunchType] = useState<"IN" | "OUT">("IN");
@@ -197,19 +199,19 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top", "left", "right"]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greetingText}>
+          <Text style={[styles.greetingText, { color: colors.text }]}>
             Hello, {hookEmployee ? `${hookEmployee.firstname} ${hookEmployee.lastname}` : "Employee"}
           </Text>
-          <Text style={styles.subText}>Mark your attendance</Text>
+          <Text style={[styles.subText, { color: colors.textSecondary }]}>Mark your attendance</Text>
         </View>
-        <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
-          <RefreshCw size={20} color="#1E293B" />
+        <TouchableOpacity onPress={onRefresh} style={[styles.refreshBtn, { backgroundColor: colors.surface }]}>
+          <RefreshCw size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -218,12 +220,12 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
         <View
           style={[
             styles.scannerCircle,
-            { borderColor: activeColor, borderStyle: "dashed" },
+            { borderColor: activeColor, borderStyle: "dashed", backgroundColor: colors.surface },
           ]}
         >
           <Fingerprint size={100} color={activeColor} />
-          <Text style={styles.visualHint}>Touch Sensor</Text>
-          <Text style={styles.subVisualHint}>
+          <Text style={[styles.visualHint, { color: colors.text }]}>Touch Sensor</Text>
+          <Text style={[styles.subVisualHint, { color: colors.textSecondary }]}>
             Use Fingerprint or Enter PIN
           </Text>
         </View>
@@ -231,8 +233,8 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
 
       {/* Punch Type */}
       <View style={styles.punchTypeContainer}>
-        <Text style={styles.punchLabel}>Action Type:</Text>
-        <View style={styles.switchContainer}>
+        <Text style={[styles.punchLabel, { color: colors.textSecondary }]}>Action Type:</Text>
+        <View style={[styles.switchContainer, { backgroundColor: isDark ? colors.surface : "#F1F5F9" }]}>
           <TouchableOpacity
             style={[
               styles.switchBtn,
@@ -243,6 +245,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
             <Text
               style={[
                 styles.switchText,
+                { color: isDark ? colors.textSecondary : "#94A3B8" },
                 punchType === "IN" && { color: "#fff", fontWeight: "bold" },
               ]}
             >

@@ -25,6 +25,7 @@ import { useApplyLeave, useDeleteLeave, useGetLeaves } from '../api/hook/leaves/
 import { LeaveType } from '../api/hook/leaves/type';
 import { useGetEmployeeById } from '../src/employee/hook/useEmployee';
 import { useEmployeeAuthStore } from '../src/store/useEmployeeAuthStore';
+import { useTheme } from '../src/theme/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -43,6 +44,7 @@ const PURPLE = '#7209B7';
 const SOFT_PURPLE_BG = '#F3E5F5';
 
 const RequestScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<'Expenses' | 'Leaves' | 'Loans'>('Leaves');
   const scrollViewRef = useRef<ScrollView>(null);
   const { employee } = useEmployeeAuthStore();
@@ -162,9 +164,9 @@ const RequestScreen: React.FC = () => {
   // --- RENDER SECTIONS ---
 
   const renderExpensesContent = () => (
-    <View style={[styles.contentLight, { width: width }]}>
-      <Icon name="receipt-outline" size={60} color="#CBD5E1" />
-      <Text style={styles.noExpenseText}>No expenses to display</Text>
+    <View style={[styles.contentLight, { width: width, backgroundColor: colors.background }]}>
+      <Icon name="receipt-outline" size={60} color={isDark ? colors.border : "#CBD5E1"} />
+      <Text style={[styles.noExpenseText, { color: colors.textSecondary }]}>No expenses to display</Text>
     </View>
   );
 
@@ -197,58 +199,58 @@ const RequestScreen: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={[BLUE]} // Android
-              tintColor={BLUE} // iOS
+              colors={[colors.primary]} // Android
+              tintColor={colors.primary} // iOS
             />
           }
         >
           {/* Leave Balances Card */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.subHeader}>Leave Balances</Text>
-            <View style={[styles.card, styles.shadowSoft]}>
+            <Text style={[styles.subHeader, { color: colors.text }]}>Leave Balances</Text>
+            <View style={[styles.card, styles.shadowSoft, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.summaryHeaderRow}>
-                 <Text style={styles.summaryHeaderLabel}>Privilege</Text>
-                 <Text style={styles.summaryHeaderLabel}>Sick</Text>
-                 <Text style={styles.summaryHeaderLabel}>Emergency</Text>
+                 <Text style={[styles.summaryHeaderLabel, { color: colors.textSecondary }]}>Privilege</Text>
+                 <Text style={[styles.summaryHeaderLabel, { color: colors.textSecondary }]}>Sick</Text>
+                 <Text style={[styles.summaryHeaderLabel, { color: colors.textSecondary }]}>Emergency</Text>
               </View>
               <View style={styles.summaryValueRow}>
-                 <Text style={styles.bigNumber}>{numberOfPrivilegeLeaves}</Text>
-                 <View style={styles.verticalDivider} />
-                 <Text style={styles.bigNumber}>{numberOfSickLeaves}</Text>
-                 <View style={styles.verticalDivider} />
-                 <Text style={styles.bigNumber}>{numberOfEmergencyLeaves}</Text>
+                 <Text style={[styles.bigNumber, { color: colors.text }]}>{numberOfPrivilegeLeaves}</Text>
+                 <View style={[styles.verticalDivider, { backgroundColor: colors.border }]} />
+                 <Text style={[styles.bigNumber, { color: colors.text }]}>{numberOfSickLeaves}</Text>
+                 <View style={[styles.verticalDivider, { backgroundColor: colors.border }]} />
+                 <Text style={[styles.bigNumber, { color: colors.text }]}>{numberOfEmergencyLeaves}</Text>
               </View>
             </View>
 
             {/* Casual Leave Progress */}
-            <View style={[styles.card, styles.shadowSoft, { marginTop: 15 }]}>
+            <View style={[styles.card, styles.shadowSoft, { marginTop: 15, backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.casualHeader}>
                   <View style={styles.casualTitleRow}>
-                      <View style={[styles.circleIcon, { backgroundColor: SOFT_PURPLE_BG }]}>
+                      <View style={[styles.circleIcon, { backgroundColor: isDark ? colors.background : SOFT_PURPLE_BG }]}>
                           <Icon name="briefcase-outline" size={18} color={PURPLE} />
                       </View>
                       <View>
-                          <Text style={styles.cardTitle}>Casual Leave</Text>
-                          <Text style={styles.subText}>Yearly Quota</Text>
+                          <Text style={[styles.cardTitle, { color: colors.text }]}>Casual Leave</Text>
+                          <Text style={[styles.subText, { color: colors.textSecondary }]}>Yearly Quota</Text>
                       </View>
                   </View>
                   <Text style={styles.percentText}>{Math.round(casualPercent)}%</Text>
               </View>
-              <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarBg, { backgroundColor: colors.border }]}>
                   <View style={[styles.progressBarFill, { width: `${Math.min(100, casualPercent)}%` }]} />
               </View>
-              <View style={styles.statsContainer}>
+              <View style={[styles.statsContainer, { backgroundColor: isDark ? colors.background : '#FAFAFA' }]}>
                    <View style={styles.statBox}>
-                      <Text style={styles.statLabel}>Used</Text>
-                      <Text style={styles.statValue}>{casualUsed}</Text>
+                      <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Used</Text>
+                      <Text style={[styles.statValue, { color: colors.text }]}>{casualUsed}</Text>
                    </View>
-                   <View style={[styles.statBox, styles.statBoxActive]}>
-                      <Text style={[styles.statLabel, {color: BLUE}]}>Available</Text>
-                      <Text style={[styles.statValue, {color: BLUE}]}>{numberOfCasualLeaves - casualUsed}</Text>
+                   <View style={[styles.statBox, styles.statBoxActive, { borderColor: colors.border }]}>
+                      <Text style={[styles.statLabel, {color: colors.primary}]}>Available</Text>
+                      <Text style={[styles.statValue, {color: colors.primary}]}>{numberOfCasualLeaves - casualUsed}</Text>
                    </View>
                    <View style={styles.statBox}>
-                      <Text style={styles.statLabel}>Total</Text>
-                      <Text style={styles.statValue}>{numberOfCasualLeaves}</Text>
+                      <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Total</Text>
+                      <Text style={[styles.statValue, { color: colors.text }]}>{numberOfCasualLeaves}</Text>
                    </View>
               </View>
             </View>
@@ -262,13 +264,13 @@ const RequestScreen: React.FC = () => {
 
           {/* Active Requests List (Scrollable) */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.subHeader}>Active Requests ({requests.length})</Text>
+            <Text style={[styles.subHeader, { color: colors.text }]}>Active Requests ({requests.length})</Text>
             
             {requests.map((req: any) => (
-              <View key={req.id} style={[styles.card, styles.shadowSoft, { marginBottom: 15 }]}>
+              <View key={req.id} style={[styles.card, styles.shadowSoft, { marginBottom: 15, backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <View style={styles.requestHeader}>
-                  <View style={styles.categoryBadge}>
-                     <Text style={styles.categoryText}>{formatLeaveType(req.type)}</Text>
+                  <View style={[styles.categoryBadge, { backgroundColor: isDark ? colors.background : '#E3F2FD' }]}>
+                     <Text style={[styles.categoryText, { color: colors.primary }]}>{formatLeaveType(req.type)}</Text>
                   </View>
                   <View style={styles.requestHeaderRight}>
                     <View style={[styles.statusPill, { backgroundColor: getStatusColor(req.status) }]}>
@@ -291,18 +293,18 @@ const RequestScreen: React.FC = () => {
                   </View>
                 </View>
                 
-                <Text style={styles.description}>{req.reason || 'No reason provided'}</Text>
+                <Text style={[styles.description, { color: colors.text }]}>{req.reason || 'No reason provided'}</Text>
 
-                <View style={styles.cardDivider} />
+                <View style={[styles.cardDivider, { backgroundColor: colors.border }]} />
 
                 <View style={styles.detailsRow}>
                   <View style={styles.detailItem}>
-                    <Icon name="calendar-clear-outline" size={16} color={TEXT_GRAY} />
-                    <Text style={styles.detailText}>{new Date(req.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                    <Icon name="calendar-clear-outline" size={16} color={colors.textSecondary} />
+                    <Text style={[styles.detailText, { color: colors.textSecondary }]}>{new Date(req.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
                   </View>
                   <View style={styles.detailItem}>
-                    <Icon name="time-outline" size={16} color={TEXT_GRAY} />
-                    <Text style={styles.detailText}>
+                    <Icon name="time-outline" size={16} color={colors.textSecondary} />
+                    <Text style={[styles.detailText, { color: colors.textSecondary }]}>
                       {Math.ceil((new Date(req.endDate).getTime() - new Date(req.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1} Day(s)
                     </Text>
                   </View>
@@ -311,7 +313,7 @@ const RequestScreen: React.FC = () => {
             ))}
             
             {requests.length === 0 && (
-              <Text style={{ textAlign: 'center', color: TEXT_GRAY, marginTop: 10 }}>
+              <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 10 }}>
                 No requests found.
               </Text>
             )}
@@ -319,12 +321,12 @@ const RequestScreen: React.FC = () => {
 
           {/* Holidays Section */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.subHeader}>Holidays</Text>
-            <View style={[styles.card, styles.shadowSoft, styles.emptyStateCard]}>
-              <View style={styles.calendarIconBg}>
-                <Icon name="calendar" size={32} color={BLUE} />
+            <Text style={[styles.subHeader, { color: colors.text }]}>Holidays</Text>
+            <View style={[styles.card, styles.shadowSoft, styles.emptyStateCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={[styles.calendarIconBg, { backgroundColor: isDark ? colors.background : '#E3F2FD' }]}>
+                <Icon name="calendar" size={32} color={colors.primary} />
               </View>
-              <Text style={styles.noHolidaysText}>No holidays this month</Text>
+              <Text style={[styles.noHolidaysText, { color: colors.text }]}>No holidays this month</Text>
             </View>
           </View>
         </ScrollView>
@@ -333,26 +335,26 @@ const RequestScreen: React.FC = () => {
   };
 
   const renderLoansContent = () => (
-    <View style={[styles.contentLight, { width: width }]}>
-      <Icon name="wallet-outline" size={60} color="#CBD5E1" />
-      <Text style={styles.noExpenseText}>No loans to display</Text>
+    <View style={[styles.contentLight, { width: width, backgroundColor: colors.background }]}>
+      <Icon name="wallet-outline" size={60} color={isDark ? colors.border : "#CBD5E1"} />
+      <Text style={[styles.noExpenseText, { color: colors.textSecondary }]}>No loans to display</Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.containerLight}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" />
+    <SafeAreaView style={[styles.containerLight, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       {/* Header */}
-      <View style={styles.headerLight}>
-        <Text style={styles.title}>Requests</Text>
-        <TouchableOpacity style={styles.iconButton}>
-             <Icon name="notifications-outline" size={24} color={DARK_BLUE} />
+      <View style={[styles.headerLight, { backgroundColor: colors.background }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Requests</Text>
+        <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.surface }]}>
+             <Icon name="notifications-outline" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* Tabs - WITH GAP */}
-      <View style={styles.tabContainerLight}>
+      <View style={[styles.tabContainerLight, { backgroundColor: colors.background }]}>
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab}
@@ -360,10 +362,10 @@ const RequestScreen: React.FC = () => {
             onPress={() => handleTabPress(tab)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.tab, activeTab === tab && styles.activeTabLight]}>
+            <Text style={[styles.tab, { color: colors.textSecondary }, activeTab === tab && [styles.activeTabLight, { color: colors.primary }]]}>
               {tab}
             </Text>
-            {activeTab === tab && <View style={styles.activeTabLine} />}
+            {activeTab === tab && <View style={[styles.activeTabLine, { backgroundColor: colors.primary }]} />}
           </TouchableOpacity>
         ))}
       </View>
@@ -376,7 +378,7 @@ const RequestScreen: React.FC = () => {
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleScroll}
         contentOffset={{ x: width, y: 0 }}
-        style={styles.scrollView}
+        style={[styles.scrollView, { backgroundColor: colors.background }]}
       >
         {renderExpensesContent()}
         {renderLeavesContent()}
@@ -394,34 +396,34 @@ const RequestScreen: React.FC = () => {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>New Leave Request</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>New Leave Request</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Icon name="close" size={24} color={TEXT_GRAY} />
+                <Icon name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.inputLabel}>Leave Type</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Leave Type</Text>
             <View style={styles.typeSelector}>
               {(['CASUAL', 'SICK', 'PRIVILEGE', 'EMERGENCY'] as LeaveType[]).map((type) => (
                 <TouchableOpacity
                   key={type}
-                  style={[styles.typeBtn, selectedLeaveType === type && styles.typeBtnActive]}
+                  style={[styles.typeBtn, { backgroundColor: isDark ? colors.background : '#F0F0F0', borderColor: colors.border }, selectedLeaveType === type && [styles.typeBtnActive, { backgroundColor: colors.primary, borderColor: colors.primary }]]}
                   onPress={() => setSelectedLeaveType(type)}
                 >
-                  <Text style={[styles.typeBtnText, selectedLeaveType === type && styles.typeBtnTextActive]}>
+                  <Text style={[styles.typeBtnText, { color: colors.textSecondary }, selectedLeaveType === type && [styles.typeBtnTextActive, { color: WHITE }]]}>
                     {type.charAt(0) + type.slice(1).toLowerCase()}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={styles.inputLabel}>Reason / Description</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Reason / Description</Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: isDark ? colors.background : '#FAFAFA', borderColor: colors.border, color: colors.text }]}
               placeholder="Why are you taking leave?"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textSecondary}
               multiline
               numberOfLines={4}
               value={reason}
@@ -430,7 +432,7 @@ const RequestScreen: React.FC = () => {
             />
 
             <TouchableOpacity 
-              style={[styles.submitButton, applyLeaveMutation.isPending && { opacity: 0.7 }]} 
+              style={[styles.submitButton, { backgroundColor: colors.primary }, applyLeaveMutation.isPending && { opacity: 0.7 }]} 
               onPress={handleSubmitRequest}
               disabled={applyLeaveMutation.isPending}
             >

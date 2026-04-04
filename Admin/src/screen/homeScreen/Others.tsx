@@ -1,18 +1,19 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
 import { EmployeeListItem } from '../../../../src/employee/type/employee';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 
 // --- Types ---
 interface Colleague {
@@ -32,6 +33,7 @@ interface OthersProps {
 }
 
 const Others: React.FC<OthersProps> = ({ onClose }) => {
+  const { colors, isDark } = useTheme();
   const [selectedFilter, setSelectedFilter] = useState('All');
 
   // --- Data Fetching ---
@@ -65,14 +67,15 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
       <TouchableOpacity
         style={[
           styles.filterChip,
-          isSelected ? styles.filterChipSelected : styles.filterChipUnselected,
+          isSelected ? [styles.filterChipSelected, { backgroundColor: colors.primary, borderColor: colors.primary }] : [styles.filterChipUnselected, { backgroundColor: 'transparent', borderColor: colors.border }],
         ]}
         onPress={() => setSelectedFilter(item)}
       >
         <Text
           style={[
             styles.filterText,
-            isSelected ? styles.filterTextSelected : styles.filterTextUnselected,
+            { color: colors.textSecondary },
+            isSelected ? [styles.filterTextSelected, { color: colors.background }] : [styles.filterTextUnselected, { color: colors.textSecondary }],
           ]}
         >
           {item}
@@ -92,15 +95,16 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
 
       {/* Text Info */}
       <View style={styles.infoContainer}>
-        <Text style={styles.nameText}>{item.name}</Text>
-        <Text style={styles.roleText}>{item.role}</Text>
+        <Text style={[styles.nameText, { color: colors.text }]}>{item.name}</Text>
+        <Text style={[styles.roleText, { color: colors.textSecondary }]}>{item.role}</Text>
       </View>
 
       {/* Action Button */}
       <TouchableOpacity
         style={[
           styles.actionButton,
-          styles.btnFollow, 
+          styles.btnFollow,
+          { backgroundColor: colors.primary, borderColor: colors.primary }
         ]}
         // onPress={() => {}} // Placeholder action
       >
@@ -120,26 +124,26 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
     if (!isFetchingNextPage) return null;
     return (
       <View style={{ paddingVertical: 20 }}>
-        <ActivityIndicator size="small" color="#000" />
+        <ActivityIndicator size="small" color={colors.primary} />
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Top Handle Bar */}
-      <View style={styles.handleBar} />
+      <View style={[styles.handleBar, { backgroundColor: isDark ? colors.border : '#E0E0E0' }]} />
 
       {/* Header with Close Button */}
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Find Your Colleagues</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Find Your Colleagues</Text>
         
         {/* Close Button */}
         <TouchableOpacity 
-          style={styles.closeButton} 
+          style={[styles.closeButton, { backgroundColor: colors.surface }]} 
           onPress={onClose}
         >
-          <Icon name="close" size={24} color="#000" />
+          <Icon name="close" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -158,7 +162,7 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
       {/* Colleagues List */}
       {isLoading ? (
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-           <ActivityIndicator size="large" color="#000" />
+           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
@@ -173,7 +177,7 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
           ListFooterComponent={renderFooter}
           ListEmptyComponent={
              <View style={{alignItems: 'center', marginTop: 50}}>
-               <Text style={{color: '#888'}}>No colleagues found.</Text>
+               <Text style={{color: colors.textSecondary}}>No colleagues found.</Text>
              </View>
           }
         />

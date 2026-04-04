@@ -1,21 +1,22 @@
 
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    FlatList,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useCreateCategory, useUpdateCategory } from '../../../../src/employee/hook/useCategory';
 import { useGetAllEmployees } from '../../../../src/employee/hook/useEmployee';
 import { Category } from '../../../../src/employee/type/category';
 import { EmployeeListItem } from '../../../../src/employee/type/employee';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 import { showError, showSuccess } from '../../../../src/utils/meesage';
 
 interface NewCategoryScreenProps {
@@ -25,6 +26,7 @@ interface NewCategoryScreenProps {
 }
 
 const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScreenProps) => {
+  const { colors, isDark } = useTheme();
   const [categoryName, setCategoryName] = useState(initialData?.name || '');
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>(
     initialData?.employees?.map(emp => emp.id) || []
@@ -89,21 +91,21 @@ const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScree
   const isPending = createCategoryMutation.isPending || updateCategoryMutation.isPending;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Ionicons name="close-outline" size={28} color="#fff" />
+          <Ionicons name="close-outline" size={28} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>{isEditing ? 'Edit Category' : 'New Category'}</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{isEditing ? 'Edit Category' : 'New Category'}</Text>
 
         <TouchableOpacity 
           onPress={handleSubmit} 
           disabled={isPending}
         >
           {isPending ? (
-            <ActivityIndicator size="small" color="#3B82F6" />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
             <Text style={styles.doneText}>Save</Text>
           )}
@@ -114,11 +116,11 @@ const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScree
         
         {/* Section 1: Category Name */}
         <View style={styles.section}>
-          <Text style={styles.label}>Category name</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Category name</Text>
 
-          <View style={styles.glassInputContainer}>
+          <View style={[styles.glassInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { color: colors.text }]}
               placeholder="Examples: Sales, Marketing, Development..."
               placeholderTextColor="#94A3B8" 
               value={categoryName}
@@ -126,24 +128,24 @@ const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScree
             />
           </View>
 
-          <Text style={styles.helperText}>
+          <Text style={[styles.helperText, { color: colors.textSecondary }]}>
             Categories help you organize and manage different groups of employees.
           </Text>
         </View>
 
         {/* Section 2: Add Employees */}
         <View style={styles.section}>
-          <Text style={styles.label}>Add Employees</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Add Employees</Text>
 
           <TouchableOpacity 
-            style={styles.glassButton}
+            style={[styles.glassButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => setIsEmployeeModalVisible(true)}
           >
             <View style={styles.iconCircle}>
-              <Ionicons name="person-add-outline" size={24} color="#3B82F6" />
+              <Ionicons name="person-add-outline" size={24} color={colors.primary} />
             </View>
             <View>
-              <Text style={styles.buttonText}>Add employees to category</Text>
+              <Text style={[styles.buttonText, { color: colors.text }]}>Add employees to category</Text>
               {selectedEmployeeIds.length > 0 && (
                 <Text style={styles.selectedCountText}>
                   {selectedEmployeeIds.length} employees selected
@@ -155,13 +157,13 @@ const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScree
 
         {/* Section 3: Add Managers */}
         <View style={styles.section}>
-          <Text style={styles.label}>Add Managers</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Add Managers</Text>
 
-          <TouchableOpacity style={styles.glassButton}>
+          <TouchableOpacity style={[styles.glassButton, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.iconCircle}>
-              <Ionicons name="person-add-outline" size={24} color="#3B82F6" />
+              <Ionicons name="person-add-outline" size={24} color={colors.primary} />
             </View>
-            <Text style={styles.buttonText}>Add managers to category</Text>
+            <Text style={[styles.buttonText, { color: colors.text }]}>Add managers to category</Text>
           </TouchableOpacity>
         </View>
 
@@ -176,32 +178,32 @@ const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScree
         onRequestClose={() => setIsEmployeeModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Employees</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Select Employees</Text>
               <TouchableOpacity onPress={() => setIsEmployeeModalVisible(false)}>
                 <Text style={styles.modalDoneText}>Done</Text>
               </TouchableOpacity>
             </View>
 
             {isLoadingEmployees ? (
-              <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 20 }} />
+              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
             ) : (
               <FlatList
                 data={employees}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <TouchableOpacity 
-                    style={styles.employeeItem}
+                    style={[styles.employeeItem, { borderBottomColor: colors.border }]}
                     onPress={() => toggleEmployeeSelection(item.id)}
                   >
                     <View style={styles.employeeInfo}>
-                      <View style={styles.avatarPlaceholder}>
-                         <Text style={styles.avatarText}>{item.firstname ? item.firstname[0] : '?'}</Text>
+                      <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? colors.background : '#E2E8F0' }]}>
+                         <Text style={[styles.avatarText, { color: colors.text }]}>{item.firstname ? item.firstname[0] : '?'}</Text>
                       </View>
                       <View>
-                        <Text style={styles.employeeName}>{item.firstname} {item.lastname}</Text>
-                        <Text style={styles.employeeDesignation}>{item.designation || 'Staff'}</Text>
+                        <Text style={[styles.employeeName, { color: colors.text }]}>{item.firstname} {item.lastname}</Text>
+                        <Text style={[styles.employeeDesignation, { color: colors.textSecondary }]}>{item.designation || 'Staff'}</Text>
                       </View>
                     </View>
                     <Ionicons 
@@ -213,7 +215,7 @@ const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScree
                 )}
                 ListEmptyComponent={
                   <View style={{ alignItems: 'center', marginTop: 50 }}>
-                    <Text style={{ color: '#94A3B8' }}>No employees found.</Text>
+                    <Text style={{ color: colors.textSecondary }}>No employees found.</Text>
                   </View>
                 }
               />

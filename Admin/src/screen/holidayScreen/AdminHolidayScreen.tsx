@@ -1,34 +1,45 @@
-
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import Icon from "react-native-vector-icons/Ionicons";
 import {
-    useCreateHoliday,
-    useDeleteHoliday,
-    useGetHolidays,
-    useUpdateHoliday
+  useCreateHoliday,
+  useDeleteHoliday,
+  useGetHolidays,
+  useUpdateHoliday
 } from "../../../../api/hook/holiday/useHoliday";
 import { Holiday } from "../../../../api/hook/type/holiday";
+import { useTheme } from "../../../../src/theme/ThemeContext";
+
+const DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+const MONTHS = [
+  { label: 'Jan', value: '01' }, { label: 'Feb', value: '02' }, { label: 'Mar', value: '03' },
+  { label: 'Apr', value: '04' }, { label: 'May', value: '05' }, { label: 'Jun', value: '06' },
+  { label: 'Jul', value: '07' }, { label: 'Aug', value: '08' }, { label: 'Sep', value: '09' },
+  { label: 'Oct', value: '10' }, { label: 'Nov', value: '11' }, { label: 'Dec', value: '12' },
+];
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 11 }, (_, i) => (CURRENT_YEAR - 5 + i).toString());
 
 const HolidaysScreen = ({ navigation }: any) => {
+  const { colors, isDark } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
@@ -38,6 +49,12 @@ const HolidaysScreen = ({ navigation }: any) => {
   const [date, setDate] = useState(""); // YYYY-MM-DD
   const [description, setDescription] = useState("");
   const [isPaid, setIsPaid] = useState(true);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  
+  // Custom Date Picker State
+  const [tempDay, setTempDay] = useState("01");
+  const [tempMonth, setTempMonth] = useState("01");
+  const [tempYear, setTempYear] = useState(CURRENT_YEAR.toString());
 
   // Fetch Data
   const { data, isLoading, refetch } = useGetHolidays({});
@@ -72,6 +89,26 @@ const HolidaysScreen = ({ navigation }: any) => {
       resetForm();
     }
     setModalVisible(true);
+  };
+
+  const openDatePicker = () => {
+    if (date && date.includes("-")) {
+      const [y, m, d] = date.split("-");
+      setTempDay(d || "01");
+      setTempMonth(m || "01");
+      setTempYear(y || CURRENT_YEAR.toString());
+    } else {
+      const now = new Date();
+      setTempDay(now.getDate().toString().padStart(2, '0'));
+      setTempMonth((now.getMonth() + 1).toString().padStart(2, '0'));
+      setTempYear(now.getFullYear().toString());
+    }
+    setShowDatePicker(true);
+  };
+
+  const confirmDate = () => {
+    setDate(`${tempYear}-${tempMonth}-${tempDay}`);
+    setShowDatePicker(false);
   };
 
   const handleSubmit = () => {
@@ -147,11 +184,11 @@ const HolidaysScreen = ({ navigation }: any) => {
   };
 
   const renderHolidayItem = ({ item }: { item: Holiday }) => (
-    <View style={styles.holidayCard}>
+    <View style={[styles.holidayCard, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
       <View style={styles.holidayHeader}>
         <View>
-          <Text style={styles.holidayName}>{item.name}</Text>
-          <Text style={styles.holidayDate}>
+          <Text style={[styles.holidayName, { color: colors.text }]}>{item.name}</Text>
+          <Text style={[styles.holidayDate, { color: colors.textSecondary }]}>
             {new Date(item.date).toLocaleDateString("en-US", { 
               weekday: 'long', 
               year: 'numeric', 
@@ -161,22 +198,22 @@ const HolidaysScreen = ({ navigation }: any) => {
           </Text>
         </View>
         <View style={styles.actionRow}>
-          <TouchableOpacity onPress={() => handleOpenModal(item)} style={styles.actionButton}>
+          <TouchableOpacity onPress={() => handleOpenModal(item)} style={[styles.actionButton, { backgroundColor: isDark ? colors.background : '#F5F5F5' }]}>
             <Icon name="pencil" size={20} color="#FF9F1C" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.actionButton}>
+          <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.actionButton, { backgroundColor: isDark ? colors.background : '#F5F5F5' }]}>
             <Icon name="trash-outline" size={20} color="#EF5350" />
           </TouchableOpacity>
         </View>
       </View>
       
       {item.description ? (
-        <Text style={styles.holidayDesc}>{item.description}</Text>
+        <Text style={[styles.holidayDesc, { color: colors.textSecondary }]}>{item.description}</Text>
       ) : null}
       
       <View style={styles.badgeRow}>
-        <View style={[styles.paidBadge, { backgroundColor: item.isPaid ? "#E8F5E9" : "#FFEBEE" }]}>
-          <Text style={[styles.paidBadgeText, { color: item.isPaid ? "#2E7D32" : "#C62828" }]}>
+        <View style={[styles.paidBadge, { backgroundColor: item.isPaid ? (isDark ? 'rgba(46, 125, 50, 0.2)' : "#E8F5E9") : (isDark ? 'rgba(198, 40, 40, 0.2)' : "#FFEBEE") }]}>
+          <Text style={[styles.paidBadgeText, { color: item.isPaid ? (isDark ? '#81C784' : "#2E7D32") : (isDark ? '#E57373' : "#C62828") }]}>
             {item.isPaid ? "Paid Holiday" : "Unpaid Holiday"}
           </Text>
         </View>
@@ -185,11 +222,11 @@ const HolidaysScreen = ({ navigation }: any) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#FF8A3D" barStyle="light-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar backgroundColor={colors.primary} barStyle="light-content" />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
@@ -212,10 +249,10 @@ const HolidaysScreen = ({ navigation }: any) => {
             <FontAwesome5
               name="umbrella-beach"
               size={80}
-              color="#FFCCBC"
+              color={isDark ? colors.surface : "#FFCCBC"}
             />
-            <Text style={styles.emptyText}>No holidays found</Text>
-            <TouchableOpacity style={styles.addBtn} onPress={() => handleOpenModal()}>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No holidays found</Text>
+            <TouchableOpacity style={[styles.addBtn, { backgroundColor: colors.primary }]} onPress={() => handleOpenModal()}>
               <Text style={styles.addBtnText}>Add Holiday</Text>
             </TouchableOpacity>
           </View>
@@ -243,42 +280,109 @@ const HolidaysScreen = ({ navigation }: any) => {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
                 {editingHoliday ? "Edit Holiday" : "Add New Holiday"}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Icon name="close" size={24} color="#666" />
+                <Icon name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Holiday Name *</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Holiday Name *</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: isDark ? colors.background : '#F9F9F9', borderColor: colors.border, color: colors.text }]}
                   placeholder="e.g. Independence Day"
+                  placeholderTextColor={colors.textSecondary}
                   value={name}
                   onChangeText={setName}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Date (YYYY-MM-DD) *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="2024-01-01"
-                  value={date}
-                  onChangeText={setDate}
-                />
+                <Text style={[styles.label, { color: colors.text }]}>Date (YYYY-MM-DD) *</Text>
+                  <TouchableOpacity 
+                    style={[styles.input, { 
+                      backgroundColor: isDark ? colors.background : '#F9F9F9', 
+                      borderColor: colors.border, 
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }]}
+                    onPress={openDatePicker}
+                  >
+                    <Text style={{ color: date ? colors.text : colors.textSecondary }}>
+                      {date || "Select Date"}
+                    </Text>
+                    <Icon name="calendar-outline" size={20} color={colors.primary} />
+                  </TouchableOpacity>
               </View>
 
+              {/* Custom Date Picker Modal */}
+              <Modal visible={showDatePicker} transparent animationType="fade">
+                <View style={styles.pickerModalOverlay}>
+                  <View style={[styles.pickerContainer, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.pickerTitle, { color: colors.text }]}>Select Date</Text>
+                    
+                    <View style={styles.pickerRow}>
+                      {/* Day Column */}
+                      <View style={styles.columnWrapper}>
+                        <Text style={[styles.columnLabel, { color: colors.textSecondary }]}>Day</Text>
+                        <ScrollView showsVerticalScrollIndicator={false} style={styles.wheelList}>
+                          {DAYS.map(d => (
+                            <TouchableOpacity key={d} onPress={() => setTempDay(d)} style={[styles.wheelItem, tempDay === d && { backgroundColor: colors.primary + '20', borderRadius: 8 }]}>
+                              <Text style={[styles.wheelText, { color: tempDay === d ? colors.primary : colors.text }, tempDay === d && { fontWeight: '700' }]}>{d}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+
+                      {/* Month Column */}
+                      <View style={styles.columnWrapper}>
+                        <Text style={[styles.columnLabel, { color: colors.textSecondary }]}>Month</Text>
+                        <ScrollView showsVerticalScrollIndicator={false} style={styles.wheelList}>
+                          {MONTHS.map(m => (
+                            <TouchableOpacity key={m.value} onPress={() => setTempMonth(m.value)} style={[styles.wheelItem, tempMonth === m.value && { backgroundColor: colors.primary + '20', borderRadius: 8 }]}>
+                              <Text style={[styles.wheelText, { color: tempMonth === m.value ? colors.primary : colors.text }, tempMonth === m.value && { fontWeight: '700' }]}>{m.label}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+
+                      {/* Year Column */}
+                      <View style={styles.columnWrapper}>
+                        <Text style={[styles.columnLabel, { color: colors.textSecondary }]}>Year</Text>
+                        <ScrollView showsVerticalScrollIndicator={false} style={styles.wheelList}>
+                          {YEARS.map(y => (
+                            <TouchableOpacity key={y} onPress={() => setTempYear(y)} style={[styles.wheelItem, tempYear === y && { backgroundColor: colors.primary + '20', borderRadius: 8 }]}>
+                              <Text style={[styles.wheelText, { color: tempYear === y ? colors.primary : colors.text }, tempYear === y && { fontWeight: '700' }]}>{y}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    </View>
+
+                    <View style={styles.pickerFooter}>
+                      <TouchableOpacity style={styles.pickerCancelBtn} onPress={() => setShowDatePicker(false)}>
+                        <Text style={[styles.pickerCancelText, { color: colors.textSecondary }]}>Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={[styles.pickerConfirmBtn, { backgroundColor: colors.primary }]} onPress={confirmDate}>
+                        <Text style={styles.pickerConfirmText}>Confirm</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Description (Optional)</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Description (Optional)</Text>
                 <TextInput
-                  style={[styles.input, styles.textArea]}
+                  style={[styles.input, styles.textArea, { backgroundColor: isDark ? colors.background : '#F9F9F9', borderColor: colors.border, color: colors.text }]}
                   placeholder="Details about the holiday..."
+                  placeholderTextColor={colors.textSecondary}
                   value={description}
                   onChangeText={setDescription}
                   multiline
@@ -286,21 +390,21 @@ const HolidaysScreen = ({ navigation }: any) => {
                 />
               </View>
 
-              <View style={styles.switchGroup}>
+              <View style={[styles.switchGroup, { backgroundColor: isDark ? colors.background : '#F9F9F9' }]}>
                 <View>
-                  <Text style={styles.label}>Is Paid Holiday?</Text>
-                  <Text style={styles.subLabel}>Will be included in monthly pay</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Is Paid Holiday?</Text>
+                  <Text style={[styles.subLabel, { color: colors.textSecondary }]}>Will be included in monthly pay</Text>
                 </View>
                 <Switch
                   value={isPaid}
                   onValueChange={setIsPaid}
-                  trackColor={{ false: "#D1D1D1", true: "#FF8A3D" }}
+                  trackColor={{ false: isDark ? colors.border : "#D1D1D1", true: colors.primary }}
                   thumbColor="#FFFFFF"
                 />
               </View>
 
               <TouchableOpacity 
-                style={[styles.submitBtn, (createMutation.isPending || updateMutation.isPending) && { opacity: 0.7 }]}
+                style={[styles.submitBtn, { backgroundColor: colors.primary }, (createMutation.isPending || updateMutation.isPending) && { opacity: 0.7 }]}
                 onPress={handleSubmit}
                 disabled={createMutation.isPending || updateMutation.isPending}
               >
@@ -504,5 +608,78 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
+  },
+  // Custom Picker Styles
+  pickerModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pickerContainer: {
+    width: '85%',
+    borderRadius: 20,
+    padding: 20,
+    elevation: 5,
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    height: 200,
+  },
+  columnWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  columnLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  wheelList: {
+    flex: 1,
+    width: '100%',
+  },
+  wheelItem: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  wheelText: {
+    fontSize: 16,
+  },
+  pickerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    gap: 12,
+  },
+  pickerCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  pickerCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  pickerConfirmBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  pickerConfirmText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

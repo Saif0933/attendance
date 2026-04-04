@@ -678,6 +678,7 @@ import { IMAGE_BASE_URL } from '../../../../api/api';
 import { useGetCompanyById, useOnboardCompany } from '../../../../api/hook/company/onBoarding/useCompany';
 import { RootStackParamList } from '../../../../src/navigation/Stack';
 import { useAuthStore } from '../../../../src/store/useAuthStore';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 import { showError, showSuccess } from '../../../../src/utils/meesage';
 
 const { height } = Dimensions.get('window');
@@ -699,6 +700,7 @@ interface MenuItemProps {
 }
 
 const AdminSettingScreen = () => {
+  const { colors, isDark, toggleTheme } = useTheme();
   // --- Navigation ---
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { company } = useAuthStore();
@@ -906,6 +908,15 @@ const AdminSettingScreen = () => {
       icon: 'location',
       iconColor: '#14B8A6' 
     },
+    {
+      id: 'dark-mode-toggle',
+      title: 'Dark Mode',
+      type: 'toggle',
+      value: isDark,
+      onToggle: toggleTheme,
+      icon: isDark ? 'moon' : 'sunny',
+      iconColor: colors.primary
+    },
     { 
       id: '9', 
       title: 'Geo Fencing Locations', 
@@ -988,8 +999,12 @@ const AdminSettingScreen = () => {
   });
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"} 
+        backgroundColor="transparent" 
+        translucent 
+      />
 
       {/* Background with Overlay */}
       <View style={styles.backgroundContainer}>
@@ -999,7 +1014,7 @@ const AdminSettingScreen = () => {
           resizeMode="cover"
           blurRadius={5} 
         >
-          <View style={styles.darkOverlay} />
+          <View style={[styles.darkOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(248, 250, 252, 0.8)' }]} />
         </ImageBackground>
       </View>
 
@@ -1014,11 +1029,9 @@ const AdminSettingScreen = () => {
       >
         {/* --- Header Section (Profile Pic & Title) --- */}
         <View style={styles.headerContainer}>
-          <Animated.View style={{ opacity: headerOpacity }}>
-            <Text style={styles.headerTitle}>
-              Your Info.
-            </Text>
-          </Animated.View>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Your Info.
+          </Text>
 
           {/* Profile Picture Container with Animation */}
           <Animated.View
@@ -1042,8 +1055,8 @@ const AdminSettingScreen = () => {
                   resizeMode="cover"
                 />
               ) : (
-                <View style={styles.placeholderAvatar}>
-                  <Text style={styles.placeholderText}>
+                <View style={[styles.placeholderAvatar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.placeholderText, { color: colors.text }]}>
                     {companyInfo?.name ? companyInfo.name.slice(0, 2).toUpperCase() : 'CO'}
                   </Text>
                 </View>
@@ -1055,16 +1068,19 @@ const AdminSettingScreen = () => {
             </TouchableOpacity>
           </Animated.View>
           
-          <Animated.View style={{ opacity: headerOpacity, alignItems: 'center', width: '100%' }}>
-             <Text style={styles.userName}>{companyInfo?.name || "Loading..."}</Text>
-          </Animated.View>
+          <View style={{ alignItems: 'center', width: '100%', marginTop: 10 }}>
+             <Text style={[styles.userName, { color: colors.text }]}>{companyInfo?.name || "Loading..."}</Text>
+          </View>
         </View>
 
         {/* --- SHEET ANIMATION CONTAINER --- */}
         <Animated.View
           style={[
             styles.sheetContainer,
-            { transform: [{ translateY: slideAnim }] },
+            { 
+              backgroundColor: colors.surface,
+              transform: [{ translateY: slideAnim }] 
+            },
           ]}
         >
           {/* --- Menu Items List --- */}
@@ -1123,16 +1139,15 @@ const AdminSettingScreen = () => {
                   }
                 }}
               >
-                {/* --- Icon Wrapper --- */}
                 <View style={[styles.iconWrapper, { backgroundColor: item.iconColor }]}>
                   <Ionicons name={item.icon} size={18} color="#FFF" />
                 </View>
 
                 {/* --- Text Container (Title + Subtitle) --- */}
                 <View style={styles.textContainer}>
-                    <Text style={styles.menuText}>{item.title}</Text>
+                    <Text style={[styles.menuText, { color: colors.text }]}>{item.title}</Text>
                     {item.subtitle && (
-                        <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                        <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
                     )}
                 </View>
 
@@ -1144,9 +1159,9 @@ const AdminSettingScreen = () => {
 
                   {item.type === 'toggle' ? (
                     <Switch
-                      trackColor={{ false: '#334155', true: '#3B82F6' }}
-                      thumbColor={'#FFFFFF'}
-                      ios_backgroundColor="#334155"
+                      trackColor={{ false: isDark ? '#334155' : '#D1D1D6', true: colors.primary }}
+                      thumbColor="#FFFFFF"
+                      ios_backgroundColor={isDark ? '#334155' : '#D1D1D6'}
                       onValueChange={item.onToggle}
                       value={item.value}
                       style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }], marginLeft: 8 }}
@@ -1155,7 +1170,7 @@ const AdminSettingScreen = () => {
                     <Ionicons
                       name="chevron-forward"
                       size={20}
-                      color="#64748B"
+                      color={colors.textSecondary}
                     />
                   )}
                 </View>
@@ -1165,17 +1180,17 @@ const AdminSettingScreen = () => {
 
             {/* --- NEW: INVITE EMPLOYEES SECTION --- */}
             <View style={styles.inviteSection}>
-                <Text style={styles.inviteHeader}>Invite Employees</Text>
-                <View style={styles.inviteCard}>
+                <Text style={[styles.inviteHeader, { color: colors.text }]}>Invite Employees</Text>
+                <View style={[styles.inviteCard, { backgroundColor: isDark ? colors.surface : '#F1F5F9' }]}>
                     <View>
-                        <Text style={styles.inviteLabel}>Company Code</Text>
-                        <Text style={styles.inviteCode}>5ZUFU</Text>
+                        <Text style={[styles.inviteLabel, { color: colors.textSecondary }]}>Company Code</Text>
+                        <Text style={[styles.inviteCode, { color: colors.primary }]}>5ZUFU</Text>
                     </View>
                     <View style={styles.inviteActions}>
-                        <TouchableOpacity style={styles.iconButton}>
+                        <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.primary }]}>
                             <Ionicons name="copy-outline" size={20} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconButton}>
+                        <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.primary }]}>
                             <Ionicons name="share-social-outline" size={20} color="#fff" />
                         </TouchableOpacity>
                     </View>
@@ -1238,7 +1253,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -1288,7 +1302,6 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#fff',
     marginTop: 3,
     textAlign: 'center', 
   },
@@ -1307,7 +1320,6 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center', 
-    backgroundColor: '#1E293B',
     paddingHorizontal: 20,
     paddingVertical: 18,
     minHeight: 60,
@@ -1395,7 +1407,8 @@ const styles = StyleSheet.create({
   },
   iconButton: {
       marginLeft: 15,
-      padding: 5,
+      padding: 10,
+      borderRadius: 10,
   },
 
   // --- Logout Button ---

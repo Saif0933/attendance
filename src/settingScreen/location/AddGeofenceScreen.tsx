@@ -28,10 +28,29 @@ import { useCreateGeofence, useGetGeofenceById, useUpdateGeofence } from '../../
 import { Geofence } from '../../../api/hook/type/geofence';
 import { useGetAllEmployees } from '../../employee/hook/useEmployee';
 import { EmployeeListItem } from '../../employee/type/employee';
+import { useTheme } from '../../theme/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
+const DARK_MAP_STYLE = [
+  { "elementType": "geometry", "stylers": [{ "color": "#242f3e" }] },
+  { "elementType": "labels.text.fill", "stylers": [{ "color": "#746855" }] },
+  { "elementType": "labels.text.stroke", "stylers": [{ "color": "#242f3e" }] },
+  { "featureType": "administrative.locality", "elementType": "labels.text.fill", "stylers": [{ "color": "#d59563" }] },
+  { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#d59563" }] },
+  { "featureType": "poi.park", "elementType": "geometry", "stylers": [{ "color": "#263c3f" }] },
+  { "featureType": "poi.park", "elementType": "labels.text.fill", "stylers": [{ "color": "#6b9a76" }] },
+  { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#38414e" }] },
+  { "featureType": "road", "elementType": "geometry.stroke", "stylers": [{ "color": "#212a37" }] },
+  { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#746855" }] },
+  { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#1f2835" }] },
+  { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{ "color": "#f3d19c" }] },
+  { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#17263c" }] },
+  { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#515c6d" }] }
+];
+
 const AddGeofenceScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   const route = useRoute();
   
@@ -237,7 +256,7 @@ const AddGeofenceScreen: React.FC = () => {
     const isSelected = selectedEmployeeIds.includes(item.id);
     return (
       <TouchableOpacity 
-        style={[styles.employeeItem, isSelected && styles.selectedEmployeeItem]} 
+        style={[styles.employeeItem, { borderBottomColor: colors.border }, isSelected && [styles.selectedEmployeeItem, { backgroundColor: isDark ? colors.surface : '#FFF0E6' }]]} 
         onPress={() => toggleEmployeeSelection(item.id)}
       >
         <Image 
@@ -245,8 +264,8 @@ const AddGeofenceScreen: React.FC = () => {
           style={styles.employeeImage} 
         />
         <View style={styles.employeeInfo}>
-          <Text style={styles.employeeName}>{item.firstname} {item.lastname}</Text>
-          <Text style={styles.employeeDesignation}>{item.designation || 'No Designation'}</Text>
+          <Text style={[styles.employeeName, { color: colors.text }]}>{item.firstname} {item.lastname}</Text>
+          <Text style={[styles.employeeDesignation, { color: colors.textSecondary }]}>{item.designation || 'No Designation'}</Text>
         </View>
         {isSelected && (
           <Icon name="checkmark-circle" size={24} color="#FF7F50" />
@@ -256,8 +275,8 @@ const AddGeofenceScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor="transparent" translucent />
 
       {/* 1. MAP SECTION */}
       <View style={styles.mapContainer}>
@@ -265,38 +284,39 @@ const AddGeofenceScreen: React.FC = () => {
           ref={mapRef}
           provider={PROVIDER_GOOGLE}
           style={styles.map}
+          customMapStyle={isDark ? DARK_MAP_STYLE : []}
           initialRegion={region}
           showsUserLocation={true}
           onUserLocationChange={onUserLocationChange}
           onRegionChangeComplete={onRegionChangeComplete}
         >
-          <Marker coordinate={region} />
+          <Marker coordinate={region} pinColor={colors.primary} />
           <Circle 
             center={region}
             radius={radius}
-            strokeColor="rgba(255, 127, 80, 0.8)"
-            fillColor="rgba(255, 127, 80, 0.2)"
+            strokeColor={colors.primary}
+            fillColor={isDark ? `${colors.primary}20` : `${colors.primary}30`}
             strokeWidth={2}
           />
         </MapView>
 
-        <View style={styles.searchBar}>
+        <View style={[styles.searchBar, { backgroundColor: colors.surface }]}>
           <TouchableOpacity 
             style={styles.backBtn} 
             onPress={() => navigation.goBack()}
           >
-            <Icon name="arrow-back" size={24} color="#555" />
+            <Icon name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.searchText}>Search location</Text>
-          <Icon name="location-sharp" size={24} color="#999" />
+          <Text style={[styles.searchText, { color: colors.textSecondary }]}>Search location</Text>
+          <Icon name="location-sharp" size={24} color={colors.textSecondary} />
         </View>
 
         <TouchableOpacity 
-          style={styles.currentLocationBtn} 
+          style={[styles.currentLocationBtn, { backgroundColor: colors.surface }]} 
           onPress={handleCurrentLocation}
         >
-          <MaterialIcons name="my-location" size={20} color="#FF7F50" />
-          <Text style={styles.currentLocationText}>Use current location</Text>
+          <MaterialIcons name="my-location" size={20} color={colors.primary} />
+          <Text style={[styles.currentLocationText, { color: colors.primary }]}>Use current location</Text>
         </TouchableOpacity>
       </View>
 
@@ -308,7 +328,7 @@ const AddGeofenceScreen: React.FC = () => {
         <Animated.View 
           style={[
             styles.bottomSheetContainer,
-            { transform: [{ translateY: slideAnim }] }
+            { backgroundColor: colors.background, transform: [{ translateY: slideAnim }] }
           ]}
         >
           <ScrollView 
@@ -320,10 +340,10 @@ const AddGeofenceScreen: React.FC = () => {
           >
             
             <View style={styles.infoRow}>
-              <Icon name="location-sharp" size={24} color="#FF7F50" style={styles.iconWidth} />
+              <Icon name="location-sharp" size={24} color={colors.primary} style={styles.iconWidth} />
               <View>
-                <Text style={styles.labelTitle}>Selected Location</Text>
-                <Text style={styles.coordinateText}>
+                <Text style={[styles.labelTitle, { color: colors.text }]}>Selected Location</Text>
+                <Text style={[styles.coordinateText, { color: colors.textSecondary }]}>
                   {region.latitude.toFixed(6)}, {region.longitude.toFixed(6)}
                 </Text>
               </View>
@@ -331,41 +351,40 @@ const AddGeofenceScreen: React.FC = () => {
 
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <MaterialIcons name="radio-button-checked" size={20} color="#FF7F50" style={styles.iconWidth} />
-                <Text style={styles.labelTitle}>Geo-fence Radius (meters)</Text>
+                <MaterialIcons name="radio-button-checked" size={20} color={colors.primary} style={styles.iconWidth} />
+                <Text style={[styles.labelTitle, { color: colors.text }]}>Geo-fence Radius (meters)</Text>
               </View>
               
               <View style={styles.radiusControlContainer}>
                 <TouchableOpacity onPress={decreaseRadius} style={styles.radiusBtn}>
-                  <Text style={styles.radiusBtnText}>-</Text>
+                  <Text style={[styles.radiusBtnText, { color: colors.primary }]}>-</Text>
                 </TouchableOpacity>
                 
-                <View style={styles.radiusDisplay}>
+                <View style={[styles.radiusDisplay, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <TextInput 
-                    style={styles.radiusInput} 
+                    style={[styles.radiusInput, { color: colors.primary }]} 
                     value={radius.toString()} 
                     keyboardType="numeric"
                     onChangeText={(text) => setRadius(Number(text) || 0)}
                   />
                 </View>
-
                 <TouchableOpacity onPress={increaseRadius} style={styles.radiusBtn}>
-                  <Text style={styles.radiusBtnText}>+</Text>
+                  <Text style={[styles.radiusBtnText, { color: colors.primary }]}>+</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={styles.radiusUnitText}>{radius} meters</Text>
+              <Text style={[styles.radiusUnitText, { color: colors.primary }]}>{radius} meters</Text>
             </View>
 
             <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
-                <MaterialIcons name="edit-location" size={20} color="#FF7F50" style={styles.iconWidth} />
-                <Text style={styles.labelTitle}>Geofence Name / Address</Text>
+                <MaterialIcons name="edit-location" size={20} color={colors.primary} style={styles.iconWidth} />
+                <Text style={[styles.labelTitle, { color: colors.text }]}>Geofence Name / Address</Text>
               </View>
-              <View style={[styles.addressContainer, isReverseGeocoding && { opacity: 0.6 }]}>
+              <View style={[styles.addressContainer, { backgroundColor: colors.surface, borderColor: colors.border }, isReverseGeocoding && { opacity: 0.6 }]}>
                 <TextInput
-                  style={styles.addressInput}
+                  style={[styles.addressInput, { color: colors.text }]}
                   placeholder="Enter geofence name or address"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.textSecondary}
                   multiline
                   value={address}
                   onChangeText={setAddress}
@@ -380,22 +399,22 @@ const AddGeofenceScreen: React.FC = () => {
             {/* Employee Selection Section */}
             <View style={styles.inputGroup}>
               <TouchableOpacity 
-                style={styles.employeeSelectorBtn} 
+                style={[styles.employeeSelectorBtn, { borderBottomColor: colors.border }]} 
                 onPress={() => setIsEmployeeModalVisible(true)}
               >
                 <View style={styles.labelRow}>
-                  <MaterialIcons name="people" size={20} color="#FF7F50" style={styles.iconWidth} />
-                  <Text style={styles.labelTitle}>Assigned Employees</Text>
+                  <MaterialIcons name="people" size={20} color={colors.primary} style={styles.iconWidth} />
+                  <Text style={[styles.labelTitle, { color: colors.text }]}>Assigned Employees</Text>
                 </View>
                 <View style={styles.employeeCountBadge}>
-                  <Text style={styles.employeeCountText}>{selectedEmployeeIds.length} Selected</Text>
-                  <Icon name="chevron-forward" size={20} color="#999" />
+                  <Text style={[styles.employeeCountText, { color: colors.textSecondary }]}>{selectedEmployeeIds.length} Selected</Text>
+                  <Icon name="chevron-forward" size={20} color={colors.textSecondary} />
                 </View>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity 
-              style={[styles.confirmButton, isLoading && { opacity: 0.7 }]}
+              style={[styles.confirmButton, { backgroundColor: colors.primary, shadowColor: colors.primary }, isLoading && { opacity: 0.7 }]}
               onPress={handleConfirm}
               disabled={isLoading}
             >
@@ -420,21 +439,21 @@ const AddGeofenceScreen: React.FC = () => {
         transparent={true}
         onRequestClose={() => setIsEmployeeModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+        <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.7)' }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Employees</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Select Employees</Text>
               <TouchableOpacity onPress={() => setIsEmployeeModalVisible(false)}>
-                <Icon name="close" size={24} color="#333" />
+                <Icon name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
             
             <View style={styles.modalActions}>
-              <TouchableOpacity onPress={handleSelectAllEmployees} style={styles.actionLink}>
-                <Text style={styles.actionLinkText}>Select All</Text>
+              <TouchableOpacity onPress={handleSelectAllEmployees} style={[styles.actionLink, { backgroundColor: `${colors.primary}15` }]}>
+                <Text style={[styles.actionLinkText, { color: colors.primary }]}>Select All</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleClearAllEmployees} style={styles.actionLink}>
-                <Text style={styles.actionLinkText}>Clear All</Text>
+              <TouchableOpacity onPress={handleClearAllEmployees} style={[styles.actionLink, { backgroundColor: `${colors.primary}15` }]}>
+                <Text style={[styles.actionLinkText, { color: colors.primary }]}>Clear All</Text>
               </TouchableOpacity>
             </View>
 
@@ -454,7 +473,7 @@ const AddGeofenceScreen: React.FC = () => {
             )}
             
             <TouchableOpacity 
-              style={styles.modalConfirmBtn} 
+              style={[styles.modalConfirmBtn, { backgroundColor: colors.primary }]} 
               onPress={() => setIsEmployeeModalVisible(false)}
             >
               <Text style={styles.modalConfirmBtnText}>Done</Text>
@@ -471,14 +490,13 @@ export default AddGeofenceScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   // MAP STYLES
   mapContainer: {
     height: height * 0.45,
     width: '100%',
     position: 'relative',
-    zIndex: 1, // Ensure map stays behind sheet visually if needed
+    zIndex: 1, 
   },
   map: {
     ...StyleSheet.absoluteFillObject,
@@ -488,17 +506,16 @@ const styles = StyleSheet.create({
     top: Platform.OS === 'ios' ? 20 : 20,
     left: 20,
     right: 20,
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
     paddingVertical: 12,
-    elevation: 5,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
   backBtn: {
     marginRight: 10,
@@ -506,13 +523,11 @@ const styles = StyleSheet.create({
   searchText: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
   },
   currentLocationBtn: {
     position: 'absolute',
     bottom: 30,
     right: 20,
-    backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
@@ -537,20 +552,19 @@ const styles = StyleSheet.create({
   },
   bottomSheetContainer: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    marginTop: -20,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: -30,
     paddingHorizontal: 20,
     paddingTop: 25,
-    elevation: 10, // Added shadow for better separation
+    elevation: 10,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: -2,
+      height: -4,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
+    shadowRadius: 10,
   },
   scrollContent: {
     paddingBottom: 30,
@@ -568,12 +582,10 @@ const styles = StyleSheet.create({
   },
   labelTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
   },
   coordinateText: {
     fontSize: 13,
-    color: '#666',
     marginTop: 2,
   },
   
@@ -595,30 +607,28 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   radiusBtn: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
   radiusBtnText: {
-    fontSize: 24,
+    fontSize: 28,
     color: '#FF7F50',
     fontWeight: 'bold',
   },
   radiusDisplay: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderWidth: 1.5,
+    borderRadius: 12,
     paddingHorizontal: 20,
-    paddingVertical: 5,
+    paddingVertical: 8,
     marginHorizontal: 15,
-    minWidth: 80,
+    minWidth: 100,
     alignItems: 'center',
   },
   radiusInput: {
-    fontSize: 16,
-    color: '#FF7F50',
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '900',
     padding: 0,
     textAlign: 'center',
   },
@@ -627,28 +637,25 @@ const styles = StyleSheet.create({
     color: '#FF7F50',
     fontSize: 12,
     marginTop: 5,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
   // Address Input
   addressContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderRadius: 12,
     paddingHorizontal: 15,
     paddingVertical: 5,
-    minHeight: 80,
+    minHeight: 100,
     marginBottom: 25,
-    backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   addressInput: {
     flex: 1,
     fontSize: 14,
-    color: '#000',
     textAlignVertical: 'top',
-    minHeight: 60,
+    minHeight: 80,
     paddingTop: 10,
   },
   loaderInside: {
@@ -659,14 +666,20 @@ const styles = StyleSheet.create({
   // Confirm Button
   confirmButton: {
     backgroundColor: '#FF7F50',
-    paddingVertical: 15,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: 'center',
+    shadowColor: '#FF7F50',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   confirmButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
 
   // Employee Selection Styles
@@ -674,56 +687,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    paddingVertical: 16,
+    borderBottomWidth: 1.5,
   },
   employeeCountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 127, 80, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
   employeeCountText: {
-    fontSize: 14,
-    color: '#666',
-    marginRight: 5,
+    fontSize: 12,
+    fontWeight: '700',
+    marginRight: 4,
   },
   
   // Modal Styles
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: '80%',
-    padding: 20,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    height: '85%',
+    padding: 24,
+    elevation: 20,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 22,
+    fontWeight: '800',
   },
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginBottom: 10,
+    marginBottom: 15,
     gap: 15,
   },
   actionLink: {
-    padding: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
   actionLinkText: {
-    color: '#FF7F50',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 13,
   },
   loader: {
     marginTop: 50,
@@ -734,42 +750,39 @@ const styles = StyleSheet.create({
   employeeItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   selectedEmployeeItem: {
-    backgroundColor: '#FFF0E6',
   },
   employeeImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
   },
   employeeInfo: {
     flex: 1,
   },
   employeeName: {
     fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
+    fontWeight: '700',
   },
   employeeDesignation: {
     fontSize: 13,
-    color: '#777',
+    marginTop: 2,
   },
   emptyText: {
     textAlign: 'center',
-    color: '#999',
     marginTop: 50,
+    fontSize: 15,
   },
   modalConfirmBtn: {
-    backgroundColor: '#FF7F50',
-    paddingVertical: 15,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: 'center',
     marginTop: 10,
+    elevation: 5,
   },
   modalConfirmBtnText: {
     color: '#fff',

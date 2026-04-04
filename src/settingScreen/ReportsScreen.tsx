@@ -1,4 +1,3 @@
-
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import {
@@ -11,40 +10,47 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '../theme/ThemeContext';
 
 const ReportsScreen = () => {
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation();
 
   // Reusable List Item Component
   const ReportListItem = ({ title, description, onPress }: { title: string, description: string, onPress?: () => void }) => (
-    <TouchableOpacity style={styles.listItem} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity 
+      style={[styles.listItem, { backgroundColor: colors.surface }]} 
+      onPress={onPress} 
+      activeOpacity={0.7}
+    >
       <View style={styles.textContainer}>
-        <Text style={styles.itemTitle}>{title}</Text>
-        <Text style={styles.itemDescription}>{description}</Text>
+        <Text style={[styles.itemTitle, { color: colors.text }]}>{title}</Text>
+        <Text style={[styles.itemDescription, { color: colors.textSecondary }]}>{description}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#475569" />
+      <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
     </TouchableOpacity>
   );
 
   return (
-    // Replaced View with SafeAreaView
-    <SafeAreaView style={styles.container}>
-      {/* --- Status Bar: Light Content for Dark Background --- */}
-      <StatusBar barStyle="light-content" backgroundColor="#0A2540" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.surface} />
 
       {/* --- Header Section --- */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={[styles.backButton, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' }]}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>Reports.</Text>
-          <Text style={styles.headerSubtitle}>All your reports in one place</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Reports.</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>All your reports in one place</Text>
         </View>
       </View>
 
       {/* --- List Content --- */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { backgroundColor: colors.background }]}>
         <ReportListItem
           title="Monthly Salary Summary Sheet"
           description="View and generate monthly salary summary reports for your employees"
@@ -52,7 +58,7 @@ const ReportsScreen = () => {
         />
         
         {/* Separator Line */}
-        <View style={styles.separator} />
+        <View style={[styles.separator, { backgroundColor: colors.border }]} />
 
         <ReportListItem
           title="Daily Reports"
@@ -67,11 +73,9 @@ const ReportsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A2540',
   },
   // --- Header Styles ---
   header: {
-    backgroundColor: '#0A2540',
     paddingVertical: 18,
     paddingHorizontal: 20,
     flexDirection: 'row',
@@ -82,7 +86,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -90,19 +93,16 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#FFFFFF',
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '500',
     marginTop: -2,
   },
   // --- List Content Styles ---
   scrollContent: {
     flexGrow: 1,
-    backgroundColor: '#F4F7FA',
     paddingTop: 10,
   },
   listItem: {
@@ -111,7 +111,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 18,
     paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
     marginBottom: 1, // subtle gap
   },
   textContainer: {
@@ -121,18 +120,15 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0F172A',
     marginBottom: 4,
   },
   itemDescription: {
     fontSize: 14,
-    color: '#64748B',
     lineHeight: 20,
     fontWeight: '400',
   },
   separator: {
     height: 1,
-    backgroundColor: '#E2E8F0',
     marginHorizontal: 0,
   },
 });

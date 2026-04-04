@@ -20,6 +20,8 @@ import React from "react";
 import { StatusBar } from "react-native";
 import Stack from "./src/navigation/Stack";
 import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
+import { useEffect } from "react";
+import { GetFCMToken, NotificationListener, requestUserPermission } from "./src/notification";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +34,19 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   const { isDark, colors } = useTheme();
+
+  useEffect(() => {
+    const setupNotifications = async () => {
+      const hasPermission = await requestUserPermission();
+      if (hasPermission) {
+        await GetFCMToken();
+      }
+      const unsubscribe = NotificationListener();
+      return unsubscribe;
+    };
+
+    setupNotifications();
+  }, []);
 
   const navigationTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),

@@ -2,7 +2,7 @@ import axios from "axios";
 import { useAuthStore } from "../src/store/useAuthStore";
 import { useEmployeeAuthStore } from "../src/store/useEmployeeAuthStore";
 
-// If you are using a physical device or emulator, "localhost" might not work.
+
 // - Physical Device: Use your machine's local IP (e.g., "http://192.168.1.10:8000/api/v1")
 export const BASE_URL = "http://192.168.1.10:5000/api/v1"; 
 export const IMAGE_BASE_URL = "http://192.168.1.10:5000"; // Assuming images are served from root or specific uploads folder

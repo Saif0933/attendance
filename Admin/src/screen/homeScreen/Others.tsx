@@ -33,7 +33,8 @@ interface OthersProps {
 }
 
 const Others: React.FC<OthersProps> = ({ onClose }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [selectedFilter, setSelectedFilter] = useState('All');
 
   // --- Data Fetching ---
@@ -188,39 +189,16 @@ const Others: React.FC<OthersProps> = ({ onClose }) => {
 
 export default Others;
 
-// --- Styles ---
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
     paddingTop: 12,
     paddingHorizontal: 20,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end', // Aligns modal to bottom
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    height: height * 0.75, // Takes up 75% of screen
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingTop: 12,
-    paddingHorizontal: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 10,
   },
   handleBar: {
     width: 40,
     height: 4,
-    backgroundColor: '#E0E0E0',
     borderRadius: 2,
     alignSelf: 'center',
     marginBottom: 20,
@@ -233,16 +211,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '700', // Using generic bold, use custom font if needed
-    color: '#1A1A1A',
-    fontFamily: 'System', 
+    fontFamily: fonts.bold,
+    color: colors.text,
   },
   closeButton: {
     padding: 4,
-    backgroundColor: '#F5F5F5',
     borderRadius: 20,
   },
-  // Filter Styles
   filtersContainer: {
     height: 50,
     marginBottom: 10,
@@ -257,25 +232,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
     borderWidth: 1,
   },
-  filterChipSelected: {
-    backgroundColor: '#FFD700', // The specific yellow from the image
-    borderColor: '#FFD700',
-  },
-  filterChipUnselected: {
-    backgroundColor: 'transparent',
-    borderColor: '#E0E0E0',
-  },
   filterText: {
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     fontSize: 15,
   },
-  filterTextSelected: {
-    color: '#000',
-  },
-  filterTextUnselected: {
-    color: '#A0A0A0',
-  },
-  // List Item Styles
   listContent: {
     paddingBottom: 40,
   },
@@ -297,17 +257,16 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#000',
+    fontFamily: fonts.bold,
+    color: colors.text,
     marginBottom: 4,
-    fontFamily: 'System',
   },
   roleText: {
     fontSize: 14,
-    color: '#888',
+    fontFamily: fonts.regular,
+    color: colors.textSecondary,
     fontStyle: 'italic',
   },
-  // Button Styles
   actionButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -316,24 +275,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnFollow: {
-    backgroundColor: '#000',
-    borderWidth: 1,
-    borderColor: '#000',
-  },
-  btnFollowing: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
   btnText: {
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     fontSize: 14,
+  },
+  btnFollow: {
+    borderWidth: 1,
   },
   textFollow: {
     color: '#fff',
   },
-  textFollowing: {
+  filterChipSelected: {
+    backgroundColor: '#FFD700',
+  },
+  filterChipUnselected: {
+    backgroundColor: 'transparent',
+  },
+  filterTextSelected: {
     color: '#000',
+  },
+  filterTextUnselected: {
+    color: '#A0A0A0',
   },
 });

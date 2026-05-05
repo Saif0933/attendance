@@ -26,7 +26,8 @@ const AdminPunching = () => {
 };
 
 const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   // Fingerprint + PIN/Password enabled
   const rnBiometrics = new ReactNativeBiometrics({
     allowDeviceCredentials: true,
@@ -106,7 +107,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
             <Text
               style={[
                 styles.switchText,
-                punchType === "IN" && { color: "#fff", fontWeight: "bold" },
+                punchType === "IN" && { color: "#fff", fontFamily: fonts.bold },
               ]}
             >
               IN
@@ -123,7 +124,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
             <Text
               style={[
                 styles.switchText,
-                punchType === "OUT" && { color: "#fff", fontWeight: "bold" },
+                punchType === "OUT" && { color: "#fff", fontFamily: fonts.bold },
               ]}
             >
               OUT
@@ -156,8 +157,8 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
 export default AdminPunching;
 
 /* ✅ STYLES (THIS FIXES THE ERROR) */
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
+  container: { flex: 1 },
 
   header: {
     padding: 20,
@@ -165,9 +166,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  greetingText: { color: "#fff", fontSize: 22, fontWeight: "bold" },
-  subText: { color: "#aaa", fontSize: 14, marginTop: 4 },
-  refreshBtn: { padding: 10, backgroundColor: "#222", borderRadius: 50 },
+  greetingText: { fontSize: 22, fontFamily: fonts.bold },
+  subText: { fontSize: 14, marginTop: 4, fontFamily: fonts.regular },
+  refreshBtn: { padding: 10, borderRadius: 50 },
 
   scannerSection: {
     flex: 1,
@@ -181,18 +182,16 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0a0a0a",
   },
   visualHint: {
-    color: "#fff",
     marginTop: 15,
-    fontWeight: "bold",
+    fontFamily: fonts.bold,
     fontSize: 16,
   },
   subVisualHint: {
-    color: "#666",
     fontSize: 12,
     marginTop: 4,
+    fontFamily: fonts.regular,
   },
 
   punchTypeContainer: {
@@ -202,10 +201,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 15,
   },
-  punchLabel: { color: "#888" },
+  punchLabel: { fontFamily: fonts.medium },
   switchContainer: {
     flexDirection: "row",
-    backgroundColor: "#222",
     borderRadius: 20,
     padding: 2,
   },
@@ -216,7 +214,7 @@ const styles = StyleSheet.create({
   },
   switchText: {
     color: "#666",
-    fontWeight: "600",
+    fontFamily: fonts.bold,
   },
 
   footer: {
@@ -237,10 +235,10 @@ const styles = StyleSheet.create({
   actionBtnText: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: fonts.bold,
   },
   footerNote: {
-    color: "#555",
     fontSize: 12,
+    fontFamily: fonts.regular,
   },
 });

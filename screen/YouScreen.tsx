@@ -20,7 +20,8 @@ import { useTheme } from '../src/theme/ThemeContext';
 const { width } = Dimensions.get('window');
 
 const AttendanceDashboardScreen: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const { employee } = useEmployeeAuthStore();
   const employeeId = employee?.id || '';
 
@@ -100,7 +101,7 @@ const AttendanceDashboardScreen: React.FC = () => {
       </View>
       <View style={styles.bannerTextContainer}>
         <Text style={[styles.bannerMonth, { color: colors.text }]}>
-          {item.month} <Text style={styles.bannerYear}>• {item.year}</Text>
+          {item.month} <Text style={[styles.bannerYear, { color: colors.primary }]}>• {item.year}</Text>
         </Text>
       </View>
     </View>
@@ -115,7 +116,7 @@ const AttendanceDashboardScreen: React.FC = () => {
       <View key={item.id || index} style={[styles.rowContainer, { borderBottomColor: isDark ? colors.border : '#F5F5F5' }]}>
         <View style={styles.dateColumn}>
           <Text style={[styles.dayText, { color: colors.text }]}>{formatDay(item.date)}</Text>
-          <Text style={styles.dateText}>{formatDate(item.date)}</Text>
+          <Text style={[styles.dateText, { color: colors.textSecondary }]}>{formatDate(item.date)}</Text>
         </View>
 
         <View style={styles.statusContainer}>
@@ -157,8 +158,8 @@ const AttendanceDashboardScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#4b43f0']}
-            tintColor="#4b43f0"
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
       >
@@ -168,7 +169,7 @@ const AttendanceDashboardScreen: React.FC = () => {
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Previous Reports</Text>
-          <Text style={styles.sectionSubtitle}>View your last 3 sessions</Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>View your last 3 sessions</Text>
           
           <FlatList
             data={previousMonths}
@@ -184,17 +185,17 @@ const AttendanceDashboardScreen: React.FC = () => {
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Your current analytics</Text>
-          <Text style={styles.sectionSubtitle}>Based on your current monthly data</Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>Based on your current monthly data</Text>
           
           <View style={styles.listContainer}>
             {isLoading ? (
-              <ActivityIndicator size="large" color="#4b43f0" style={{ marginTop: 20 }} />
+              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
             ) : error ? (
-              <Text style={styles.errorText}>Failed to load attendance history</Text>
+              <Text style={[styles.errorText, { color: '#F44336' }]}>Failed to load attendance history</Text>
             ) : attendanceHistory?.data?.length > 0 ? (
               attendanceHistory.data.map((item: Attendance, index: number) => renderAttendanceItem(item, index))
             ) : (
-              <Text style={styles.emptyText}>No attendance records found</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No attendance records found</Text>
             )}
           </View>
         </View>
@@ -206,10 +207,9 @@ const AttendanceDashboardScreen: React.FC = () => {
 
 export default AttendanceDashboardScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollContent: {
     paddingBottom: 40,
@@ -221,24 +221,22 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 26, 
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
   },
   section: {
     marginTop: 25,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
+    fontFamily: fonts.bold,
     paddingHorizontal: 20,
   },
   sectionSubtitle: {
     fontSize: 13,
-    color: '#9E9E9E', 
     paddingHorizontal: 20,
     marginTop: 4,
     marginBottom: 15,
+    fontFamily: fonts.regular,
   },
   bannerList: {
     paddingHorizontal: 20,
@@ -270,12 +268,11 @@ const styles = StyleSheet.create({
   },
   bannerMonth: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   bannerYear: {
     fontSize: 16,
-    fontWeight: 'normal',
-    color: '#FFA726',
+    fontFamily: fonts.regular,
   },
   listContainer: {
     marginTop: 5,
@@ -287,20 +284,18 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5', 
   },
   dateColumn: {
     flex: 1,
   },
   dayText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
     marginBottom: 2,
   },
   dateText: {
     fontSize: 13,
-    color: '#9E9E9E',
+    fontFamily: fonts.regular,
   },
   statusContainer: {
     flexDirection: 'row',
@@ -315,13 +310,13 @@ const styles = StyleSheet.create({
   },
   labelIn: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: '#4CAF50',
     marginBottom: 2,
   },
   labelOut: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: '#FFA726',
     marginBottom: 2,
   },
@@ -331,12 +326,12 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 13,
-    color: '#757575',
     fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   lateTag: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: '#F44336',
   },
   absentContainer: {
@@ -345,19 +340,19 @@ const styles = StyleSheet.create({
   },
   absentText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     color: '#FF5252',
   },
   errorText: {
     textAlign: 'center',
-    color: '#F44336',
     marginTop: 20,
     fontSize: 14,
+    fontFamily: fonts.medium,
   },
   emptyText: {
     textAlign: 'center',
-    color: '#9E9E9E',
     marginTop: 20,
     fontSize: 14,
+    fontFamily: fonts.medium,
   },
 });

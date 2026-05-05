@@ -13,7 +13,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '../theme/ThemeContext';
 
 const ReportsScreen = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
 
   // Reusable List Item Component
@@ -70,7 +71,7 @@ const ReportsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -92,12 +93,12 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
     marginTop: -2,
   },
   // --- List Content Styles ---
@@ -119,13 +120,13 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     marginBottom: 4,
   },
   itemDescription: {
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: '400',
+    fontFamily: fonts.regular,
   },
   separator: {
     height: 1,

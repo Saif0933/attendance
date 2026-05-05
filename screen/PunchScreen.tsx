@@ -36,7 +36,8 @@ const PunchScreen = () => {
 };
 
 const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation<any>();
   const { employee: hookEmployee } = useEmployeeAuthStore();
   const [punchType, setPunchType] = useState<"IN" | "OUT">("IN");
@@ -246,7 +247,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
               style={[
                 styles.switchText,
                 { color: isDark ? colors.textSecondary : "#94A3B8" },
-                punchType === "IN" && { color: "#fff", fontWeight: "bold" },
+                punchType === "IN" && { color: "#fff" },
               ]}
             >
               IN
@@ -263,7 +264,7 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
             <Text
               style={[
                 styles.switchText,
-                punchType === "OUT" && { color: "#fff", fontWeight: "bold" },
+                punchType === "OUT" && { color: "#fff" },
               ]}
             >
               OUT
@@ -321,10 +322,8 @@ const PunchScreenContent = ({ onRefresh }: { onRefresh: () => void }) => {
   );
 };
 
-export default PunchScreen;
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFC" },
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
+  container: { flex: 1 },
 
   header: {
     padding: 20,
@@ -332,9 +331,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  greetingText: { color: "#1E293B", fontSize: 24, fontWeight: "800" },
-  subText: { color: "#64748B", fontSize: 14, marginTop: 4, fontWeight: "500" },
-  refreshBtn: { padding: 10, backgroundColor: "#fff", borderRadius: 50, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+  greetingText: { fontSize: 24, fontFamily: fonts.bold },
+  subText: { fontSize: 14, marginTop: 4, fontFamily: fonts.medium },
+  refreshBtn: { padding: 10, borderRadius: 50, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
 
   scannerSection: {
     flex: 1,
@@ -348,7 +347,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
     elevation: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
@@ -356,15 +354,14 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
   },
   visualHint: {
-    color: "#1E293B",
     marginTop: 18,
-    fontWeight: "800",
+    fontFamily: fonts.bold,
     fontSize: 18,
   },
   subVisualHint: {
-    color: "#666",
     fontSize: 12,
     marginTop: 4,
+    fontFamily: fonts.regular,
   },
 
   punchTypeContainer: {
@@ -374,10 +371,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 15,
   },
-  punchLabel: { color: "#64748B", fontWeight: "600", fontSize: 14 },
+  punchLabel: { fontFamily: fonts.bold, fontSize: 14 },
   switchContainer: {
     flexDirection: "row",
-    backgroundColor: "#F1F5F9",
     borderRadius: 24,
     padding: 4,
   },
@@ -387,8 +383,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   switchText: {
-    color: "#94A3B8",
-    fontWeight: "700",
+    fontFamily: fonts.bold,
     fontSize: 13,
   },
 
@@ -411,13 +406,14 @@ const styles = StyleSheet.create({
   actionBtnText: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: fonts.bold,
   },
   footerNote: {
-    color: "#94A3B8",
     fontSize: 13,
-    fontWeight: "500",
+    fontFamily: fonts.medium,
     marginTop: 10,
     textAlign: "center",
   },
 });
+
+export default PunchScreen;

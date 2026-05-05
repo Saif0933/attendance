@@ -19,7 +19,8 @@ import { useEmployeeAuthStore } from "../store/useEmployeeAuthStore";
 import { useTheme } from "../theme/ThemeContext";
 
 const HolidaysScreen = ({ navigation }: any) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [refreshing, setRefreshing] = useState(false);
   const { company } = useEmployeeAuthStore();
 
@@ -111,9 +112,7 @@ const HolidaysScreen = ({ navigation }: any) => {
   );
 };
 
-export default HolidaysScreen;
-
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -135,7 +134,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: fonts.bold,
   },
   content: {
     flex: 1,
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 12,
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: fonts.medium,
   },
   holidayCard: {
     borderRadius: 12,
@@ -169,17 +168,18 @@ const styles = StyleSheet.create({
   },
   holidayName: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: fonts.bold,
   },
   holidayDate: {
     fontSize: 14,
     marginTop: 2,
-    fontWeight: "500",
+    fontFamily: fonts.medium,
   },
   holidayDesc: {
     fontSize: 14,
     marginTop: 10,
     lineHeight: 20,
+    fontFamily: fonts.regular,
   },
   badgeRow: {
     flexDirection: "row",
@@ -192,6 +192,8 @@ const styles = StyleSheet.create({
   },
   paidBadgeText: {
     fontSize: 12,
-    fontWeight: "700",
+    fontFamily: fonts.bold,
   },
 });
+
+export default HolidaysScreen;

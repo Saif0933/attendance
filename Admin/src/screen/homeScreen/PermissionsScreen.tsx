@@ -14,6 +14,7 @@ import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler
 import LinearGradient from 'react-native-linear-gradient';
 import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +27,8 @@ interface PermissionItemProps {
 }
 
 const PermissionsScreen = () => {
+  const { colors, fonts, isDark } = useTheme();
+  const styles = createStyles(colors, fonts, isDark);
   const navigation = useNavigation();
   const [locationPermission, setLocationPermission] = useState<'granted' | 'pending'>('pending');
   const [locationService, setLocationService] = useState<'granted' | 'pending'>('pending');
@@ -85,11 +88,11 @@ const PermissionsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      <StatusBar translucent backgroundColor="transparent" barStyle={isDark ? "light-content" : "dark-content"} />
       
       <LinearGradient
         // User's preferred blue palette
-        colors={['#323bf0ff', '#667ff0ff', '#a9c2f2ff']}
+        colors={isDark ? ['#0F172A', '#1E293B', '#334155'] : ['#323bf0ff', '#667ff0ff', '#a9c2f2ff']}
         style={styles.gradientBackground}
       >
         <SafeAreaView style={styles.safeArea}>
@@ -110,7 +113,7 @@ const PermissionsScreen = () => {
           {/* Hero Section */}
           <View style={styles.heroSection}>
             <View style={styles.iconContainer}>
-              <ShieldCheck size={64} color="#FFF" strokeWidth={1.5} />
+              <ShieldCheck size={64} color={isDark ? colors.primary : "#FFF"} strokeWidth={1.5} />
             </View>
             <Text style={styles.heroTitle}>Service Access</Text>
             <Text style={styles.heroSubtitle}>
@@ -127,7 +130,7 @@ const PermissionsScreen = () => {
               <Text style={styles.sectionTitle}>Required Permissions</Text>
 
               <PermissionItem
-                icon={<LocateFixed size={24} color="#323bf0" />}
+                icon={<LocateFixed size={24} color={colors.primary} />}
                 title="Location Services"
                 description="Required to enable GPS tracking"
                 status={locationService}
@@ -135,7 +138,7 @@ const PermissionsScreen = () => {
               />
 
               <PermissionItem
-                icon={<ShieldCheck size={24} color="#323bf0" />}
+                icon={<ShieldCheck size={24} color={colors.primary} />}
                 title="Location Permission"
                 description="Required to access device coordinates"
                 status={locationPermission}
@@ -160,6 +163,8 @@ const PermissionItem: React.FC<PermissionItemProps> = ({
   status,
   onPress
 }) => {
+  const { colors, fonts, isDark } = useTheme();
+  const styles = createStyles(colors, fonts, isDark);
   const isGranted = status === 'granted';
 
   return (
@@ -188,7 +193,7 @@ const PermissionItem: React.FC<PermissionItemProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -217,7 +222,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     color: '#FFF',
     letterSpacing: 0.5,
   },
@@ -238,7 +243,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: '#FFF',
     marginBottom: 10,
   },
@@ -247,12 +252,13 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.9)',
     textAlign: 'center',
     lineHeight: 22,
+    fontFamily: fonts.regular,
   },
 
   // Bottom Sheet
   bottomSheet: {
     flex: 1,
-    backgroundColor: '#F8F9FB',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 20,
@@ -268,8 +274,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1C1E',
+    fontFamily: fonts.bold,
+    color: colors.text,
     marginBottom: 20,
     marginLeft: 5,
   },
@@ -278,7 +284,7 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface,
     padding: 16,
     borderRadius: 16,
     marginBottom: 15,
@@ -288,13 +294,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: colors.border,
   },
   itemIconBox: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: isDark ? colors.surface : '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -308,25 +314,26 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: fonts.bold,
+    color: colors.text,
     marginBottom: 4,
   },
   itemDescription: {
     fontSize: 13,
-    color: '#666',
+    color: colors.textSecondary,
     lineHeight: 18,
+    fontFamily: fonts.regular,
   },
   actionButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#323bf0',
+    backgroundColor: colors.primary,
     borderRadius: 20,
   },
   actionButtonText: {
     color: '#FFF',
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   statusLabel: {
     paddingVertical: 6,
@@ -339,7 +346,7 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#4CAF50',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
 });
 

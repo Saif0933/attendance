@@ -64,7 +64,8 @@ const monthNames = [
 
 /* ===================== CUSTOM CALENDAR ===================== */
 const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void, onClose: () => void }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
@@ -122,7 +123,8 @@ const CustomCalendar = ({ onSelect, onClose }: { onSelect: (date: Date) => void,
 };
 
 const EmployeeDetailsScreen = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { employeeId } = route.params || {};
@@ -494,7 +496,8 @@ const EmployeeDetailsScreen = () => {
 // --- Helper Components ---
 
 const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, isMaterial, isIonicons, onPress }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
       <View style={[styles.actionIconCircle, { backgroundColor: isDark ? colors.background : '#F8FAFC', borderColor: colors.border }]}>
@@ -512,7 +515,8 @@ const ActionButton: React.FC<ActionButtonProps> = ({ icon, label, isMaterial, is
 };
 
 const StatCard: React.FC<StatCardProps> = ({ label, count, color }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={[styles.statAccent, { backgroundColor: color }]} />
@@ -525,7 +529,8 @@ const StatCard: React.FC<StatCardProps> = ({ label, count, color }) => {
 };
 
 const DateCell: React.FC<DateCellProps> = ({ day, isWeekend, status, isSelected, onPress, isEmpty }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   
   if (isEmpty) {
     return <View style={styles.dateCell} />;
@@ -571,7 +576,7 @@ const DateCell: React.FC<DateCellProps> = ({ day, isWeekend, status, isSelected,
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -596,7 +601,7 @@ const styles = StyleSheet.create({
   },
   headerTitleText: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     letterSpacing: -0.5,
   },
   profileContainer: {
@@ -632,7 +637,7 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 22,
-    fontWeight: '900',
+    fontFamily: fonts.bold,
     letterSpacing: -0.5,
   },
   metaRow: {
@@ -643,7 +648,7 @@ const styles = StyleSheet.create({
   },
   designationText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   dotSeparator: {
     width: 4,
@@ -653,12 +658,12 @@ const styles = StyleSheet.create({
   },
   payrollBadge: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     textTransform: 'uppercase',
   },
   phoneText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: fonts.regular,
   },
   actionGrid: {
     flexDirection: 'row',
@@ -684,7 +689,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -700,7 +705,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -728,7 +733,7 @@ const styles = StyleSheet.create({
   },
   attendanceTitle: {
     fontSize: 18,
-    fontWeight: '900',
+    fontFamily: fonts.bold,
   },
   datePicker: {
     flexDirection: 'row',
@@ -741,7 +746,7 @@ const styles = StyleSheet.create({
   dateText: {
     marginLeft: 8,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   statsContainer: {
     marginTop: 10,
@@ -771,12 +776,12 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 9,
     marginBottom: 4,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     textTransform: 'uppercase',
   },
   statCount: {
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
   calendarContainer: {
     paddingHorizontal: 16,
@@ -789,7 +794,7 @@ const styles = StyleSheet.create({
   weekDayText: {
     width: (width - 72 - 24) / 7,
     textAlign: 'center',
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     fontSize: 12,
     textTransform: 'uppercase',
   },
@@ -809,7 +814,7 @@ const styles = StyleSheet.create({
   },
   dateTextNum: {
     fontSize: 15,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
   selectedIndicator: {
     position: 'absolute',
@@ -842,7 +847,7 @@ const styles = StyleSheet.create({
   footerBtnText: {
     marginLeft: 8,
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
   modalOverlay: {
     flex: 1,
@@ -868,7 +873,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontFamily: fonts.bold,
   },
   customCalendarContainer: {
   },
@@ -880,7 +885,7 @@ const styles = StyleSheet.create({
   },
   calendarMonthYear: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
   calendarWeekRow: {
     flexDirection: 'row',
@@ -889,7 +894,7 @@ const styles = StyleSheet.create({
   },
   calendarWeekDayText: {
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     width: 35,
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -911,7 +916,7 @@ const styles = StyleSheet.create({
   },
   calendarDayText: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 });
 

@@ -72,8 +72,8 @@ const RegisterBusinessScreen = () => {
   const [pickerTitle, setPickerTitle] = useState('');
   const [pickerOptions, setPickerOptions] = useState<string[]>([]);
   const [currentSelectionHandler, setCurrentSelectionHandler] = useState<(val: string) => void>(() => {});
-  const { colors, isDark } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const company = useAuthStore((state) => state.company);
   const token = useAuthStore((state) => state.token);
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -365,8 +365,8 @@ const RegisterBusinessScreen = () => {
 
 // --- COMPONENTS ---
 const InputGroup: React.FC<InputGroupProps> = ({ label, placeholder, keyboardType, icon, isMaterialIcon, value, onChangeText, editable = true }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   
   return (
     <View style={styles.inputContainer}>
@@ -392,8 +392,8 @@ const InputGroup: React.FC<InputGroupProps> = ({ label, placeholder, keyboardTyp
 };
 
 const DropdownGroup: React.FC<DropdownGroupProps> = ({ label, value, onPress }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
 
   return (
     <View style={styles.inputContainer}>
@@ -406,10 +406,19 @@ const DropdownGroup: React.FC<DropdownGroupProps> = ({ label, value, onPress }) 
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: colors.background },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: colors.text },
+  headerTitle: { 
+    fontSize: 18, 
+    fontFamily: fonts.bold, 
+    color: colors.text 
+  },
+  headerSubtitle: { 
+    fontSize: 16, 
+    fontFamily: fonts.regular, 
+    color: colors.textSecondary 
+  },
   backButton: { padding: 5 },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 20 },
   
@@ -471,28 +480,40 @@ const createStyles = (colors: any) => StyleSheet.create({
     zIndex: 999, 
     elevation: 10, 
   },
-  uploadTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 4 },
-  uploadSubtitle: { fontSize: 14, color: colors.textSecondary },
-  sectionHeader: { fontSize: 12, fontWeight: '700', color: colors.textSecondary, marginTop: 20, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
+  uploadTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.text, marginBottom: 4 },
+  uploadSubtitle: { fontSize: 14, color: colors.textSecondary, fontFamily: fonts.regular },
+  sectionHeader: { fontSize: 12, fontFamily: fonts.bold, color: colors.textSecondary, marginTop: 20, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
   inputContainer: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '500', color: colors.text, marginBottom: 8 },
+  label: {
+    fontSize: 15,
+    fontFamily: fonts.bold,
+    color: '#334155',
+    marginBottom: 8,
+    marginLeft: 4,
+  },
   inputWrapper: { backgroundColor: colors.surface, borderRadius: 10, borderWidth: 1, borderColor: colors.border, height: 50, justifyContent: 'center' },
   disabledInput: { backgroundColor: colors.background, borderColor: colors.border },
-  input: { flex: 1, fontSize: 15, color: colors.text, paddingHorizontal: 15 },
+  input: { flex: 1, fontSize: 15, color: colors.text, paddingHorizontal: 15, fontFamily: fonts.medium },
   textArea: { height: 80, paddingTop: 12, textAlignVertical: 'top', backgroundColor: colors.surface, borderRadius: 10, borderWidth: 1, borderColor: colors.border },
   iconContainer: { position: 'absolute', right: 15 },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 15 },
   col: { flex: 1 },
   dropdownWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 15 },
-  inputText: { fontSize: 15, color: colors.text, flex: 1, marginRight: 5 },
+  inputText: { fontSize: 15, color: colors.text, flex: 1, marginRight: 5, fontFamily: fonts.medium },
   createButton: { backgroundColor: colors.primary, height: 56, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginTop: 10, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  createButtonText: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  createButtonText: { fontSize: 16, fontFamily: fonts.bold, color: '#FFF' },
+  textInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: fonts.medium,
+    color: '#1E293B',
+  },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '50%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 15 },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
+  modalTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.text },
   modalOption: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  modalOptionText: { fontSize: 16, color: colors.text },
+  modalOptionText: { fontSize: 16, color: colors.text, fontFamily: fonts.medium },
 });
 
 export default RegisterBusinessScreen;

@@ -25,7 +25,8 @@ interface TodaysAbsentScreenProps {
 type TabType = 'Absent' | 'Present' | 'Heads';
 
 const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initialTab = 'Absent' }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const { company } = useAuthStore();
   const companyId = company?.id;
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
@@ -176,7 +177,7 @@ const TodaysAbsentScreen: React.FC<TodaysAbsentScreenProps> = ({ onClose, initia
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   activeTabText: {
   },
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
   },
   avatarInitials: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   infoContainer: {
     flex: 1,
@@ -254,12 +255,12 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     marginBottom: 4,
   },
   roleText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   statusContainer: {
     alignItems: 'flex-end',
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     textTransform: 'uppercase',
   },
   separator: {
@@ -286,6 +287,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
+    fontFamily: fonts.medium,
   },
 });
 

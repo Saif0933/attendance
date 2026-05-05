@@ -14,7 +14,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const { height } = Dimensions.get('window');
 
+import { useTheme } from '../theme/ThemeContext';
+
 const PopUpDesignationScreen = () => {
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   
   // Switch States (All OFF as shown in Image 6)
@@ -41,17 +45,17 @@ const PopUpDesignationScreen = () => {
       </TouchableWithoutFeedback>
       
       {/* --- Modal Card Container --- */}
-      <View style={styles.modalContainer}>
+      <View style={[styles.modalContainer, { backgroundColor: isDark ? '#0F172A' : colors.background }]}>
         
         {/* Close Button (Optional - tap outside also closes) */}
         <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-          <Ionicons name="close" size={24} color="#94A3B8" />
+          <Ionicons name="close" size={24} color={colors.textSecondary} />
         </TouchableOpacity>
         
         {/* 1. Dropdown Bar */}
-        <TouchableOpacity style={styles.dropdownBar} activeOpacity={0.9}>
-          <Text style={styles.dropdownText}>Attendance</Text>
-          <Ionicons name="caret-down" size={18} color="#FFF" />
+        <TouchableOpacity style={[styles.dropdownBar, { backgroundColor: colors.surface }]} activeOpacity={0.9}>
+          <Text style={[styles.dropdownText, { color: colors.text }]}>Attendance</Text>
+          <Ionicons name="caret-down" size={18} color={colors.text} />
         </TouchableOpacity>
 
         {/* 2. Toggles Grid */}
@@ -60,11 +64,11 @@ const PopUpDesignationScreen = () => {
           <View style={styles.toggleRow}>
             {/* Add Switch */}
             <View style={styles.toggleItem}>
-              <Text style={styles.toggleLabel}>Add</Text>
+              <Text style={[styles.toggleLabel, { color: colors.text }]}>Add</Text>
               <Switch
-                trackColor={{ false: '#CBD5E1', true: '#0284C7' }}
+                trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor={'#FFFFFF'}
-                ios_backgroundColor="#CBD5E1"
+                ios_backgroundColor={colors.border}
                 onValueChange={() => toggleSwitch('add')}
                 value={permissions.add}
                 style={styles.switchScale}
@@ -73,11 +77,11 @@ const PopUpDesignationScreen = () => {
 
             {/* View Switch */}
             <View style={styles.toggleItem}>
-              <Text style={styles.toggleLabel}>View</Text>
+              <Text style={[styles.toggleLabel, { color: colors.text }]}>View</Text>
               <Switch
-                trackColor={{ false: '#CBD5E1', true: '#0284C7' }}
+                trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor={'#FFFFFF'}
-                ios_backgroundColor="#CBD5E1"
+                ios_backgroundColor={colors.border}
                 onValueChange={() => toggleSwitch('view')}
                 value={permissions.view}
                 style={styles.switchScale}
@@ -89,11 +93,11 @@ const PopUpDesignationScreen = () => {
           <View style={styles.toggleRow}>
             {/* Edit Switch */}
             <View style={styles.toggleItem}>
-              <Text style={styles.toggleLabel}>Edit</Text>
+              <Text style={[styles.toggleLabel, { color: colors.text }]}>Edit</Text>
               <Switch
-                trackColor={{ false: '#CBD5E1', true: '#0284C7' }}
+                trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor={'#FFFFFF'}
-                ios_backgroundColor="#CBD5E1"
+                ios_backgroundColor={colors.border}
                 onValueChange={() => toggleSwitch('edit')}
                 value={permissions.edit}
                 style={styles.switchScale}
@@ -102,11 +106,11 @@ const PopUpDesignationScreen = () => {
 
             {/* Delete Switch */}
             <View style={styles.toggleItem}>
-              <Text style={styles.toggleLabel}>Delete</Text>
+              <Text style={[styles.toggleLabel, { color: colors.text }]}>Delete</Text>
               <Switch
-                trackColor={{ false: '#CBD5E1', true: '#0284C7' }}
+                trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor={'#FFFFFF'}
-                ios_backgroundColor="#CBD5E1"
+                ios_backgroundColor={colors.border}
                 onValueChange={() => toggleSwitch('delete')}
                 value={permissions.delete}
                 style={styles.switchScale}
@@ -116,7 +120,7 @@ const PopUpDesignationScreen = () => {
         </View>
 
         {/* 3. Add Button (Large Pill) */}
-        <TouchableOpacity style={styles.addButton} activeOpacity={0.8} onPress={handleClose}>
+        <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.primary }]} activeOpacity={0.8} onPress={handleClose}>
           <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
 
@@ -125,7 +129,7 @@ const PopUpDesignationScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   // --- Overlay & Modal ---
   overlay: {
     flex: 1,
@@ -137,7 +141,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)', // Semi-transparent dark overlay
   },
   modalContainer: {
-    backgroundColor: '#0F172A', // Dark Slate background
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -160,7 +163,6 @@ const styles = StyleSheet.create({
 
   // --- Dropdown Style ---
   dropdownBar: {
-    backgroundColor: '#94A3B8',
     height: 54,
     borderRadius: 12,
     flexDirection: 'row',
@@ -170,9 +172,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   dropdownText: {
-    color: '#FFF',
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
 
   // --- Toggles Grid ---
@@ -192,9 +193,8 @@ const styles = StyleSheet.create({
     width: '42%',
   },
   toggleLabel: {
-    color: '#FFF',
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   switchScale: {
     transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }],
@@ -202,7 +202,6 @@ const styles = StyleSheet.create({
 
   // --- Add Button ---
   addButton: {
-    backgroundColor: '#1E293B',
     height: 56,
     borderRadius: 28,
     justifyContent: 'center',
@@ -212,7 +211,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#FFF',
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
 });
 

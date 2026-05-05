@@ -25,7 +25,8 @@ interface Shift {
 }
 
 const CompanyShifts = () => {
-    const { colors, isDark } = useTheme();
+    const { colors, isDark, fonts } = useTheme();
+    const styles = createStyles(colors, fonts);
     const navigation = useNavigation();
     const [refreshing, setRefreshing] = useState(false);
 
@@ -112,7 +113,7 @@ const CompanyShifts = () => {
                         }
                         ListEmptyComponent={
                             <View style={styles.empty}>
-                                <Text style={{ color: colors.textSecondary }}>No shifts found</Text>
+                                <Text style={{ color: colors.textSecondary, fontFamily: fonts.regular }}>No shifts found</Text>
                             </View>
                         }
                     />
@@ -130,7 +131,7 @@ const CompanyShifts = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: fonts.bold,
     },
     content: {
         flex: 1,
@@ -166,11 +167,12 @@ const styles = StyleSheet.create({
     },
     shiftName: {
         fontSize: 17,
-        fontWeight: '600',
+        fontFamily: fonts.bold,
         marginBottom: 4,
     },
     shiftTime: {
         fontSize: 14,
+        fontFamily: fonts.medium,
     },
     actionGroup: {
         flexDirection: 'row',

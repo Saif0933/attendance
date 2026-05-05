@@ -493,7 +493,8 @@ const IMAGE_BASE_URL = "http://192.168.1.5:5000";
 /* ===================== SCREEN ===================== */
 
 const StaffHomeScreen: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const { company } = useAuthStore();
   const companyId = company?.id;
   const navigation = useNavigation<any>();
@@ -901,7 +902,8 @@ const StaffHomeScreen: React.FC = () => {
 /* ===================== CUSTOM CALENDAR ===================== */
 
 const CustomCalendar = ({ onSelect }: { onSelect: (date: string) => void }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
@@ -972,7 +974,8 @@ type StatItemProps = {
 };
 
 const StatItem: React.FC<StatItemProps> = ({ label, value, color, onPress }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     <TouchableOpacity style={styles.statItem} onPress={onPress} activeOpacity={0.7}>
       <View style={[styles.statBar, { backgroundColor: color }]} />
@@ -989,20 +992,15 @@ const StatItem: React.FC<StatItemProps> = ({ label, value, color, onPress }) => 
 
 /* ===================== STYLES ===================== */
 
-const styles = StyleSheet.create({
-  // UPDATED: Modern Dark Blue/Black Theme (More attractive & Standard)
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: { flex: 1 }, 
-  
-  // UPDATED: Smoother overlay for depth
   backgroundLayer: { ...StyleSheet.absoluteFillObject, opacity: 0.5 },
-
   scrollContent: { paddingHorizontal: 20, paddingTop: 50, paddingBottom: 100 },
 
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  greetingText: { fontSize: 28, fontWeight: '700', letterSpacing: 0.5 },
+  greetingText: { fontSize: 28, fontFamily: fonts.bold, letterSpacing: 0.5 },
   headerDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#EF4444', marginTop: 10 },
 
-  // UPDATED: Cleaner Stats Card with subtle gradient feel
   statsCard: { 
     borderRadius: 24, 
     padding: 20, 
@@ -1015,8 +1013,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   statsHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
-  statsTitle: { fontSize: 18, fontWeight: '700' },
-  statsSubtitle: { fontSize: 13, marginTop: 4 },
+  statsTitle: { fontSize: 18, fontFamily: fonts.bold },
+  statsSubtitle: { fontSize: 13, marginTop: 4, fontFamily: fonts.regular },
 
   dateButton: { 
     flexDirection: 'row', 
@@ -1026,17 +1024,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center'
   },
-  dateButtonText: { fontSize: 13, fontWeight: '600' },
+  dateButtonText: { fontSize: 13, fontFamily: fonts.bold },
 
   statsGrid: { gap: 24 },
   statRow: { flexDirection: 'row', justifyContent: 'space-between' },
   statItem: { flexDirection: 'row', alignItems: 'center', width: '30%' },
   statBar: { width: 4, height: 38, borderRadius: 4, marginRight: 10 },
-  statValue: { fontSize: 20, fontWeight: 'bold' },
-  statLabel: { fontSize: 11, fontWeight: '500' },
-  statLabelSmall: { fontSize: 10 },
+  statValue: { fontSize: 20, fontFamily: fonts.bold },
+  statLabel: { fontSize: 11, fontFamily: fonts.bold },
+  statLabelSmall: { fontSize: 10, fontFamily: fonts.regular },
 
-  // UPDATED: Modern Search Bar
   searchContainer: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -1046,21 +1043,20 @@ const styles = StyleSheet.create({
     marginBottom: 25,
     borderWidth: 1,
   },
-  searchPlaceholder: { flex: 1, fontSize: 16, marginLeft: 12 },
+  searchPlaceholder: { flex: 1, fontSize: 16, marginLeft: 12, fontFamily: fonts.regular },
 
   actionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, justifyContent: 'space-between' },
   filterPillActive: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: 30, marginRight: 8 },
   filterPillInactive: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30, marginRight: 8, borderWidth: 1 },
-  filterPillTextActive: { fontWeight: '700' },
-  filterPillTextInactive: { fontWeight: '600' },
+  filterPillTextActive: { fontFamily: fonts.bold },
+  filterPillTextInactive: { fontFamily: fonts.bold },
   filterScroll: { paddingRight: 10, alignItems: 'center' },
   addButtonSmall: { padding: 5, marginLeft: 5 },
 
   listHeader: { marginBottom: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  listTitle: { fontSize: 20, fontWeight: 'bold' },
-  listSubtitle: { fontSize: 13 },
+  listTitle: { fontSize: 20, fontFamily: fonts.bold },
+  listSubtitle: { fontSize: 13, fontFamily: fonts.regular },
 
-  // UPDATED: Employee Card Design
   employeeCard: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -1072,19 +1068,18 @@ const styles = StyleSheet.create({
   avatarContainer: { marginRight: 16 },
   avatarImage: { width: 50, height: 50, borderRadius: 25 },
   avatarPlaceholder: { justifyContent: 'center', alignItems: 'center' },
-  avatarText: { fontWeight: 'bold', fontSize: 20 },
+  avatarText: { fontFamily: fonts.bold, fontSize: 20 },
 
   employeeInfo: { flex: 1 },
-  employeeName: { fontWeight: '600', fontSize: 16, marginBottom: 2 },
-  employeeRole: { fontSize: 13 },
+  employeeName: { fontFamily: fonts.bold, fontSize: 16, marginBottom: 2 },
+  employeeRole: { fontSize: 13, fontFamily: fonts.regular },
 
   statusContainer: { alignItems: 'flex-end' },
-  statusInText: { color: '#4ADE80', fontWeight: '700', fontSize: 13 },
-  timeText: { fontSize: 13, marginTop: 2 },
-  lateFlag: { color: '#F87171', fontWeight: '700' },
-  statusNotMarked: { fontSize: 13, fontStyle: 'italic' },
+  statusInText: { color: '#4ADE80', fontFamily: fonts.bold, fontSize: 13 },
+  timeText: { fontSize: 13, marginTop: 2, fontFamily: fonts.bold },
+  lateFlag: { color: '#F87171', fontFamily: fonts.bold },
+  statusNotMarked: { fontSize: 13, fontFamily: fonts.regular },
 
-  // UPDATED: FAB Color
   fab: { 
     position: 'absolute', 
     bottom: 30, 
@@ -1102,20 +1097,20 @@ const styles = StyleSheet.create({
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
   calendarContainer: { width: width * 0.9, borderRadius: 24, padding: 24 },
-  calendarTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+  calendarTitle: { fontSize: 20, fontFamily: fonts.bold, marginBottom: 10 },
 
   // Calendar Styles
   customCalendarContainer: { marginTop: 10 },
   calendarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  calendarMonthYear: { fontSize: 18, fontWeight: 'bold' },
+  calendarMonthYear: { fontSize: 18, fontFamily: fonts.bold },
   calendarWeekRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 10 },
-  calendarWeekDayText: { fontWeight: '600', width: 30, textAlign: 'center' },
+  calendarWeekDayText: { fontFamily: fonts.bold, width: 30, textAlign: 'center' },
   calendarDaysGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   calendarDay: { width: '14.28%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 20 },
   calendarDayEmpty: { width: '14.28%', aspectRatio: 1 },
   calendarDayToday: { },
-  calendarDayText: { fontSize: 16, fontWeight: '500' },
-  calendarDayTextToday: { color: '#fff', fontWeight: 'bold' },
+  calendarDayText: { fontSize: 16, fontFamily: fonts.regular },
+  calendarDayTextToday: { color: '#fff', fontFamily: fonts.bold },
 
   categoryModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   categoryModalContainer: { borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '100%' },
@@ -1138,7 +1133,7 @@ const styles = StyleSheet.create({
   },
   optionsTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     marginBottom: 20,
     textAlign: 'center',
     paddingBottom: 15,
@@ -1156,7 +1151,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
 });
 

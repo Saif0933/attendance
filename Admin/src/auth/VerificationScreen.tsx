@@ -27,8 +27,8 @@ const VerificationScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'VerificationScreen'>>();
   const { mobile } = route.params;
-  const { colors, isDark } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
 
   const [otp, setOtp] = useState(['', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -228,7 +228,7 @@ const VerificationScreen = () => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -242,7 +242,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     color: colors.text,
   },
   backButton: {
@@ -260,7 +260,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   mainTitle: {
     fontSize: 28,
-    fontWeight: '700', 
+    fontFamily: fonts.bold, 
     color: colors.text,
     marginBottom: 15,
     letterSpacing: -0.5,
@@ -268,13 +268,13 @@ const createStyles = (colors: any) => StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: colors.text,
-    fontWeight: '400',
+    fontFamily: fonts.regular,
     marginBottom: 5,
   },
   phoneNumber: {
     fontSize: 16,
     color: colors.primary, 
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
 
   // OTP Styles
@@ -306,11 +306,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     shadowOpacity: 0.2,
   },
   otpInput: {
+    flex: 1,
     fontSize: 24,
+    fontFamily: fonts.bold,
     color: colors.text,
     textAlign: 'center',
-    width: '100%',
-    height: '100%',
   },
   fakeCursor: {
     position: 'absolute',
@@ -396,10 +396,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 8,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: fonts.bold,
+    marginRight: 10,
   },
   footerText: {
     textAlign: 'center',

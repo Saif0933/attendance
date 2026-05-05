@@ -2,12 +2,12 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import {
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -18,8 +18,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const SelectRoleScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { colors, isDark } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
 
   const handleEmployeePress = () => {
     navigation.navigate('EmployeeLoginScreen');
@@ -108,7 +108,7 @@ const SelectRoleScreen = () => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -118,8 +118,8 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 20,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 24,
+    fontFamily: fonts.bold,
     color: colors.text,
   },
   content: {
@@ -155,12 +155,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     letterSpacing: -0.5,
   },
   brandSubtitle: {
-    fontSize: 24,
-    color: colors.text,
-    fontWeight: '800',
+    fontSize: 16,
+    fontFamily: fonts.medium,
+    color: colors.textSecondary,
     textAlign: 'center',
-    marginTop: 10,
-    letterSpacing: -0.5,
+    paddingHorizontal: 20,
   },
 
   // Role Cards
@@ -196,13 +195,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginRight: 10,
   },
   roleTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontFamily: fonts.bold,
     color: colors.text,
     marginBottom: 4,
   },
   roleDescription: {
     fontSize: 13,
+    fontFamily: fonts.regular,
     color: colors.textSecondary,
     lineHeight: 18,
   },
@@ -214,8 +214,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingBottom: 30,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
+    fontFamily: fonts.regular,
     color: colors.textSecondary,
+    textAlign: 'center',
   },
   linkText: {
     color: colors.primary,

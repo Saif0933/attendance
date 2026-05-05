@@ -19,11 +19,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../../navigation/Stack';
 import { useEmployeeRequestOtp } from '../hook/useEmployeeAuth';
+import { useTheme } from '../../theme/ThemeContext';
 import { EmployeeOtpValidator } from '../validator/auth.validator';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const EmployeeLoginScreen = () => {
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation<NavigationProp>();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState('');
@@ -87,7 +90,7 @@ const EmployeeLoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -101,7 +104,7 @@ const EmployeeLoginScreen = () => {
           {/* Top Actions */}
           <View style={styles.topBar}>
             <TouchableOpacity style={styles.backIconButton} onPress={() => navigation.goBack()}>
-              <Ionicons name="chevron-back" size={24} color="#0F172A" />
+              <Ionicons name="chevron-back" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -110,7 +113,7 @@ const EmployeeLoginScreen = () => {
             <Animated.View style={[styles.heroSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
               <View style={styles.logoRing}>
                 <View style={styles.logoInner}>
-                  <Ionicons name="person" size={40} color="#4b43f0" />
+                  <Ionicons name="person" size={40} color={colors.primary} />
                 </View>
               </View>
               <Text style={styles.heroTitle}>Employee Login</Text>
@@ -186,10 +189,10 @@ const EmployeeLoginScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -221,7 +224,7 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     marginBottom: 24,
     shadowColor: '#4b43f0',
     shadowOffset: { width: 0, height: 10 },
@@ -239,14 +242,15 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 28,
-    fontWeight: '900',
-    color: '#0F172A',
+    fontFamily: fonts.bold,
+    color: colors.text,
     marginBottom: 12,
     letterSpacing: -0.5,
   },
   heroSubtitle: {
     fontSize: 15,
-    color: '#64748B',
+    fontFamily: fonts.regular,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 10,
@@ -259,8 +263,8 @@ const styles = StyleSheet.create({
   },
   overline: {
     fontSize: 12,
-    fontWeight: '800',
-    color: '#94A3B8',
+    fontFamily: fonts.bold,
+    color: colors.textSecondary,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 12,
@@ -270,10 +274,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 64,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.surface,
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: '#F1F5F9',
+    borderColor: colors.border,
     paddingHorizontal: 20,
   },
   modernInputError: {
@@ -284,18 +288,18 @@ const styles = StyleSheet.create({
     marginRight: 16,
     paddingRight: 16,
     borderRightWidth: 1,
-    borderRightColor: '#E2E8F0',
+    borderRightColor: colors.border,
   },
   prefixText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#475569',
+    fontFamily: fonts.bold,
+    color: colors.text,
   },
   textInput: {
     flex: 1,
     fontSize: 18,
-    fontWeight: '700',
-    color: '#0F172A',
+    fontFamily: fonts.bold,
+    color: colors.text,
     letterSpacing: 1,
   },
   errorBanner: {
@@ -307,7 +311,7 @@ const styles = StyleSheet.create({
   errorBannerText: {
     color: '#EF4444',
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     marginLeft: 8,
   },
   primaryButton: {
@@ -330,7 +334,7 @@ const styles = StyleSheet.create({
   buttonLabel: {
     color: '#FFF',
     fontSize: 17,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     marginRight: 12,
   },
   buttonArrow: {
@@ -350,13 +354,14 @@ const styles = StyleSheet.create({
   },
   supportLabel: {
     fontSize: 14,
-    color: '#94A3B8',
+    fontFamily: fonts.regular,
+    color: colors.textSecondary,
     marginBottom: 6,
   },
   supportAction: {
     fontSize: 15,
-    color: '#4b43f0',
-    fontWeight: '800',
+    color: colors.primary,
+    fontFamily: fonts.bold,
   },
 });
 

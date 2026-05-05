@@ -42,7 +42,8 @@ const DARK_MAP_STYLE = [
 ];
 
 const AdminHomeScreen = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [othersModalVisible, setOthersModalVisible] = useState(false);
   const [punchingModalVisible, setPunchingModalVisible] = useState(false);
   const navigation = useNavigation<any>();
@@ -215,8 +216,8 @@ const AdminHomeScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   map: { ...StyleSheet.absoluteFillObject },
 
   userLocationMarker: {
@@ -240,14 +241,14 @@ const styles = StyleSheet.create({
   starterCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 30,
     elevation: 6,
   },
   cardIcon: { marginRight: 6 },
-  starterText: { fontSize: 16, fontWeight: '700', color: '#333' },
+  starterText: { fontSize: 16, fontFamily: fonts.bold, color: colors.text },
 
   topRightContainer: { position: 'absolute', top: 60, right: 20 },
   circleButton: {
@@ -258,26 +259,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 6,
   },
-  navButton: { backgroundColor: '#1A1A1A' },
+  navButton: { backgroundColor: colors.surface },
 
   bottomLeftContainer: { position: 'absolute', bottom: 40, left: 20 },
   othersCard: {
     width: 65,
     height: 65,
     borderRadius: 22,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 6,
   },
-  othersText: { fontSize: 11, fontWeight: '700', marginTop: 4 },
+  othersText: { fontSize: 11, fontFamily: fonts.bold, marginTop: 4, color: colors.text },
 
   bottomRightContainer: { position: 'absolute', bottom: 40, right: 20 },
   handButton: {
     width: 65,
     height: 65,
     borderRadius: 22,
-    backgroundColor: '#E67E22',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 6,
@@ -289,13 +290,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     height: '100%',
   },
   modalContentDark: {
-    backgroundColor: '#000',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     height: '100%',
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 15,
     right: 15,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.surface,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -316,7 +317,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 15,
     right: 15,
-    backgroundColor: '#333',
+    backgroundColor: colors.surface,
     width: 40,
     height: 40,
     borderRadius: 20,

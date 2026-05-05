@@ -1,11 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import { darkTheme, lightTheme, ThemeColors, ThemeType } from './colors';
 
 interface ThemeContextType {
   theme: ThemeType;
   colors: ThemeColors;
+  fonts: {
+    regular: string;
+    medium: string;
+    bold: string;
+  };
   toggleTheme: () => void;
   setTheme: (theme: ThemeType) => void;
   isDark: boolean;
@@ -19,25 +24,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const systemColorScheme = useColorScheme();
   
   // Sanitize the system theme to match our ThemeType ('light' | 'dark')
-  const initialTheme: ThemeType = systemColorScheme === 'dark' ? 'dark' : 'light';
-  const [theme, setThemeState] = useState<ThemeType>(initialTheme);
+  const [theme, setThemeState] = useState<ThemeType>(systemColorScheme === 'dark' ? 'dark' : 'light');
 
-  // Sync with system theme whenever it changes
+  // Sync with system theme whenever it changes (e.g. user toggles dark mode in phone settings)
   useEffect(() => {
-    if (systemColorScheme === 'light' || systemColorScheme === 'dark') {
-      setThemeState(systemColorScheme);
+    if (systemColorScheme) {
+      setThemeState(systemColorScheme as ThemeType);
     }
   }, [systemColorScheme]);
 
-  // Load saved theme from storage on mount (optional, but good for persistence if override is allowed)
   useEffect(() => {
     const loadTheme = async () => {
       try {
         const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
         if (savedTheme) {
-          // If a theme was explicitly saved, we could use it, 
-          // but the requirement is to follow phone theme.
-          // For now, let's keep it simple and follow systemColorScheme.
+          setThemeState(savedTheme as ThemeType);
         }
       } catch (error) {
         console.error('Failed to load theme:', error);
@@ -62,9 +63,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const colors = theme === 'light' ? lightTheme : darkTheme;
   const isDark = theme === 'dark';
+  const fonts = {
+    regular: Platform.OS === 'android' ? 'serif' : 'Georgia',
+    medium: Platform.OS === 'android' ? 'serif' : 'Georgia',
+    bold: Platform.OS === 'android' ? 'serif' : 'Georgia-Bold',
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, colors, toggleTheme, setTheme, isDark }}>
+    <ThemeContext.Provider value={{ theme, colors, toggleTheme, setTheme, isDark, fonts }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -90,7 +90,7 @@ function getTabBarIcon(routeName: string, color: string, size: number) {
 }
 
 export default function BottomTabNavigation() {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
 
   return (
     <Tab.Navigator
@@ -104,6 +104,11 @@ export default function BottomTabNavigation() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
+        },
+        tabBarLabelStyle: {
+          fontFamily: fonts.medium,
+          fontSize: 10,
+          marginBottom: 4,
         },
         tabBarIcon: ({ color, size }) =>
           getTabBarIcon(route.name, color, size),

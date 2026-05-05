@@ -52,7 +52,8 @@ const LIGHT_GRAY = '#B0B3B8';
 const LIGHT_BLACK = '#060505ff';
 
 const WorkScreen: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<'Tasks' | 'Decisions' | 'Clients'>('Tasks');
   const scrollViewRef = useRef<ScrollView>(null);
@@ -283,10 +284,10 @@ const WorkScreen: React.FC = () => {
       ) : (
         <Calendar size={60} color="#CBD5E1" />
       )}
-      <Text style={[styles.contentTextGray, { fontWeight: '700', fontSize: 18, color: colors.text, marginTop: 20 }]}>
+      <Text style={[styles.contentTextGray, { fontFamily: fonts.bold, fontSize: 18, color: colors.text, marginTop: 20 }]}>
         {isError ? "Connection Problem" : `${title} Not Available`}
       </Text>
-      <Text style={[styles.contentTextGray, { color: colors.textSecondary }]}>
+      <Text style={[styles.contentTextGray, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
         {isError 
           ? "We could not connect to the server. Please check your internet or try again later." 
           : `Your firm has not enabled ${title} Management. Please contact your administrator.`}
@@ -668,7 +669,7 @@ const WorkScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   containerDark: {
     flex: 1,
   },
@@ -685,7 +686,7 @@ const styles = StyleSheet.create({
   },
   titleWhite: {
     fontSize: 25,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     padding: 5,
   },
   orangeDot: {
@@ -705,10 +706,10 @@ const styles = StyleSheet.create({
   },
   tabWhite: {
     fontSize: 17,
-    fontWeight: '400',
+    fontFamily: fonts.medium,
   },
   activeTabWhite: {
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   activeLine: {
     marginTop: 4,
@@ -752,26 +753,26 @@ const styles = StyleSheet.create({
   priorityAccent: { width: 6, height: '100%' },
   taskCardContent: { flex: 1, padding: 16 },
   taskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  taskTitle: { fontSize: 17, fontWeight: '800', flex: 1, marginRight: 8 },
+  taskTitle: { fontSize: 17, fontFamily: fonts.bold, flex: 1, marginRight: 8 },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  priorityText: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  taskDescription: { fontSize: 14, marginBottom: 12, lineHeight: 20 },
+  priorityText: { fontSize: 10, fontFamily: fonts.bold, textTransform: 'uppercase' },
+  taskDescription: { fontSize: 14, marginBottom: 12, lineHeight: 20, fontFamily: fonts.regular },
   taskFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 10, borderTopWidth: 1 },
   dueDateRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  dueDateText: { fontSize: 12, fontWeight: '600' },
+  dueDateText: { fontSize: 12, fontFamily: fonts.bold },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusText: { fontSize: 11, color: WHITE, fontWeight: '800', textTransform: 'uppercase' },
+  statusText: { fontSize: 11, color: WHITE, fontFamily: fonts.bold, textTransform: 'uppercase' },
   filterToggle: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   filterToggleActive: { },
   filterBar: { paddingHorizontal: 16, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 8 },
   filterInputGroup: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 10, paddingHorizontal: 10, height: 40 },
-  filterInput: { flex: 1, color: '#0F172A', fontSize: 12, fontWeight: '600', padding: 0 },
+  filterInput: { flex: 1, color: '#0F172A', fontSize: 12, fontFamily: fonts.bold, padding: 0 },
   clearBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  clearBtnText: { fontSize: 12, fontWeight: '700' },
+  clearBtnText: { fontSize: 12, fontFamily: fonts.bold },
   paginationContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderTopWidth: 1 },
   pageBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, backgroundColor: DARK_BLUE },
-  pageBtnText: { color: WHITE, fontSize: 14, fontWeight: '700' },
-  pageInfo: { fontSize: 14, fontWeight: '600', color: '#64748B' },
+  pageBtnText: { color: WHITE, fontSize: 14, fontFamily: fonts.bold },
+  pageInfo: { fontSize: 14, fontFamily: fonts.bold, color: '#64748B' },
   datePickerBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -782,9 +783,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   datePickerBtnText: {
-    color: '#0F172A',
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   monthModalOverlay: {
     flex: 1,
@@ -800,8 +800,7 @@ const styles = StyleSheet.create({
   },
   monthPickerHeader: {
     fontSize: 20,
-    fontWeight: '800',
-    color: DARK_BLUE,
+    fontFamily: fonts.bold,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -810,67 +809,146 @@ const styles = StyleSheet.create({
   },
   pickerLabel: {
     fontSize: 14,
-    fontWeight: '700',
-    color: LIGHT_GRAY,
-    marginBottom: 10,
+    fontFamily: fonts.bold,
+    color: '#64748B',
+    marginBottom: 12,
     textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   monthGrid: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: 10,
   },
   monthOption: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   yearGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   yearOption: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   activeOption: {
     backgroundColor: DARK_BLUE,
+    borderColor: DARK_BLUE,
   },
   optionText: {
     fontSize: 14,
-    color: DARK_BLUE,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
+    color: '#475569',
   },
   activeOptionText: {
     color: WHITE,
   },
   applyBtn: {
     backgroundColor: DARK_BLUE,
+    paddingVertical: 16,
     borderRadius: 12,
-    paddingVertical: 14,
     alignItems: 'center',
     marginTop: 10,
   },
   applyBtnText: {
     color: WHITE,
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   cancelBtn: {
-    paddingVertical: 12,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 8,
   },
   cancelBtnText: {
-    color: LIGHT_GRAY,
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#EF4444',
+    fontSize: 15,
+    fontFamily: fonts.bold,
   },
+  retryBtn: {
+    marginTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: ORANGE,
+    borderRadius: 10,
+  },
+  retryBtnText: {
+    color: WHITE,
+    fontSize: 14,
+    fontFamily: fonts.bold,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: ORANGE,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
+  modalContent: {
+    width: '94%',
+    borderRadius: 24,
+    padding: 24,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontFamily: fonts.bold,
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 15,
+    fontFamily: fonts.medium,
+  },
+  participantList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 8,
+  },
+  participantChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  participantChipActive: { },
+  participantChipText: {
+    fontSize: 13,
+    fontFamily: fonts.bold,
+  },
+  participantChipTextActive: { },
   actionIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -879,63 +957,40 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   miniBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 6,
+    width: 34,
+    height: 34,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalContent: {
-    width: '90%',
-    borderRadius: 24,
-    padding: 24,
-    maxHeight: '80%',
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  creatorSubText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
   detailsSection: {
-    paddingVertical: 16,
+    paddingBottom: 20,
+    marginBottom: 16,
     borderBottomWidth: 1,
   },
   descriptionText: {
     fontSize: 15,
     lineHeight: 22,
+    fontFamily: fonts.regular,
   },
   participantRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    marginBottom: 12,
   },
   participantInfo: {
     flex: 1,
   },
   participantName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   participantComment: {
     fontSize: 12,
-    fontStyle: 'italic',
+    fontFamily: fonts.regular,
     marginTop: 2,
+    fontStyle: 'italic',
   },
   statusBadgeSmall: {
     paddingHorizontal: 8,
@@ -945,393 +1000,31 @@ const styles = StyleSheet.create({
   statusTextSmall: {
     fontSize: 10,
     color: WHITE,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
   modalActionRow: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 8,
   },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
     gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
   },
   actionBtnText: {
     color: WHITE,
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 30,
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
-    backgroundColor: DARK_BLUE,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
-  formGroup: {
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  participantList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-  },
-  participantChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  participantChipActive: {
-    backgroundColor: DARK_BLUE,
-    borderColor: DARK_BLUE,
-  },
-  participantChipText: {
-    fontSize: 13,
-    color: '#64748B',
-    fontWeight: '600',
-  },
-  participantChipTextActive: {
-    color: WHITE,
-  },
-  retryBtn: {
-    marginTop: 24,
-    backgroundColor: DARK_BLUE,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-    elevation: 2,
-  },
-  retryBtnText: {
-    color: WHITE,
-    fontWeight: '700',
-    fontSize: 14,
+  creatorSubText: {
+    fontSize: 12,
+    fontFamily: fonts.medium,
+    marginTop: 4,
   },
 });
 
-export { WorkScreen };
-
-
-
-// import { useFocusEffect, useNavigation } from '@react-navigation/native'; // Added useFocusEffect
-// import React, { useCallback, useState } from 'react'; // Added useCallback
-// import {
-//   Dimensions,
-//   Image,
-//   ScrollView,
-//   StatusBar,
-//   StyleSheet,
-//   Text,
-//   TouchableOpacity,
-//   View
-// } from 'react-native';
-// import { SafeAreaView } from 'react-native-safe-area-context';
-// import Icon from 'react-native-vector-icons/Ionicons';
-
-// const { width } = Dimensions.get('window');
-
-// // --- COLORS ---
-// const COLORS = {
-//   bg: '#FFFFFF',
-//   bgLight: '#F5F7FA',
-//   primary: '#2096C9',
-//   textDark: '#101828',
-//   textGrey: '#667085',
-//   border: '#EAECF0',
-//   red: '#F04438',
-//   redBg: '#FEF3F2',
-//   greenBg: '#ECFDF3',
-//   greenText: '#027A48',
-//   blueBg: '#E0F2FE',
-//   blueText: '#026AA2',
-//   orange: '#FF9500',
-// };
-
-// const WorkScreen: React.FC = () => {
-//   const navigation = useNavigation();
-//   const [activeTab, setActiveTab] = useState<'Tasks' | 'Visits' | 'Clients'>('Tasks');
-
-//   const tabs: ('Tasks' | 'Visits' | 'Clients')[] = ['Tasks', 'Visits', 'Clients'];
-
-//   // Reset to 'Tasks' when coming back to this screen
-//   useFocusEffect(
-//     useCallback(() => {
-//       setActiveTab('Tasks');
-//     }, [])
-//   );
-
-//   // Handle Tab Press - Navigate to respective screen
-//   const handleTabPress = (tab: 'Tasks' | 'Visits' | 'Clients') => {
-//     setActiveTab(tab);
-
-//     // Navigate to respective screen
-//     if (tab === 'Visits') {
-//       setTimeout(() => navigation.navigate('VisitsScreen' as never), 50);
-//     } else if (tab === 'Clients') {
-//       setTimeout(() => navigation.navigate('ClientsScreen' as never), 50);
-//     }
-//     // Tasks tab stays on current screen (no navigation needed)
-//   };
-
-//   // --- RENDER TASKS CONTENT ---
-//   const renderTasksContent = () => (
-//     <ScrollView 
-//       style={{ flex: 1, backgroundColor: COLORS.bgLight }}
-//       contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
-//       showsVerticalScrollIndicator={false}
-//     >
-      
-//       {/* High Priority Header */}
-//       <View style={styles.sectionHeader}>
-//         <Text style={styles.sectionTitle}>High Priority</Text>
-//         <View style={styles.actionBadge}>
-//           <Text style={styles.actionBadgeText}>2 ACTIONS REQUIRED</Text>
-//         </View>
-//       </View>
-
-//       {/* --- CARD 1: Critical Deadline --- */}
-//       <View style={styles.card}>
-//         <View style={styles.cardHeaderRow}>
-//           <Text style={styles.tagRed}>CRITICAL DEADLINE</Text>
-//           <TouchableOpacity>
-//              <Icon name="ellipsis-vertical" size={20} color={COLORS.textGrey} />
-//           </TouchableOpacity>
-//         </View>
-        
-//         <Text style={styles.cardTitle}>Finalize Q4 Strategy Presentation</Text>
-        
-//         <View style={styles.metaRow}>
-//           <Icon name="calendar-outline" size={16} color={COLORS.textGrey} />
-//           <Text style={styles.metaText}>Due Today, 5:00 PM</Text>
-//         </View>
-
-//         {/* Progress Bar */}
-//         <View style={styles.progressContainer}>
-//           <View style={styles.progressLabelRow}>
-//              <Text style={styles.progressLabel}>In Progress</Text>
-//              <Text style={styles.progressPercent}>85%</Text>
-//           </View>
-//           <View style={styles.progressBarBg}>
-//              <View style={[styles.progressBarFill, { width: '85%', backgroundColor: COLORS.primary }]} />
-//           </View>
-//         </View>
-
-//         {/* Footer: Avatars + Button */}
-//         <View style={styles.cardFooter}>
-//            <View style={styles.avatarGroup}>
-//               <Image source={{uri: 'https://randomuser.me/api/portraits/women/44.jpg'}} style={styles.avatar} />
-//               <Image source={{uri: 'https://randomuser.me/api/portraits/men/32.jpg'}} style={[styles.avatar, {marginLeft: -10}]} />
-//            </View>
-//            <TouchableOpacity style={styles.viewBtn}>
-//               <Text style={styles.viewBtnText}>View Task</Text>
-//            </TouchableOpacity>
-//         </View>
-//       </View>
-
-//       {/* --- CARD 2: Approval Needed --- */}
-//       <View style={styles.card}>
-//         <View style={styles.cardHeaderRow}>
-//           <Text style={styles.tagOrange}>APPROVAL NEEDED</Text>
-//         </View>
-        
-//         <Text style={styles.cardTitle}>Client Budget Review: TechNova</Text>
-        
-//         <View style={styles.metaRow}>
-//           <Icon name="time-outline" size={16} color={COLORS.textGrey} />
-//           <Text style={styles.metaText}>Overdue by 2 hours</Text>
-//         </View>
-
-//         {/* Red Progress Bar */}
-//         <View style={styles.progressContainer}>
-//           <View style={styles.progressLabelRow}>
-//              <Text style={[styles.progressLabel, {color: COLORS.red}]}>Pending Approval</Text>
-//              <Text style={styles.progressPercent}>40%</Text>
-//           </View>
-//           <View style={styles.progressBarBg}>
-//              <View style={[styles.progressBarFill, { width: '40%', backgroundColor: COLORS.red }]} />
-//           </View>
-//         </View>
-//       </View>
-
-//       {/* Recent Activity Section */}
-//       <View style={[styles.sectionHeader, {marginTop: 25}]}>
-//         <Text style={styles.sectionTitle}>Recent Activity</Text>
-//         <TouchableOpacity>
-//            <Text style={styles.seeAllText}>SEE ALL</Text>
-//         </TouchableOpacity>
-//       </View>
-
-//       {/* Activity List */}
-//       <View style={styles.activityCard}>
-//          <View style={styles.activityIconBoxBlue}>
-//             <Icon name="document-text" size={20} color={COLORS.primary} />
-//          </View>
-//          <View style={styles.activityInfo}>
-//             <Text style={styles.activityTitle}>Draft Sales Contract - Zenit...</Text>
-//             <Text style={styles.activitySub}>Modified 20m ago</Text>
-//          </View>
-//          <View style={styles.statusPillGrey}>
-//             <Text style={styles.statusPillTextGrey}>DRAFT</Text>
-//          </View>
-//       </View>
-
-//       <View style={styles.activityCard}>
-//          <View style={styles.activityIconBoxGreen}>
-//             <Icon name="checkmark-circle" size={20} color={COLORS.greenText} />
-//          </View>
-//          <View style={styles.activityInfo}>
-//             <Text style={styles.activityTitle}>Update CRM: Monthly Report</Text>
-//             <Text style={styles.activitySub}>Completed 1h ago</Text>
-//          </View>
-//          <View style={styles.statusPillGreen}>
-//             <Text style={styles.statusPillTextGreen}>DONE</Text>
-//          </View>
-//       </View>
-
-//       <View style={styles.activityCard}>
-//          <View style={styles.activityIconBoxLightBlue}>
-//             <Icon name="person-add" size={20} color={COLORS.blueText} />
-//          </View>
-//          <View style={styles.activityInfo}>
-//             <Text style={styles.activityTitle}>Onboard New Client: Align...</Text>
-//             <Text style={styles.activitySub}>Due in 3 days</Text>
-//          </View>
-//          <View style={styles.statusPillBlue}>
-//             <Text style={styles.statusPillTextBlue}>WAITING</Text>
-//          </View>
-//       </View>
-
-//     </ScrollView>
-//   );
-
-//   return (
-//     <SafeAreaView style={styles.container}>
-//       <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
-
-//       {/* Header */}
-//       <View style={styles.header}>
-//         <View style={styles.headerLeft}>
-//           <View style={styles.logoBox}>
-//             <Icon name="grid" size={20} color={COLORS.primary} />
-//           </View>
-//           <Text style={styles.headerTitle}>Work Tasks</Text>
-//         </View>
-//         <View style={styles.headerRight}>
-//            <TouchableOpacity style={{marginRight: 15}}>
-//              <Icon name="search" size={24} color={COLORS.textDark} />
-//            </TouchableOpacity>
-//            <TouchableOpacity>
-//              <Icon name="notifications" size={24} color={COLORS.textDark} />
-//            </TouchableOpacity>
-//         </View>
-//       </View>
-
-//       {/* Custom Tab Switcher */}
-//       <View style={styles.tabContainer}>
-//         <View style={styles.tabBackground}>
-//           {tabs.map((tab) => {
-//              const isActive = activeTab === tab;
-//              return (
-//               <TouchableOpacity
-//                 key={tab}
-//                 onPress={() => handleTabPress(tab)}
-//                 style={[styles.tabBtn, isActive && styles.tabBtnActive]}
-//                 activeOpacity={0.8}
-//               >
-//                 <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
-//                   {tab}
-//                 </Text>
-//               </TouchableOpacity>
-//              );
-//           })}
-//         </View>
-//       </View>
-
-//       {/* Main Content - Tasks Content Only (no swipe) */}
-//       {renderTasksContent()}
-
-//     </SafeAreaView>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: '#FFF' },
-//   /* HEADER */
-//   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#FFF' },
-//   headerLeft: { flexDirection: 'row', alignItems: 'center' },
-//   logoBox: { width: 36, height: 36, backgroundColor: '#E0F2FE', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-//   headerTitle: { fontSize: 22, fontWeight: '700', color: COLORS.textDark },
-//   headerRight: { flexDirection: 'row', alignItems: 'center' },
-//   /* TABS */
-//   tabContainer: { paddingHorizontal: 20, paddingBottom: 10, backgroundColor: '#FFF' },
-//   tabBackground: { flexDirection: 'row', backgroundColor: '#F2F4F7', borderRadius: 12, padding: 4 },
-//   tabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
-//   tabBtnActive: { backgroundColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-//   tabText: { fontSize: 14, fontWeight: '600', color: COLORS.textGrey },
-//   tabTextActive: { color: COLORS.primary },
-//   /* SECTIONS */
-//   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-//   sectionTitle: { fontSize: 18, fontWeight: '700', color: COLORS.textDark },
-//   actionBadge: { backgroundColor: '#FEF3F2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-//   actionBadgeText: { color: COLORS.red, fontSize: 10, fontWeight: '700' },
-//   seeAllText: { color: COLORS.primary, fontSize: 12, fontWeight: '700' },
-//   /* CARDS */
-//   card: { backgroundColor: '#FFF', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#101828', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
-//   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-//   tagRed: { color: COLORS.red, fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
-//   tagOrange: { color: COLORS.orange, fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
-//   cardTitle: { fontSize: 16, fontWeight: '700', color: COLORS.textDark, marginBottom: 8 },
-//   metaRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-//   metaText: { fontSize: 13, color: COLORS.textGrey, marginLeft: 6 },
-//   /* Progress */
-//   progressContainer: { marginBottom: 16 },
-//   progressLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-//   progressLabel: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
-//   progressPercent: { fontSize: 12, color: COLORS.textDark, fontWeight: '600' },
-//   progressBarBg: { height: 6, backgroundColor: '#F2F4F7', borderRadius: 3 },
-//   progressBarFill: { height: 6, borderRadius: 3 },
-//   /* Footer */
-//   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#F2F4F7', paddingTop: 12 },
-//   avatarGroup: { flexDirection: 'row' },
-//   avatar: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: '#FFF' },
-//   viewBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
-//   viewBtnText: { color: '#FFF', fontSize: 12, fontWeight: '600' },
-//   /* Activity */
-//   activityCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 12, borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border },
-//   activityIconBoxBlue: { width: 40, height: 40, backgroundColor: '#E0F2FE', borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-//   activityIconBoxGreen: { width: 40, height: 40, backgroundColor: '#ECFDF3', borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-//   activityIconBoxLightBlue: { width: 40, height: 40, backgroundColor: '#F0F9FF', borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-//   activityInfo: { flex: 1 },
-//   activityTitle: { fontSize: 14, fontWeight: '600', color: COLORS.textDark },
-//   activitySub: { fontSize: 12, color: COLORS.textGrey, marginTop: 2 },
-//   statusPillGrey: { backgroundColor: '#F2F4F7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
-//   statusPillTextGrey: { fontSize: 10, fontWeight: '700', color: '#344054' },
-//   statusPillGreen: { backgroundColor: '#ECFDF3', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
-//   statusPillTextGreen: { fontSize: 10, fontWeight: '700', color: COLORS.greenText },
-//   statusPillBlue: { backgroundColor: '#E0F2FE', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
-//   statusPillTextBlue: { fontSize: 10, fontWeight: '700', color: COLORS.blueText },
-// });
-
-// export { WorkScreen };
+export default WorkScreen;

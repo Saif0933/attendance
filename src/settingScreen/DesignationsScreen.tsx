@@ -20,7 +20,8 @@ const { width } = Dimensions.get('window');
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const DesignationsScreen = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation<NavigationProp>();
 
   return (
@@ -79,7 +80,7 @@ const DesignationsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -98,8 +99,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#FFF',
+    fontFamily: fonts.bold,
     letterSpacing: 0.5,
   },
 
@@ -115,36 +115,31 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: '#1E293B', // Darker Blue/Slate Circle
     marginBottom: 30,
     opacity: 0.8,
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#FFF',
+    fontFamily: fonts.bold,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#CBD5E1', // Light Grey Text
     textAlign: 'center',
     marginBottom: 30,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   
   // --- Middle Button (White Pill) ---
   middleButton: {
-    backgroundColor: '#E0F2FE', // Very Light Blue / White
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 30,
   },
   middleButtonText: {
-    color: '#0284C7', // Blue Text
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
 
   // --- Bottom Button Section ---
@@ -153,7 +148,6 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 10 : 20,
   },
   bottomButton: {
-    backgroundColor: '#0284C7', // Matches Header Blue
     borderRadius: 12,
     height: 56,
     flexDirection: 'row',
@@ -171,7 +165,7 @@ const styles = StyleSheet.create({
   bottomButtonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 });
 

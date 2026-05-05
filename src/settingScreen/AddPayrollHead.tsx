@@ -16,7 +16,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '../theme/ThemeContext';
 
 const AddPayrollHead = ({ navigation }: any) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [entryType, setEntryType] = useState('Deduction');
   const [valueType, setValueType] = useState('Fixed Amount');
   const [attendanceType, setAttendanceType] = useState('On Attendance');
@@ -187,7 +188,7 @@ const AddPayrollHead = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -208,8 +209,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontFamily: fonts.bold,
     letterSpacing: -0.5,
   },
   content: {
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     marginBottom: 10,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     letterSpacing: 0.3,
   },
   
@@ -236,7 +236,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFF',
   },
   entryTypeBtnActive: {
     borderRightWidth: 1.5,
@@ -246,12 +245,11 @@ const styles = StyleSheet.create({
   },
   entryTypeText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#64748B',
+    fontFamily: fonts.medium,
     marginLeft: 10,
   },
   entryTypeTextActive: {
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
 
   input: {
@@ -261,7 +259,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginBottom: 24,
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
 
   row: {
@@ -300,11 +298,10 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#64748B',
+    fontFamily: fonts.medium,
   },
   optionTextSelected: {
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 
   currencyInputContainer: {
@@ -317,14 +314,14 @@ const styles = StyleSheet.create({
   },
   currencySymbol: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     marginRight: 12,
   },
   currencyInput: {
     flex: 1,
     paddingVertical: 14,
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
 
   chipBtn: {
@@ -334,12 +331,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 15,
     borderRadius: 12,
-    backgroundColor: '#FFF',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
   },
   chipBtnSelected: {
-    borderColor: '#FF9500',
   },
   chipBtnUnselected: {
   },
@@ -352,9 +346,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   chipText: {
-    color: '#64748B',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.medium,
   },
 
   dropdownInput: {
@@ -369,7 +362,7 @@ const styles = StyleSheet.create({
   },
   dropdownPlaceholder: {
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
 
   footer: {
@@ -389,7 +382,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     letterSpacing: 0.5,
   },
 });

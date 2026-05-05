@@ -31,8 +31,8 @@ interface RoleCardProps {
 
 const SelectAccountTypeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { colors, isDark } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
 
   const handleManagerSelect = () => {
     navigation.navigate('RegisterBusinessScreen');
@@ -113,8 +113,8 @@ const SelectAccountTypeScreen = () => {
 
 // 2. Apply the interface to the component
 const RoleCard: React.FC<RoleCardProps> = ({ headerColor, iconName, title, description, buttonLabel, onPress }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   
   return (
     <View style={styles.cardContainer}>
@@ -140,7 +140,7 @@ const RoleCard: React.FC<RoleCardProps> = ({ headerColor, iconName, title, descr
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -154,7 +154,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   headerTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     color: colors.text,
   },
   backButton: {
@@ -172,7 +172,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   mainTitle: {
     fontSize: 26,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     color: colors.text,
     textAlign: 'center',
     marginBottom: 12,
@@ -180,6 +180,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: fonts.regular,
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
@@ -224,12 +225,13 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: colors.text,
     marginBottom: 8,
   },
   cardDescription: {
     fontSize: 14,
+    fontFamily: fonts.regular,
     color: colors.textSecondary,
     lineHeight: 20,
     marginBottom: 20,
@@ -243,7 +245,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   selectButtonText: {
     color: '#FFF',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     fontSize: 13,
   },
 
@@ -270,10 +272,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   continueButtonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   footerText: {
     textAlign: 'center',
+    fontFamily: fonts.regular,
     color: colors.textSecondary,
     fontSize: 12,
   },

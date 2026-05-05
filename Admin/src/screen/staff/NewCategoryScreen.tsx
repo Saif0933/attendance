@@ -26,7 +26,8 @@ interface NewCategoryScreenProps {
 }
 
 const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScreenProps) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [categoryName, setCategoryName] = useState(initialData?.name || '');
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>(
     initialData?.employees?.map(emp => emp.id) || []
@@ -227,7 +228,7 @@ const NewCategoryScreen = ({ onClose, isEditing, initialData }: NewCategoryScree
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     backgroundColor: '#0F172A', 
     paddingTop: 15,
@@ -249,12 +250,12 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: '#fff',
   },
   doneText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: '#3B82F6', 
   },
 
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: '#fff',
     marginBottom: 12,
   },
@@ -285,13 +286,14 @@ const styles = StyleSheet.create({
   textInput: {
     fontSize: 16,
     color: '#fff',
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   helperText: {
     marginTop: 10,
     color: '#94A3B8', 
     fontSize: 13,
     lineHeight: 18,
+    fontFamily: fonts.regular,
   },
 
   glassButton: {
@@ -309,13 +311,13 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     color: '#fff',
   },
   selectedCountText: {
     fontSize: 12,
     color: '#3B82F6',
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
 
   // Modal Styles
@@ -342,13 +344,13 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: '#fff',
   },
   modalDoneText: {
     fontSize: 16,
     color: '#3B82F6',
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   employeeItem: {
     flexDirection: 'row',
@@ -373,16 +375,17 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   employeeName: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   employeeDesignation: {
     color: '#94A3B8',
     fontSize: 12,
+    fontFamily: fonts.medium,
   },
 });
 

@@ -41,7 +41,8 @@ const DARK_MAP_STYLE = [
 ];
 
 const GeoFencingScreen: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   const mapRef = useRef<MapView>(null);
 
@@ -298,7 +299,7 @@ const GeoFencingScreen: React.FC = () => {
             ListEmptyComponent={
               <View style={{ alignItems: 'center', marginTop: 50 }}>
                 <MaterialIcons name="location-off" size={60} color={colors.textSecondary} />
-                <Text style={{ color: colors.textSecondary, marginTop: 10, fontSize: 16 }}>No Geofences available</Text>
+                <Text style={{ color: colors.textSecondary, marginTop: 10, fontSize: 16, fontFamily: fonts.medium }}>No Geofences available</Text>
               </View>
             }
           />
@@ -310,7 +311,7 @@ const GeoFencingScreen: React.FC = () => {
 
 export default GeoFencingScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     flex: 1,
     marginLeft: 15,
   },
@@ -375,11 +376,12 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: fonts.bold,
     marginBottom: 4,
   },
   itemSubtitle: {
     fontSize: 14,
+    fontFamily: fonts.regular,
   },
   actionButtons: {
     flexDirection: 'row',

@@ -20,12 +20,15 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../../navigation/Stack';
 import { useEmployeeAuthStore } from '../../store/useEmployeeAuthStore';
 import { useEmployeeRequestOtp, useEmployeeVerifyOtp } from '../hook/useEmployeeAuth';
+import { useTheme } from '../../theme/ThemeContext';
 import { EmployeeLoginValidator } from '../validator/auth.validator';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type VerificationRouteProp = RouteProp<RootStackParamList, 'EmployeeVerificationScreen'>;
 
 const VerificationScreen = () => {
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts, isDark);
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<VerificationRouteProp>();
   const { mobile } = route.params;
@@ -138,19 +141,19 @@ const VerificationScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color="#0F172A" />
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
           </TouchableOpacity>
 
           <View style={styles.mainContent}>
             <Animated.View style={[styles.heroSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
               <View style={styles.logoRing}>
                 <View style={styles.logoInner}>
-                  <Ionicons name="shield-checkmark" size={40} color="#4b43f0" />
+                  <Ionicons name="shield-checkmark" size={40} color={colors.primary} />
                 </View>
               </View>
               <Text style={styles.heroTitle}>Verification Code</Text>
@@ -204,38 +207,38 @@ const VerificationScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+const createStyles = (colors: any, fonts: any, isDark: boolean) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   scrollContent: { flexGrow: 1 },
   backButton: { paddingTop: Platform.OS === 'ios' ? 20 : 40, paddingHorizontal: 24, paddingBottom: 10 },
   mainContent: { flex: 1, paddingHorizontal: 30, paddingTop: 20 },
   heroSection: { alignItems: 'center', marginBottom: 40 },
   logoRing: {
-    width: 100, height: 100, borderRadius: 50, borderWidth: 1, borderColor: '#F1F5F9',
-    justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', marginBottom: 24,
+    width: 100, height: 100, borderRadius: 50, borderWidth: 1, borderColor: colors.border,
+    justifyContent: 'center', alignItems: 'center', backgroundColor: colors.surface, marginBottom: 24,
     shadowColor: '#4b43f0', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 15, elevation: 5
   },
-  logoInner: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#EEF2FF', justifyContent: 'center', alignItems: 'center' },
-  heroTitle: { fontSize: 28, fontWeight: '900', color: '#0F172A', marginBottom: 12 },
-  heroSubtitle: { fontSize: 15, color: '#64748B', textAlign: 'center', lineHeight: 22 },
+  logoInner: { width: 80, height: 80, borderRadius: 40, backgroundColor: isDark ? colors.surface : '#EEF2FF', justifyContent: 'center', alignItems: 'center' },
+  heroTitle: { fontSize: 28, fontFamily: fonts.bold, color: colors.text, marginBottom: 12 },
+  heroSubtitle: { fontSize: 15, fontFamily: fonts.regular, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
   formArea: { width: '100%' },
   otpGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30 },
   otpSlot: {
-    width: 64, height: 64, borderRadius: 16, backgroundColor: '#F8FAFC',
-    borderWidth: 1.5, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center'
+    width: 64, height: 64, borderRadius: 16, backgroundColor: colors.surface,
+    borderWidth: 1.5, borderColor: colors.border, justifyContent: 'center', alignItems: 'center'
   },
-  otpSlotFocused: { borderColor: '#4b43f0', backgroundColor: '#FFFFFF' },
+  otpSlotFocused: { borderColor: colors.primary, backgroundColor: colors.surface },
   otpSlotError: { borderColor: '#EF4444', backgroundColor: '#FEF2F2' },
-  otpInput: { fontSize: 24, fontWeight: '800', color: '#0F172A', textAlign: 'center', width: '100%' },
-  errorText: { color: '#EF4444', fontSize: 13, textAlign: 'center', marginBottom: 20 },
+  otpInput: { fontSize: 24, fontFamily: fonts.bold, color: colors.text, textAlign: 'center', width: '100%' },
+  errorText: { color: '#EF4444', fontSize: 13, fontFamily: fonts.medium, textAlign: 'center', marginBottom: 20 },
   timerWrapper: { alignItems: 'center', marginBottom: 30 },
-  timerBadge: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20, backgroundColor: '#EEF2FF', marginBottom: 12 },
-  timerText: { fontSize: 14, fontWeight: '700', color: '#4b43f0' },
-  resendAction: { fontSize: 14, color: '#94A3B8', fontWeight: '700' },
-  resendActionActive: { color: '#4b43f0', textDecorationLine: 'underline' },
+  timerBadge: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20, backgroundColor: colors.surface, marginBottom: 12 },
+  timerText: { fontSize: 14, fontFamily: fonts.bold, color: colors.primary },
+  resendAction: { fontSize: 14, color: colors.textSecondary, fontFamily: fonts.bold },
+  resendActionActive: { color: colors.primary, textDecorationLine: 'underline' },
   primaryButton: { height: 64, borderRadius: 20, overflow: 'hidden' },
   buttonGradient: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  buttonLabel: { color: '#FFF', fontSize: 17, fontWeight: '800', marginRight: 12 },
+  buttonLabel: { color: '#FFF', fontSize: 17, fontFamily: fonts.bold, marginRight: 12 },
   buttonArrow: { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
 });
 

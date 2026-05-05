@@ -22,7 +22,8 @@ import { useTheme } from '../theme/ThemeContext';
 const { width } = Dimensions.get('window');
 
 const PayrollConfiguration = ({ navigation }: any) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'Benefits' | 'Deductions'>('Benefits');
   
@@ -178,7 +179,7 @@ const PayrollConfiguration = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -199,8 +200,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontFamily: fonts.bold,
     letterSpacing: -0.5,
   },
   tabContainer: {
@@ -218,11 +218,11 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: fonts.medium,
     letterSpacing: 0.5,
   },
   activeTabText: {
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
   activeLine: {
     position: 'absolute',
@@ -259,17 +259,9 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1.5,
   },
-  iconBgBlue: {
-    borderWidth: 1,
-    borderColor: '#E0F2FE',
-  },
-  iconBgOrange: {
-    borderWidth: 1,
-    borderColor: '#FEF3C7',
-  },
   emptyTitle: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -277,7 +269,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 15,
     lineHeight: 24,
-    fontWeight: '400',
+    fontFamily: fonts.regular,
   },
   footer: {
     padding: 20,
@@ -297,7 +289,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     marginLeft: 10,
     letterSpacing: 0.5,
   },

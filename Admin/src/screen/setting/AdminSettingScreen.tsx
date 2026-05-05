@@ -700,7 +700,8 @@ interface MenuItemProps {
 }
 
 const AdminSettingScreen = () => {
-  const { colors, isDark, toggleTheme } = useTheme();
+  const { colors, isDark, toggleTheme, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   // --- Navigation ---
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { company } = useAuthStore();
@@ -1221,10 +1222,9 @@ const AdminSettingScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
   },
   backgroundContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -1237,7 +1237,6 @@ const styles = StyleSheet.create({
   },
   darkOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
   },
   scrollContent: {
     paddingTop: 60,
@@ -1252,7 +1251,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -1275,16 +1274,13 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#334155',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#1E293B',
   },
   placeholderText: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontFamily: fonts.bold,
   },
   editBadge: {
     position: 'absolute',
@@ -1301,14 +1297,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     marginTop: 3,
     textAlign: 'center', 
   },
 
   // --- SHEET STYLES ---
   sheetContainer: {
-    backgroundColor: '#0F172A',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingTop: 25,
@@ -1334,7 +1329,7 @@ const styles = StyleSheet.create({
   },
   menuBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: 'rgba(51, 65, 85, 0.2)',
   },
   iconWrapper: {
     width: 32,
@@ -1350,14 +1345,13 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontSize: 16,
-    color: '#fff',
-    fontWeight: '500',
+    fontFamily: fonts.bold,
   },
   menuSubtitle: {
       fontSize: 12,
-      color: '#94A3B8', 
       marginTop: 4,
       lineHeight: 16,
+      fontFamily: fonts.regular,
   },
   rightAction: {
     flexDirection: 'row',
@@ -1367,7 +1361,7 @@ const styles = StyleSheet.create({
   rightInfoText: {
       color: '#3B82F6', 
       fontSize: 14,
-      fontWeight: '600',
+      fontFamily: fonts.bold,
       marginRight: 4,
   },
 
@@ -1377,14 +1371,12 @@ const styles = StyleSheet.create({
       marginHorizontal: 16,
   },
   inviteHeader: {
-      color: '#fff',
       fontSize: 16,
-      fontWeight: '700',
+      fontFamily: fonts.bold,
       marginBottom: 10,
       marginLeft: 4,
   },
   inviteCard: {
-      backgroundColor: '#1E293B',
       borderRadius: 16,
       padding: 20,
       flexDirection: 'row',
@@ -1392,14 +1384,13 @@ const styles = StyleSheet.create({
       alignItems: 'center',
   },
   inviteLabel: {
-      color: '#94A3B8',
       fontSize: 12,
       marginBottom: 4,
+      fontFamily: fonts.medium,
   },
   inviteCode: {
-      color: '#fff',
       fontSize: 20,
-      fontWeight: 'bold',
+      fontFamily: fonts.bold,
       letterSpacing: 1,
   },
   inviteActions: {
@@ -1425,7 +1416,7 @@ const styles = StyleSheet.create({
   logoutText: {
     color: '#EF4444',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   footerContainer: {
     marginTop: 25,
@@ -1435,10 +1426,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748B',
     marginBottom: 4,
+    fontFamily: fonts.regular,
   },
   companyText: {
     fontSize: 12,
     color: '#64748B',
+    fontFamily: fonts.regular,
   },
 });
 

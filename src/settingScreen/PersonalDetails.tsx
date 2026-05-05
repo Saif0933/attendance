@@ -23,7 +23,8 @@ import { useTheme } from '../theme/ThemeContext';
 import { showSuccess } from '../utils/meesage';
 
 const PersonalDetails = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   const { employee, company,token } = useEmployeeAuthStore();
   const employeeId = employee?.id;
@@ -140,8 +141,8 @@ const PersonalDetails = () => {
               },
               {
                 onSuccess: () => {
-                  showSuccess('Personal details updated');
-                  navigation.goBack();
+                   showSuccess('Personal details updated');
+                   navigation.goBack();
                 },
                 onError: (error: any) => {
                   Alert.alert('Error', error?.response?.data?.message || 'Failed to update details');
@@ -362,7 +363,7 @@ const PersonalDetails = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -378,7 +379,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   saveButton: {
-    backgroundColor: '#FF9F00', 
     paddingVertical: 8,
     paddingHorizontal: 24,
     borderRadius: 20, 
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     fontSize: 16,
   },
   content: {
@@ -460,11 +460,13 @@ const styles = StyleSheet.create({
     left: 10,
     paddingHorizontal: 4,
     fontSize: 12,
+    fontFamily: fonts.bold,
   },
   input: {
     fontSize: 16,
     paddingVertical: 0, 
     height: '100%',
+    fontFamily: fonts.medium,
   },
   disabledText: {
     opacity: 0.6,

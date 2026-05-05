@@ -29,8 +29,8 @@ const { width, height } = Dimensions.get('window');
 const LoginScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { colors, isDark } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   
   const { mutate: requestOtp, isPending } = useRequestOtp();
 
@@ -221,7 +221,7 @@ const LoginScreen = () => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -302,16 +302,15 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   headline: {
     fontSize: 36,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     color: colors.text,
     marginBottom: 10,
-    letterSpacing: -1,
   },
   subheadline: {
     fontSize: 16,
+    fontFamily: fonts.regular,
     color: colors.textSecondary,
     lineHeight: 25,
-    fontWeight: '400',
     marginBottom: 40,
   },
   inputWrapper: {
@@ -319,7 +318,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   inputOverline: {
     fontSize: 12,
-    fontWeight: '900',
+    fontFamily: fonts.bold,
     color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 2,
@@ -343,7 +342,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   countryCode: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     color: colors.text,
   },
   verticalSep: {
@@ -355,7 +354,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   phoneField: {
     flex: 1,
     fontSize: 19,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: colors.text,
     letterSpacing: 1,
   },
@@ -379,7 +378,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   btnLabel: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '900',
+    fontFamily: fonts.bold,
     letterSpacing: 0.5,
   },
   btnIconOrb: {
@@ -408,6 +407,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   copyright: {
     fontSize: 13,
+    fontFamily: fonts.regular,
     color: colors.textSecondary,
     letterSpacing: 0.5,
   },

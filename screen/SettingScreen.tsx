@@ -39,7 +39,8 @@ interface MenuItemProps {
 }
 
 const ProfileScreen = () => {
-  const { colors, isDark, toggleTheme } = useTheme();
+  const { colors, isDark, toggleTheme, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   // --- Navigation ---
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // --- State for Profile Image ---
@@ -416,7 +417,7 @@ const ProfileScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffffff',
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -484,7 +485,7 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     color: '#888',
   },
   editBadge: {
@@ -502,12 +503,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     marginTop: 3,
     textAlign: 'center', // Explicit center alignment for text
   },
   userRole: {
     fontSize: 14,
+    fontFamily: fonts.regular,
     color: '#666',
     marginTop: 2,
     textAlign: 'center', // Explicit center alignment for text
@@ -521,12 +523,6 @@ const styles = StyleSheet.create({
     paddingTop: 25,
     paddingHorizontal: 0,
     minHeight: height * 0.7,
-    // elevation: 10,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: -2 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 5,
-    // marginTop: 10,
   },
 
   // --- Menu List ---
@@ -565,7 +561,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
-    fontWeight: '500',
+    fontFamily: fonts.bold,
   },
   rightAction: {
     justifyContent: 'center',
@@ -586,7 +582,7 @@ const styles = StyleSheet.create({
   logoutText: {
     color: '#FF3B30',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 
   // --- Footer ---
@@ -596,11 +592,13 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 12,
+    fontFamily: fonts.regular,
     color: '#999',
     marginBottom: 4,
   },
   companyText: {
     fontSize: 12,
+    fontFamily: fonts.regular,
     color: '#999',
   },
 });

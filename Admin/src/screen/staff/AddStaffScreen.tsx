@@ -60,7 +60,8 @@ interface AddStaffScreenProps {
 }
 
 const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   // --- 2. STATE MANAGEMENT ---
   
   // TanStack Query Hook for employee onboarding
@@ -838,7 +839,8 @@ interface InputItemProps {
 }
 
 const InputItem: React.FC<InputItemProps> = ({ label, placeholder, value, onChange, isHalf, isPassword, keyboardType }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     <View style={[styles.inputContainer, isHalf && styles.halfInput]}>
       <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
@@ -866,7 +868,8 @@ interface DropdownItemProps {
 }
 
 const DropdownItem: React.FC<DropdownItemProps> = ({ label, isHalf, placeholder, value, onPress }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const parts = value ? value.match(/^(.*)\s\((.*)\)$/) : null;
   const mainValue = parts ? parts[1] : value;
   const subValue = parts ? parts[2] : null;
@@ -899,7 +902,8 @@ interface ToggleItemProps {
 }
 
 const ToggleItem: React.FC<ToggleItemProps> = ({ label, subLabel, value, onValueChange }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     <View style={[styles.toggleContainer, { borderBottomColor: colors.border }]}>
       <View style={styles.toggleTextContainer}>
@@ -916,17 +920,17 @@ const ToggleItem: React.FC<ToggleItemProps> = ({ label, subLabel, value, onValue
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingTop: Platform.OS === 'android' ? 40 : 10, paddingHorizontal: 20, paddingBottom: 15, zIndex: 10,
     borderBottomWidth: 1,
   },
-  headerTitle: { fontSize: 20, fontWeight: '700' },
+  headerTitle: { fontSize: 20, fontFamily: fonts.bold },
   iconButton: { padding: 5 },
   saveBtn: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20 },
-  saveText: { fontSize: 14, fontWeight: 'bold', color: '#fff' },
+  saveText: { fontSize: 14, fontFamily: fonts.bold, color: '#fff' },
 
   scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
 
@@ -939,35 +943,35 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, right: 0,
     padding: 8, borderRadius: 20, borderWidth: 2,
   },
-  uploadText: { marginTop: 10, fontWeight: '600' },
+  uploadText: { marginTop: 10, fontFamily: fonts.bold },
 
   row: { flexDirection: 'row', justifyContent: 'space-between' },
   inputContainer: { marginBottom: 20, width: '100%' },
   halfInput: { width: '48%' },
   
-  label: { fontSize: 13, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5 },
+  label: { fontSize: 13, fontFamily: fonts.bold, marginBottom: 8, letterSpacing: 0.5 },
   
   inputBox: {
     flexDirection: 'row', alignItems: 'center',
     borderRadius: 12, borderWidth: 1, paddingHorizontal: 15, height: 50,
   },
-  input: { flex: 1, fontSize: 15 },
+  input: { flex: 1, fontSize: 15, fontFamily: fonts.regular },
 
   dropdownBox: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     borderRadius: 12, borderWidth: 1, paddingHorizontal: 15, height: 50,
   },
-  dropdownText: { fontSize: 15, fontWeight: '500' },
+  dropdownText: { fontSize: 15, fontFamily: fonts.bold },
 
   toggleContainer: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingVertical: 15, borderBottomWidth: 1,
   },
   toggleTextContainer: { flex: 1, paddingRight: 15 },
-  toggleLabel: { fontSize: 16, fontWeight: '600' },
-  toggleSubLabel: { fontSize: 12, marginTop: 2 },
+  toggleLabel: { fontSize: 16, fontFamily: fonts.bold },
+  toggleSubLabel: { fontSize: 12, marginTop: 2, fontFamily: fonts.regular },
 
-  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 15 },
+  sectionTitle: { fontSize: 18, fontFamily: fonts.bold, marginBottom: 15 },
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, marginTop: 10 },
   divider: { height: 1, marginVertical: 25 },
 
@@ -977,12 +981,12 @@ const styles = StyleSheet.create({
     maxHeight: height * 0.7, padding: 20, position: 'absolute', bottom: 0, width: '100%',
   },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 20, fontWeight: 'bold' },
+  modalTitle: { fontSize: 20, fontFamily: fonts.bold },
   modalItem: {
     paddingVertical: 16, borderBottomWidth: 1,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
   },
-  modalItemText: { fontSize: 16 },
+  modalItemText: { fontSize: 16, fontFamily: fonts.regular },
   avatarImagePreview: {
     width: '100%',
     height: '100%',
@@ -1006,10 +1010,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 30 
   },
   datePickerTitle: {
-    fontSize: 26, fontWeight: '900', letterSpacing: -0.5
+    fontSize: 26, fontFamily: fonts.bold, letterSpacing: -0.5
   },
   datePickerSubTitle: {
-    fontSize: 14, fontWeight: '500', marginTop: 4
+    fontSize: 14, fontFamily: fonts.regular, marginTop: 4
   },
   closeBtnCircle: {
      padding: 8, borderRadius: 25, borderWidth: 1,
@@ -1032,16 +1036,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'center', width: '100%', marginBottom: 12, paddingHorizontal: 12
   },
   wheelColumnLabel: {
-    flex: 1, textAlign: 'center', fontSize: 10, fontWeight: '900', letterSpacing: 2.5
+    flex: 1, textAlign: 'center', fontSize: 10, fontFamily: fonts.bold, letterSpacing: 2.5
   },
   wheelItem: {
     height: 50, width: '100%', justifyContent: 'center', alignItems: 'center'
   },
   wheelText: {
-    fontSize: 18, fontWeight: '600'
+    fontSize: 18, fontFamily: fonts.regular
   },
   wheelTextSelected: {
-    fontWeight: '900', fontSize: 24
+    fontFamily: fonts.bold, fontSize: 24
   },
   wheelUnderline: {
     height: 3, width: 28, borderRadius: 2,
@@ -1061,14 +1065,14 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: 18, borderRadius: 22, alignItems: 'center', borderWidth: 1.5,
   },
   wheelCancelText: {
-    fontSize: 16, fontWeight: '700'
+    fontSize: 16, fontFamily: fonts.bold
   },
   wheelConfirmBtn: {
     flex: 2, paddingVertical: 18, borderRadius: 22, alignItems: 'center',
     shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 12
   },
   wheelConfirmText: {
-    color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: 0.8
+    color: '#fff', fontSize: 16, fontFamily: fonts.bold, letterSpacing: 0.8
   },
 });
 

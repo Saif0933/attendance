@@ -50,7 +50,8 @@ const DARK_MAP_STYLE = [
 ];
 
 const AddGeofenceScreen: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   const route = useRoute();
   
@@ -467,7 +468,7 @@ const AddGeofenceScreen: React.FC = () => {
                 contentContainerStyle={styles.employeeList}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
-                  <Text style={styles.emptyText}>No employees found</Text>
+                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No employees found</Text>
                 }
               />
             )}
@@ -487,7 +488,7 @@ const AddGeofenceScreen: React.FC = () => {
 
 export default AddGeofenceScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -523,6 +524,7 @@ const styles = StyleSheet.create({
   searchText: {
     flex: 1,
     fontSize: 16,
+    fontFamily: fonts.regular,
   },
   currentLocationBtn: {
     position: 'absolute',
@@ -540,7 +542,7 @@ const styles = StyleSheet.create({
   },
   currentLocationText: {
     color: '#FF7F50',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     marginLeft: 5,
     fontSize: 14,
   },
@@ -582,11 +584,12 @@ const styles = StyleSheet.create({
   },
   labelTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   coordinateText: {
     fontSize: 13,
     marginTop: 2,
+    fontFamily: fonts.medium,
   },
   
   // Input Groups
@@ -615,7 +618,7 @@ const styles = StyleSheet.create({
   radiusBtnText: {
     fontSize: 28,
     color: '#FF7F50',
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   radiusDisplay: {
     borderWidth: 1.5,
@@ -628,7 +631,7 @@ const styles = StyleSheet.create({
   },
   radiusInput: {
     fontSize: 18,
-    fontWeight: '900',
+    fontFamily: fonts.bold,
     padding: 0,
     textAlign: 'center',
   },
@@ -637,7 +640,7 @@ const styles = StyleSheet.create({
     color: '#FF7F50',
     fontSize: 12,
     marginTop: 5,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 
   // Address Input
@@ -657,6 +660,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     minHeight: 80,
     paddingTop: 10,
+    fontFamily: fonts.medium,
   },
   loaderInside: {
     marginTop: 15,
@@ -678,7 +682,7 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     letterSpacing: 0.5,
   },
 
@@ -700,7 +704,7 @@ const styles = StyleSheet.create({
   },
   employeeCountText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     marginRight: 4,
   },
   
@@ -724,7 +728,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
   modalActions: {
     flexDirection: 'row',
@@ -738,7 +742,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   actionLinkText: {
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     fontSize: 13,
   },
   loader: {
@@ -766,16 +770,18 @@ const styles = StyleSheet.create({
   },
   employeeName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   employeeDesignation: {
     fontSize: 13,
     marginTop: 2,
+    fontFamily: fonts.regular,
   },
   emptyText: {
     textAlign: 'center',
     marginTop: 50,
     fontSize: 15,
+    fontFamily: fonts.medium,
   },
   modalConfirmBtn: {
     paddingVertical: 16,
@@ -787,6 +793,6 @@ const styles = StyleSheet.create({
   modalConfirmBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
 });

@@ -7,9 +7,9 @@ import { useTheme } from "../theme/ThemeContext";
 // Screens
 import PunchScreen from "../../screen/PunchScreen";
 import { RequestScreen } from "../../screen/RequestScreen";
-import SalaryScreen from "../../screen/SalaryScreen";
+import { SalaryScreen } from "../../screen/SalaryScreen";
 import SettingScreen from "../../screen/SettingScreen";
-import { WorkScreen } from "../../screen/WorkScreen";
+import WorkScreen from "../../screen/WorkScreen";
 import YouScreen from "../../screen/YouScreen";
 // import SalaryStackNavigator from "./SalaryStackNavigator";
 // import SettingsStackNavigator from "../navigation/SettingsStackNavigator";
@@ -37,7 +37,7 @@ function getTabBarIcon(routeName: string, color: string, size: number) {
 }
 
 export default function BottomTabNavigator() {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
 
   return (
     <Tab.Navigator
@@ -50,6 +50,11 @@ export default function BottomTabNavigator() {
           paddingBottom: 5,
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
+        },
+        tabBarLabelStyle: {
+          fontFamily: fonts.medium,
+          fontSize: 10,
+          marginBottom: 4,
         },
         tabBarIcon: ({ color, size }) =>
           getTabBarIcon(route.name, color, size),

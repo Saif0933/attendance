@@ -38,8 +38,9 @@ const MONTHS = [
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 11 }, (_, i) => (CURRENT_YEAR - 5 + i).toString());
 
-const HolidaysScreen = ({ navigation }: any) => {
-  const { colors, isDark } = useTheme();
+export const HolidaysScreen = ({ navigation }: any) => {
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
@@ -426,10 +427,9 @@ const HolidaysScreen = ({ navigation }: any) => {
 
 export default HolidaysScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F6F8",
   },
   flexContainer: {
     flex: 1,
@@ -441,7 +441,6 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 56,
-    backgroundColor: "#FF8A3D",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
@@ -450,7 +449,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: fonts.bold,
   },
   content: {
     flex: 1,
@@ -465,12 +464,10 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 12,
     fontSize: 16,
-    color: "#9E9E9E",
-    fontWeight: "500",
+    fontFamily: fonts.medium,
   },
   addBtn: {
     marginTop: 20,
-    backgroundColor: "#FF8A3D",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -478,10 +475,9 @@ const styles = StyleSheet.create({
   addBtnText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: fonts.bold,
   },
   holidayCard: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -498,20 +494,18 @@ const styles = StyleSheet.create({
   },
   holidayName: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
+    fontFamily: fonts.bold,
   },
   holidayDate: {
     fontSize: 14,
-    color: "#666",
     marginTop: 2,
-    fontWeight: "500",
+    fontFamily: fonts.medium,
   },
   holidayDesc: {
     fontSize: 14,
-    color: "#777",
     marginTop: 10,
     lineHeight: 20,
+    fontFamily: fonts.regular,
   },
   actionRow: {
     flexDirection: "row",
@@ -520,7 +514,6 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 8,
     marginLeft: 8,
-    backgroundColor: "#F5F5F5",
     borderRadius: 8,
   },
   badgeRow: {
@@ -534,7 +527,7 @@ const styles = StyleSheet.create({
   },
   paidBadgeText: {
     fontSize: 12,
-    fontWeight: "700",
+    fontFamily: fonts.bold,
   },
   // Modal Styles
   modalOverlay: {
@@ -543,7 +536,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#fff",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -557,31 +549,26 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "800",
-    color: "#333",
+    fontFamily: fonts.bold,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
     fontSize: 14,
-    fontWeight: "700",
-    color: "#444",
+    fontFamily: fonts.bold,
     marginBottom: 8,
   },
   subLabel: {
     fontSize: 12,
-    color: "#888",
-    fontWeight: "500",
+    fontFamily: fonts.medium,
   },
   input: {
-    backgroundColor: "#F9F9F9",
     borderWidth: 1,
-    borderColor: "#EEEEEE",
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
-    color: "#333",
+    fontFamily: fonts.regular,
   },
   textArea: {
     height: 100,
@@ -592,12 +579,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 24,
-    backgroundColor: "#F9F9F9",
     padding: 16,
     borderRadius: 12,
   },
   submitBtn: {
-    backgroundColor: "#FF8A3D",
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
@@ -607,7 +592,7 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: fonts.bold,
   },
   // Custom Picker Styles
   pickerModalOverlay: {
@@ -624,7 +609,7 @@ const styles = StyleSheet.create({
   },
   pickerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -638,7 +623,7 @@ const styles = StyleSheet.create({
   },
   columnLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     marginBottom: 10,
   },
   wheelList: {
@@ -652,6 +637,7 @@ const styles = StyleSheet.create({
   },
   wheelText: {
     fontSize: 16,
+    fontFamily: fonts.regular,
   },
   pickerFooter: {
     flexDirection: 'row',
@@ -669,7 +655,7 @@ const styles = StyleSheet.create({
   },
   pickerCancelText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   pickerConfirmBtn: {
     flex: 1,
@@ -680,6 +666,6 @@ const styles = StyleSheet.create({
   pickerConfirmText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 });

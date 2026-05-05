@@ -44,7 +44,8 @@ const PURPLE = '#7209B7';
 const SOFT_PURPLE_BG = '#F3E5F5';
 
 const RequestScreen: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [activeTab, setActiveTab] = useState<'Expenses' | 'Leaves' | 'Loans'>('Leaves');
   const scrollViewRef = useRef<ScrollView>(null);
   const { employee } = useEmployeeAuthStore();
@@ -313,7 +314,7 @@ const RequestScreen: React.FC = () => {
             ))}
             
             {requests.length === 0 && (
-              <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 10 }}>
+              <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: 10, fontFamily: fonts.regular }}>
                 No requests found.
               </Text>
             )}
@@ -451,8 +452,8 @@ const RequestScreen: React.FC = () => {
 };
 
 
-const styles = StyleSheet.create({
-  containerLight: { flex: 1, backgroundColor: BACKGROUND_LIGHT },
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
+  containerLight: { flex: 1 },
 
   headerLight: {
     flexDirection: 'row',
@@ -460,10 +461,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    backgroundColor: BACKGROUND_LIGHT,
   },
-  title: { fontSize: 28, fontWeight: '800', color: DARK_BLUE, letterSpacing: -0.5 },
-  iconButton: { padding: 8, backgroundColor: WHITE, borderRadius: 12 },
+  title: { fontSize: 28, fontFamily: fonts.bold, letterSpacing: -0.5 },
+  iconButton: { padding: 8, borderRadius: 12 },
 
   // Tabs - UPDATED FOR SPACING/GAPS
   tabContainerLight: {
@@ -471,7 +471,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', // Spreads tabs out evenly to create gaps
     paddingHorizontal: 30, // Adds side padding so tabs aren't on the edge
     paddingBottom: 10,
-    backgroundColor: BACKGROUND_LIGHT,
   },
   tabWrapper: { 
     // Removed fixed marginRight to allow justify-content to handle spacing
@@ -479,36 +478,32 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     minWidth: 80, // Ensures tabs have a minimum clickable area
   },
-  tab: { fontSize: 16, fontWeight: '500', color: TEXT_GRAY },
-  activeTabLight: { fontWeight: '700', color: BLUE },
+  tab: { fontSize: 16, fontFamily: fonts.medium },
+  activeTabLight: { fontFamily: fonts.bold },
   activeTabLine: {
     marginTop: 4,
     height: 3,
     width: 20,
-    backgroundColor: BLUE,
     borderRadius: 2,
   },
 
   scrollView: { flex: 1 },
   contentLight: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  noExpenseText: { fontSize: 16, color: TEXT_GRAY, marginTop: 16, fontWeight: '500' },
+  noExpenseText: { fontSize: 16, marginTop: 16, fontFamily: fonts.medium },
 
   // Section Headers
   sectionContainer: { paddingHorizontal: 20, marginBottom: 24 },
   subHeader: {
     fontSize: 18,
-    fontWeight: '700',
-    color: DARK_BLUE,
+    fontFamily: fonts.bold,
     marginBottom: 12,
   },
 
   // Cards
   card: {
-    backgroundColor: WHITE,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: WHITE,
   },
   shadowSoft: {
     shadowColor: '#2C3E50',
@@ -520,25 +515,25 @@ const styles = StyleSheet.create({
 
   // Leave Summary
   summaryHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  summaryHeaderLabel: { width: '33%', textAlign: 'center', color: TEXT_GRAY, fontSize: 12, fontWeight: '600', textTransform: 'uppercase' },
+  summaryHeaderLabel: { width: '33%', textAlign: 'center', fontSize: 12, fontFamily: fonts.bold, textTransform: 'uppercase' },
   summaryValueRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
-  bigNumber: { width: '33%', textAlign: 'center', fontSize: 28, fontWeight: '800', color: DARK_BLUE },
-  verticalDivider: { width: 1, height: 30, backgroundColor: BORDER_LIGHT },
+  bigNumber: { width: '33%', textAlign: 'center', fontSize: 28, fontFamily: fonts.bold },
+  verticalDivider: { width: 1, height: 30 },
 
   // Casual Leave
   casualHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 15 },
   casualTitleRow: { flexDirection: 'row', alignItems: 'center' },
   circleIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: DARK_BLUE },
-  subText: { fontSize: 12, color: TEXT_GRAY },
-  percentText: { fontSize: 16, fontWeight: '700', color: PURPLE },
-  progressBarBg: { height: 6, backgroundColor: BORDER_LIGHT, borderRadius: 3, marginBottom: 15 },
+  cardTitle: { fontSize: 16, fontFamily: fonts.bold },
+  subText: { fontSize: 12, fontFamily: fonts.regular },
+  percentText: { fontSize: 16, fontFamily: fonts.bold, color: PURPLE },
+  progressBarBg: { height: 6, borderRadius: 3, marginBottom: 15 },
   progressBarFill: { height: 6, backgroundColor: PURPLE, borderRadius: 3 },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#FAFAFA', borderRadius: 12, padding: 12 },
+  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', borderRadius: 12, padding: 12 },
   statBox: { alignItems: 'center', flex: 1 },
-  statBoxActive: { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#EEE' },
-  statLabel: { fontSize: 11, color: TEXT_GRAY, marginBottom: 4 },
-  statValue: { fontSize: 16, fontWeight: '700', color: DARK_BLUE },
+  statBoxActive: { borderLeftWidth: 1, borderRightWidth: 1 },
+  statLabel: { fontSize: 11, marginBottom: 4, fontFamily: fonts.medium },
+  statValue: { fontSize: 16, fontFamily: fonts.bold },
 
   // FAB Button
   fabButton: {
@@ -556,24 +551,24 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  buttonText: { fontSize: 16, fontWeight: '700', color: WHITE },
+  buttonText: { fontSize: 16, fontFamily: fonts.bold, color: WHITE },
 
   // Active Requests
   requestHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  categoryBadge: { backgroundColor: '#E3F2FD', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  categoryText: { fontSize: 12, fontWeight: '700', color: BLUE },
+  categoryBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  categoryText: { fontSize: 12, fontFamily: fonts.bold },
   statusPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  statusText: { fontSize: 11, fontWeight: '700', color: WHITE },
-  description: { fontSize: 14, color: DARK_BLUE, lineHeight: 22, marginBottom: 15 },
-  cardDivider: { height: 1, backgroundColor: BORDER_LIGHT, marginBottom: 15 },
+  statusText: { fontSize: 11, fontFamily: fonts.bold, color: WHITE },
+  description: { fontSize: 14, lineHeight: 22, marginBottom: 15, fontFamily: fonts.regular },
+  cardDivider: { height: 1, marginBottom: 15 },
   detailsRow: { flexDirection: 'row', gap: 20 },
   detailItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  detailText: { fontSize: 13, color: TEXT_GRAY, fontWeight: '500' },
+  detailText: { fontSize: 13, fontFamily: fonts.medium },
 
   // Holidays
   emptyStateCard: { alignItems: 'center', paddingVertical: 30 },
-  calendarIconBg: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#E3F2FD', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  noHolidaysText: { fontSize: 16, fontWeight: '600', color: DARK_BLUE },
+  calendarIconBg: { width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  noHolidaysText: { fontSize: 16, fontFamily: fonts.bold },
 
   // Modal Styles
   modalOverlay: {
@@ -582,7 +577,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: WHITE,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     padding: 24,
@@ -596,28 +590,23 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '800',
-    color: DARK_BLUE,
+    fontFamily: fonts.bold,
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: DARK_BLUE,
+    fontFamily: fonts.bold,
     marginBottom: 8,
   },
   textInput: {
-    backgroundColor: '#FAFAFA',
     borderWidth: 1,
-    borderColor: '#EEEEEE',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: DARK_BLUE,
     height: 120,
     marginBottom: 20,
+    fontFamily: fonts.medium,
   },
   submitButton: {
-    backgroundColor: BLUE,
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
@@ -630,7 +619,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: WHITE,
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   typeSelector: {
     flexDirection: 'row',
@@ -642,21 +631,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#F0F0F0',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   typeBtnActive: {
-    backgroundColor: BLUE,
-    borderColor: BLUE,
   },
   typeBtnText: {
     fontSize: 14,
-    color: TEXT_GRAY,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   typeBtnTextActive: {
-    color: WHITE,
   },
   requestHeaderRight: {
     flexDirection: 'row',

@@ -30,6 +30,16 @@ interface OutlinedInputProps {
   editable?: boolean;
 }
 
+// Custom Component for the "Label on Border" Input style
+interface OutlinedInputProps {
+  label: string;
+  value: string;
+  onChangeText?: (text: string) => void;
+  multiline?: boolean;
+  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
+  editable?: boolean;
+}
+
 const OutlinedInput = ({ 
   label, 
   value, 
@@ -38,7 +48,8 @@ const OutlinedInput = ({
   keyboardType = 'default',
   editable = true 
 }: OutlinedInputProps) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     <View style={[styles.inputContainer, multiline && { height: 100 }]}>
       <View style={[
@@ -71,7 +82,8 @@ const OutlinedInput = ({
 };
 
 const CompanyDetails = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { company, setAuth, token } = useAuthStore();
@@ -81,20 +93,7 @@ const CompanyDetails = () => {
   
   // Update Mutation
   const onboardMutation = useOnboardCompany();
-
-  // Pay Period Mapping
-  const PAY_PERIOD_MAP: Record<string, string> = {
-    '30 days (fixed)': 'FIXED_30_DAYS',
-    'calendar (week-offs paid)': 'WEEK_OFF_PAID',
-    'calendar (week-offs unpaid)': 'WEEK_OFF_UNPAID',
-  };
-
-  const REVERSE_PAY_PERIOD_MAP: Record<string, string> = {
-    'FIXED_30_DAYS': '30 days (fixed)',
-    'WEEK_OFF_PAID': 'calendar (week-offs paid)',
-    'WEEK_OFF_UNPAID': 'calendar (week-offs unpaid)',
-  };
-
+  
   // Form State
   const [formData, setFormData] = useState({
     name: '',
@@ -321,7 +320,19 @@ const CompanyDetails = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const PAY_PERIOD_MAP: Record<string, string> = {
+  '30 days (fixed)': 'FIXED_30_DAYS',
+  'calendar (week-offs paid)': 'WEEK_OFF_PAID',
+  'calendar (week-offs unpaid)': 'WEEK_OFF_UNPAID',
+};
+
+const REVERSE_PAY_PERIOD_MAP: Record<string, string> = {
+  'FIXED_30_DAYS': '30 days (fixed)',
+  'WEEK_OFF_PAID': 'calendar (week-offs paid)',
+  'WEEK_OFF_UNPAID': 'calendar (week-offs unpaid)',
+};
+
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -339,13 +350,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     flex: 1,
     marginLeft: 16,
   },
   updateText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   content: {
     padding: 20,
@@ -366,7 +377,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.medium,
     padding: 0,
   },
   labelContainer: {
@@ -378,14 +389,14 @@ const styles = StyleSheet.create({
   },
   labelText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   payPeriodContainer: {
     marginTop: 10,
   },
   sectionLabel: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     marginBottom: 12,
   },
   dropdownBox: {
@@ -400,13 +411,13 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   helperText: {
     marginTop: 12,
     fontSize: 13,
     lineHeight: 20,
-    fontWeight: '500',
+    fontFamily: fonts.regular,
     fontStyle: 'italic',
   },
   modalOverlay: {
@@ -430,7 +441,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   optionItem: {
     flexDirection: 'row',
@@ -446,10 +457,10 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.medium,
   },
   selectedOptionText: {
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 });
 

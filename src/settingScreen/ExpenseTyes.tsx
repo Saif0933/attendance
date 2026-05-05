@@ -19,8 +19,9 @@ import { useTheme } from '../theme/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
-const App = ({ navigation }: any) => { // Assuming navigation is passed
-  const { colors, isDark } = useTheme();
+const ExpenseTyes = ({ navigation }: any) => { // Assuming navigation is passed
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [modalVisible, setModalVisible] = useState(false);
   const [expenseType, setExpenseType] = useState('');
   const [isFocused, setIsFocused] = useState(false); // For attractive input animation
@@ -121,7 +122,7 @@ const App = ({ navigation }: any) => { // Assuming navigation is passed
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
   },
   headerTitleText: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   
   // --- Background Watermark Style ---
@@ -156,7 +157,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 20,
-    backgroundColor: '#007AFF', 
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   saveButton: {
     paddingVertical: 6,
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   saveButtonText: {
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     fontSize: 14,
   },
   
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     marginBottom: 10,
     marginLeft: 4,
   },
@@ -240,7 +240,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     paddingVertical: 12,
+    fontFamily: fonts.medium,
   },
 });
 
-export default App;
+export default ExpenseTyes;

@@ -15,7 +15,8 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useTheme } from "../theme/ThemeContext";
 
 const PaySlipsScreen = ({ navigation }: any) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     // 3. Changed View to SafeAreaView
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -47,10 +48,8 @@ const PaySlipsScreen = ({ navigation }: any) => {
   );
 };
 
-export default PaySlipsScreen;
-
 /* 🔥 Styles */
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -66,7 +65,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: "600",
+    fontFamily: fonts.bold,
   },
 
   content: {
@@ -80,6 +79,8 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 15,
     fontSize: 16,
-    fontWeight: "500",
+    fontFamily: fonts.medium,
   }
 });
+
+export default PaySlipsScreen;

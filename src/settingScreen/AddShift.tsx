@@ -23,7 +23,8 @@ import { useTheme } from '../theme/ThemeContext';
 const { width, height } = Dimensions.get('window');
 
 const AddShiftScreen = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   const route = useRoute();
   
@@ -252,10 +253,9 @@ const AddShiftScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -264,15 +264,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
   },
   addButton: {
-    backgroundColor: '#000',
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -281,12 +278,11 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     fontSize: 14,
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   contentContainer: {
     padding: 16,
@@ -296,41 +292,35 @@ const styles = StyleSheet.create({
   },
   labelBold: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#333',
+    fontFamily: fonts.bold,
     marginBottom: 8,
   },
   standardInput: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    color: '#000',
-    backgroundColor: '#fff',
+    fontFamily: fonts.medium,
   },
   timeSelectorInput: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     alignItems: 'flex-end',
   },
   selectTimeText: {
-    color: '#FF6B6B',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   reddishContainer: {
-    backgroundColor: '#FFF0F0',
     padding: 16,
     borderRadius: 12,
   },
   subLabel: {
     fontSize: 14,
-    color: '#555',
     marginBottom: 10,
+    fontFamily: fonts.regular,
   },
 
   // Modal Styles
@@ -342,7 +332,6 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     width: width * 0.85,
-    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 20,
     elevation: 10,
@@ -353,8 +342,7 @@ const styles = StyleSheet.create({
   },
   pickerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -371,8 +359,7 @@ const styles = StyleSheet.create({
   },
   columnLabel: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
     marginBottom: 10,
   },
   timeList: {
@@ -387,23 +374,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   selectedTimeItem: {
-    backgroundColor: '#FFF0F0',
     borderWidth: 1,
-    borderColor: '#FF7F50',
+    borderColor: colors.primary,
   },
   timeText: {
     fontSize: 16,
-    color: '#333',
+    fontFamily: fonts.regular,
   },
   selectedTimeText: {
-    color: '#FF7F50',
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     fontSize: 18,
   },
   separator: {
     fontSize: 30,
-    fontWeight: 'bold',
-    color: '#FF7F50',
+    fontFamily: fonts.bold,
+    color: colors.primary,
     marginHorizontal: 10,
     marginTop: 25,
   },
@@ -418,28 +403,24 @@ const styles = StyleSheet.create({
     marginRight: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#DDD',
     alignItems: 'center',
   },
   cancelBtnText: {
-    color: '#666',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   confirmBtn: {
     flex: 1,
     paddingVertical: 12,
     marginLeft: 10,
     borderRadius: 10,
-    backgroundColor: '#FF7F50',
     alignItems: 'center',
   },
   confirmBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
 });
-
 
 export default AddShiftScreen;

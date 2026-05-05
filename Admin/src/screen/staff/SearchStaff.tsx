@@ -26,7 +26,8 @@ interface SearchStaffProps {
 }
 
 const SearchStaff: React.FC<SearchStaffProps> = ({ onClose }) => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const { company } = useAuthStore();
   const companyId = company?.id;
   const navigation = useNavigation<any>();
@@ -160,7 +161,7 @@ const SearchStaff: React.FC<SearchStaffProps> = ({ onClose }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   // UPDATED: Modern Dark Blue Background
   container: { flex: 1 }, 
   backgroundLayer: {
@@ -198,6 +199,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 50,
     fontSize: 16,
+    fontFamily: fonts.medium,
   },
 
   itemContainer: {
@@ -216,25 +218,25 @@ const styles = StyleSheet.create({
   },
   avatarInitials: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
 
   infoContainer: { flex: 1 },
   nameText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     marginBottom: 4,
   },
-  roleText: { fontSize: 14, fontWeight: '500' },
+  roleText: { fontSize: 14, fontFamily: fonts.medium },
 
   statusContainer: { alignItems: 'flex-end', minWidth: 80 },
   statusInWrapper: { alignItems: 'flex-end' },
   statusInText: {
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     fontSize: 14,
     marginBottom: 2,
   },
-  timeText: { fontSize: 14, fontWeight: '500' },
+  timeText: { fontSize: 14, fontFamily: fonts.medium },
 
   notMarkedBadge: {
     paddingVertical: 6,
@@ -243,7 +245,7 @@ const styles = StyleSheet.create({
   },
   notMarkedText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
 
   separator: {

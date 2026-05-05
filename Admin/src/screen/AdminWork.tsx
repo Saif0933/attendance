@@ -81,7 +81,8 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEARS_PICKER = Array.from({ length: 50 }, (_, i) => (CURRENT_YEAR + 10 - i).toString());
 
 const AdminWork: React.FC = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState<'Tasks' | 'Decisions' | 'Clients'>('Tasks');
   const scrollViewRef = useRef<ScrollView>(null);
@@ -1051,20 +1052,20 @@ const AdminWork: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   containerDark: { flex: 1 },
   headerTitleContainer: { flexDirection: 'row', alignItems: 'center' },
   headerDark: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
-  titleWhite: { fontSize: 25, fontWeight: '800', padding: 5, color: WHITE },
+  titleWhite: { fontSize: 25, fontFamily: fonts.bold, padding: 5, color: colors.text },
   orangeDot: { fontSize: 34, color: ORANGE, marginLeft: 4 },
   tabContainerDark: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
   tabWrapper: { alignItems: 'center' },
-  tabWhite: { fontSize: 17, fontWeight: '400', color: LIGHT_GRAY },
-  activeTabWhite: { color: WHITE, fontWeight: '600' },
-  activeLine: { marginTop: 4, height: 3, width: 40, backgroundColor: ORANGE, borderRadius: 2 },
+  tabWhite: { fontSize: 17, fontFamily: fonts.regular, color: colors.textSecondary },
+  activeTabWhite: { color: colors.primary, fontFamily: fonts.bold },
+  activeLine: { marginTop: 4, height: 3, width: 40, backgroundColor: colors.primary, borderRadius: 2 },
   contentContainer: { flex: 1 },
   contentPage: { flex: 1 },
-  contentTextGray: { fontSize: 15, color: LIGHT_GRAY, textAlign: 'center', lineHeight: 24, marginTop: 10 },
+  contentTextGray: { fontSize: 15, color: colors.textSecondary, textAlign: 'center', lineHeight: 24, marginTop: 10, fontFamily: fonts.regular },
   taskList: { padding: 16, paddingBottom: 100 },
   taskCard: { borderRadius: 20, marginBottom: 16, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 12, flexDirection: 'row', overflow: 'hidden', borderWidth: 1 },
   modalOverlay: {
@@ -1083,38 +1084,38 @@ const styles = StyleSheet.create({
   taskCardContent: { flex: 1, padding: 16 },
   taskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
   taskHeaderLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
-  taskTitle: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
+  taskTitle: { fontSize: 18, fontFamily: fonts.bold, letterSpacing: -0.5 },
   priorityBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  priorityText: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  taskDescription: { fontSize: 14, color: LIGHT_GRAY, marginBottom: 15, lineHeight: 20, fontWeight: '400' },
-  taskFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5, paddingTop: 12, borderTopWidth: 1, borderTopColor: BORDER_COLOR },
+  priorityText: { fontSize: 10, fontFamily: fonts.bold, textTransform: 'uppercase' },
+  taskDescription: { fontSize: 14, color: colors.textSecondary, marginBottom: 15, lineHeight: 20, fontFamily: fonts.regular },
+  taskFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border },
   taskFooterLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   taskAssignee: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   assigneeAvatar: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#475569', justifyContent: 'center', alignItems: 'center' },
-  assigneeText: { fontSize: 12, color: LIGHT_GRAY, fontWeight: '600' },
+  assigneeText: { fontSize: 12, color: colors.textSecondary, fontFamily: fonts.bold },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  statusText: { fontSize: 11, color: WHITE, fontWeight: '800', textTransform: 'uppercase' },
+  statusText: { fontSize: 11, color: WHITE, fontFamily: fonts.bold, textTransform: 'uppercase' },
   actionIconButton: { width: 34, height: 34, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginLeft: 8, borderWidth: 1 },
-  fab: { position: 'absolute', bottom: 30, right: 24, width: 65, height: 65, borderRadius: 22, backgroundColor: ORANGE, justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: ORANGE, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 15 },
-  dueDateRow: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#1E293B', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  dueDateText: { fontSize: 11, color: '#38BDF8', fontWeight: '700' },
+  fab: { position: 'absolute', bottom: 30, right: 24, width: 65, height: 65, borderRadius: 22, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: colors.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 15 },
+  dueDateRow: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.surface, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  dueDateText: { fontSize: 11, color: colors.primary, fontFamily: fonts.bold },
   modalHeaderTitle: { flexDirection: 'row', alignItems: 'center' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 15, borderBottomWidth: 1, borderBottomColor: BORDER_COLOR },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 15, borderBottomWidth: 1, borderBottomColor: colors.border },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
   },
-  inputLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 12 },
-  input: { borderRadius: 10, padding: 12, fontSize: 14, borderWidth: 1 },
+  inputLabel: { fontSize: 14, fontFamily: fonts.bold, marginBottom: 8, marginTop: 12 },
+  input: { borderRadius: 10, padding: 12, fontSize: 14, borderWidth: 1, fontFamily: fonts.regular },
   pickerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  pickerButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: BORDER_COLOR, backgroundColor: '#1E293B' },
-  pickerText: { fontSize: 12, fontWeight: '600', color: LIGHT_GRAY },
+  pickerButton: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  pickerText: { fontSize: 12, fontFamily: fonts.bold, color: colors.textSecondary },
   employeePicker: { marginBottom: 20 },
   employeeItem: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 10, borderWidth: 1 },
   employeeItemSelected: { },
-  employeeItemText: { fontSize: 13 },
-  createButton: { backgroundColor: ORANGE, borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 20, marginBottom: 20 },
-  createButtonText: { color: WHITE, fontSize: 16, fontWeight: '700' },
+  employeeItemText: { fontSize: 13, fontFamily: fonts.bold },
+  createButton: { backgroundColor: colors.primary, borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 20, marginBottom: 20 },
+  createButtonText: { color: WHITE, fontSize: 16, fontFamily: fonts.bold },
   taskHeaderRight: { flexDirection: 'row', alignItems: 'center' },
   filterToggle: {
     width: 44,
@@ -1124,7 +1125,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterToggleActive: {
-    backgroundColor: ORANGE,
+    backgroundColor: colors.primary,
   },
   filterBar: {
     paddingHorizontal: 16,
@@ -1145,7 +1146,7 @@ const styles = StyleSheet.create({
   datePickerBtnText: {
     color: WHITE,
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   clearBtn: {
     paddingHorizontal: 12,
@@ -1156,7 +1157,7 @@ const styles = StyleSheet.create({
   clearBtnText: {
     color: WHITE,
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   monthModalOverlay: {
     flex: 1,
@@ -1172,7 +1173,7 @@ const styles = StyleSheet.create({
   },
   monthPickerHeader: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     color: WHITE,
     marginBottom: 20,
     textAlign: 'center',
@@ -1182,7 +1183,7 @@ const styles = StyleSheet.create({
   },
   pickerLabel: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: LIGHT_GRAY,
     marginBottom: 10,
     textTransform: 'uppercase',
@@ -1212,7 +1213,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 14,
     color: LIGHT_GRAY,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   activeOptionText: {
     color: WHITE,
@@ -1227,7 +1228,7 @@ const styles = StyleSheet.create({
   applyBtnText: {
     color: WHITE,
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   cancelBtn: {
     paddingVertical: 12,
@@ -1237,7 +1238,7 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     color: LIGHT_GRAY,
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   decisionActions: {
     flexDirection: 'row',
@@ -1254,18 +1255,19 @@ const styles = StyleSheet.create({
   detailsSection: {
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
+    borderBottomColor: colors.border,
   },
   creatorSubText: {
     fontSize: 12,
-    color: LIGHT_GRAY,
-    fontWeight: '600',
+    color: colors.textSecondary,
+    fontFamily: fonts.bold,
     marginTop: 2,
   },
   descriptionText: {
     fontSize: 14,
-    color: LIGHT_GRAY,
+    color: colors.textSecondary,
     lineHeight: 22,
+    fontFamily: fonts.regular,
   },
   participantRow: {
     flexDirection: 'row',
@@ -1282,20 +1284,22 @@ const styles = StyleSheet.create({
   },
   participantName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: WHITE,
   },
   participantComment: {
     fontSize: 12,
-    color: LIGHT_GRAY,
+    color: colors.textSecondary,
     fontStyle: 'italic',
     marginTop: 2,
+    fontFamily: fonts.regular,
   },
   emptyText: {
     textAlign: 'center',
-    color: LIGHT_GRAY,
+    color: colors.textSecondary,
     fontSize: 13,
     marginTop: 10,
+    fontFamily: fonts.regular,
   },
   modalActionRow: {
     flexDirection: 'row',
@@ -1314,14 +1318,14 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
   // --- DATE PICKER STYLES ---
   dateInputTrigger: {
     borderRadius: 12, padding: 14, flexDirection: 'row', 
     justifyContent: 'space-between', alignItems: 'center', borderWidth: 1
   },
-  dateInputText: { fontSize: 14, fontWeight: '600' },
+  dateInputText: { fontSize: 14, fontFamily: fonts.bold },
   datePickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
   datePickerBottomContent: {
     borderTopLeftRadius: 40, borderTopRightRadius: 40,
@@ -1331,25 +1335,25 @@ const styles = StyleSheet.create({
   },
   sheetHandle: { width: 36, height: 4, borderRadius: 10, alignSelf: 'center', marginBottom: 20 },
   datePickerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
-  datePickerTitle: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
-  datePickerSubTitle: { fontSize: 14, fontWeight: '500', marginTop: 4 },
+  datePickerTitle: { fontSize: 24, fontFamily: fonts.bold, letterSpacing: -0.5 },
+  datePickerSubTitle: { fontSize: 14, fontFamily: fonts.regular, marginTop: 4 },
   closeBtnCircle: { padding: 8, borderRadius: 25, borderWidth: 1 },
   wheelMainContainer: { height: 250, justifyContent: 'center', borderRadius: 32, overflow: 'hidden', borderWidth: 1 },
   wheelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' },
   wheelColumn: { flex: 1, height: '100%', alignItems: 'center' },
   wheelLabelRow: { flexDirection: 'row', justifyContent: 'center', width: '100%', marginBottom: 12, paddingHorizontal: 12 },
-  wheelColumnLabel: { flex: 1, textAlign: 'center', fontSize: 10, fontWeight: '900', letterSpacing: 2.5 },
+  wheelColumnLabel: { flex: 1, textAlign: 'center', fontSize: 10, fontFamily: fonts.bold, letterSpacing: 2.5 },
   wheelItem: { height: 50, width: '100%', justifyContent: 'center', alignItems: 'center' },
-  wheelText: { fontSize: 18, color: '#475569', fontWeight: '600' },
-  wheelTextSelected: { fontWeight: '900', fontSize: 24 },
+  wheelText: { fontSize: 18, color: '#475569', fontFamily: fonts.regular },
+  wheelTextSelected: { fontFamily: fonts.bold, fontSize: 24 },
   wheelUnderline: { height: 3, backgroundColor: ORANGE, width: 28, borderRadius: 2, position: 'absolute', bottom: 6, shadowColor: ORANGE, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 5 },
   wheelVignetteTop: { position: 'absolute', top: 0, left: 0, right: 0, height: 90 },
   wheelVignetteBottom: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 90 },
   wheelActionRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 16, marginTop: 30 },
   wheelCancelBtn: { flex: 1, paddingVertical: 18, borderRadius: 22, alignItems: 'center', borderWidth: 1.5 },
-  wheelCancelText: { fontSize: 16, fontWeight: '700' },
+  wheelCancelText: { fontSize: 16, fontFamily: fonts.bold },
   wheelConfirmBtn: { flex: 2, backgroundColor: ORANGE, paddingVertical: 18, borderRadius: 22, alignItems: 'center', shadowColor: ORANGE, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 15, elevation: 12 },
-  wheelConfirmText: { fontSize: 16, fontWeight: '900', letterSpacing: 0.8 },
+  wheelConfirmText: { fontSize: 16, fontFamily: fonts.bold, letterSpacing: 0.8 },
 });
 
 export { AdminWork };

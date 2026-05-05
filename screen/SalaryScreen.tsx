@@ -30,8 +30,9 @@ interface SalaryScreenProps {
   hideHeader?: boolean;
 }
 
-const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId, hideHeader }) => {
-  const { colors, isDark } = useTheme();
+export const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId, hideHeader }) => {
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation();
   
   // Use the employee data directly from the store if available
@@ -188,8 +189,8 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
   if (isLoadingEmployee) {
     const loadingContent = (
       <View style={[styles.container, hideHeader && { backgroundColor: 'transparent', height: 200 }, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#4b43f0" />
-        <Text style={{ marginTop: 10, color: '#666' }}>Loading salary details...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ marginTop: 10, color: colors.textSecondary, fontFamily: fonts.medium }}>Loading salary details...</Text>
       </View>
     );
     if (hideHeader) return loadingContent;
@@ -221,7 +222,7 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
         showsVerticalScrollIndicator={false}
         scrollEnabled={!hideHeader}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2089dc']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
         }
       >
         
@@ -320,7 +321,7 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
         </View>
 
         {/* --- GENERATE BUTTON --- */}
-        <TouchableOpacity style={styles.generateBtn} onPress={() => navigation.navigate('PayslipScreen' as never)}>
+        <TouchableOpacity style={[styles.generateBtn, { backgroundColor: colors.primary }]} onPress={() => navigation.navigate('PayslipScreen' as never)}>
             <Icon name="download-outline" size={20} color="#fff" />
             <Text style={styles.generateBtnText}>Generate Payslip</Text>
         </TouchableOpacity>
@@ -422,10 +423,9 @@ const SalaryScreen: React.FC<SalaryScreenProps> = ({ employeeId: propEmployeeId,
 
 export default SalaryScreen;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FB', // Light greyish white background
   },
   scrollContent: {
     padding: 16,
@@ -439,17 +439,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
   },
   navTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
+    fontFamily: fonts.bold,
   },
 
   /* PROFILE CARD */
   card: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -460,7 +457,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: '#eee',
   },
   profileRow: {
     flexDirection: 'row',
@@ -477,35 +473,31 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
   },
   profileRole: {
     fontSize: 12,
     color: '#2089dc', // Blueish tint for role
     marginTop: 2,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   profileId: {
     fontSize: 12,
-    color: '#888',
     marginTop: 2,
+    fontFamily: fonts.regular,
   },
 
   /* PERIOD SELECTOR */
   sectionLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontFamily: fonts.bold,
     marginBottom: 8,
   },
   dateSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -513,8 +505,7 @@ const styles = StyleSheet.create({
   },
   dateSelectorText: {
     fontSize: 16,
-    color: '#000',
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
 
   /* COMMON CARD STYLES */
@@ -526,8 +517,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontFamily: fonts.bold,
   },
   row: {
     flexDirection: 'row',
@@ -537,12 +527,11 @@ const styles = StyleSheet.create({
   labelBlue: {
     fontSize: 14,
     color: '#546E7A', // Blueish Grey
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   value: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
   },
 
   /* ATTENDANCE SECTION */
@@ -553,7 +542,6 @@ const styles = StyleSheet.create({
   },
   attendBox: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
     borderRadius: 8,
     paddingVertical: 15,
     alignItems: 'center',
@@ -567,20 +555,17 @@ const styles = StyleSheet.create({
   },
   boxLabel: {
     fontSize: 10,
-    fontWeight: 'bold',
-    color: '#555',
+    fontFamily: fonts.bold,
     marginBottom: 5,
     textTransform: 'uppercase',
   },
   boxValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
   },
 
   /* BUTTON */
   generateBtn: {
-    backgroundColor: '#4b43f0', // Solid Blue
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -592,53 +577,44 @@ const styles = StyleSheet.create({
   generateBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     marginLeft: 8,
   },
 
   /* FOOTER */
   footerContainer: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#eee',
   },
   footerLabel: {
     fontSize: 14,
-    color: '#ccc', // Faded
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
   footerValueFaded: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#eee', // Faded
+    fontFamily: fonts.bold,
   },
   divider: {
     height: 1,
-    backgroundColor: '#f0f0f0',
   },
   bigTotalLabel: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: fonts.bold,
   },
   bigTotalValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2089dc',
+    fontFamily: fonts.bold,
   },
   settledBadge: {
-    backgroundColor: '#E8F5E9',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
     marginTop: 4,
   },
   settledText: {
-    color: '#2E7D32',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
 
   /* MODAL STYLES (Keep Existing mostly) */
@@ -650,7 +626,6 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '85%',
-    backgroundColor: '#fff',
     borderRadius: 15,
     padding: 20,
     maxHeight: height * 0.6,
@@ -658,10 +633,9 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
     marginBottom: 15,
     textAlign: 'center',
-    color: '#333',
   },
   modalListContainer: {
     maxHeight: 300,
@@ -672,21 +646,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   modalItemSelected: {
-    backgroundColor: '#f5f9ff',
     paddingHorizontal: 10,
     borderRadius: 8,
     borderBottomWidth: 0,
   },
   modalItemText: {
     fontSize: 16,
-    color: '#333',
+    fontFamily: fonts.medium,
   },
   modalItemTextSelected: {
-    color: '#2a568f',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   closeButton: {
     marginTop: 15,
@@ -696,6 +667,6 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#D32F2F',
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: fonts.medium,
   },
 });

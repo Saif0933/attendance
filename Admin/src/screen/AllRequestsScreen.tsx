@@ -30,7 +30,8 @@ import { useAuthStore } from '../../../src/store/useAuthStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
 
 const AllRequestsScreen = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const [activeTab, setActiveTab] = useState<'All' | 'PENDING' | 'APPROVED' | 'REJECTED'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeaveId, setSelectedLeaveId] = useState<string | null>(null);
@@ -298,7 +299,8 @@ const getStatusColor = (status: LeaveStatus) => {
 // --- Reusable Components ---
 
 const StatItem = ({ label, count, color }: { label: string, count: string, color: string }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     <View style={styles.statItem}>
       <View style={styles.statLabelRow}>
@@ -312,7 +314,8 @@ const StatItem = ({ label, count, color }: { label: string, count: string, color
 };
 
 const FilterTab = ({ label, active, onPress }: { label: string, active: boolean, onPress: () => void }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   return (
     <TouchableOpacity 
       style={[
@@ -330,13 +333,13 @@ const FilterTab = ({ label, active, onPress }: { label: string, active: boolean,
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
   backgroundLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#1E293B',
+    backgroundColor: colors.background,
     opacity: 0.5,
   },
   mainContent: {
@@ -352,17 +355,17 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontFamily: fonts.bold,
+    color: colors.text,
   },
   statsCard: {
-    backgroundColor: '#1E293B',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     paddingVertical: 20,
     paddingHorizontal: 10,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: colors.border,
   },
   statsRow: {
     flexDirection: 'row',
@@ -384,36 +387,38 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   statCount: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontFamily: fonts.bold,
+    color: colors.text,
     marginBottom: 2,
   },
   statSubText: {
     fontSize: 10,
-    color: '#94A3B8',
+    fontFamily: fonts.regular,
+    color: colors.textSecondary,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     paddingHorizontal: 15,
     height: 50,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: colors.border,
   },
   searchIcon: {
     marginRight: 10,
   },
   searchInput: {
     flex: 1,
-    color: '#fff',
+    color: colors.text,
     fontSize: 15,
+    fontFamily: fonts.regular,
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -427,22 +432,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   activeTab: {
-    backgroundColor: '#fff',
-    borderColor: '#fff',
+    backgroundColor: colors.text,
+    borderColor: colors.text,
   },
   inactiveTab: {
-    backgroundColor: '#1E293B',
-    borderColor: '#334155',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   activeTabText: {
-    color: '#0F172A',
+    color: colors.background,
   },
   inactiveTabText: {
-    color: '#94A3B8',
+    color: colors.textSecondary,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -452,21 +457,21 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontFamily: fonts.bold,
+    color: colors.text,
   },
   resultsCount: {
     fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '600',
+    color: colors.textSecondary,
+    fontFamily: fonts.bold,
   },
   leaveCard: {
-    backgroundColor: '#1E293B',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: colors.border,
   },
   leaveHeader: {
     flexDirection: 'row',
@@ -482,24 +487,25 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#334155',
+    backgroundColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   avatarText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: colors.text,
+    fontFamily: fonts.bold,
     fontSize: 14,
   },
   employeeName: {
-    color: '#fff',
+    color: colors.text,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   employeeCode: {
-    color: '#94A3B8',
+    color: colors.textSecondary,
     fontSize: 12,
+    fontFamily: fonts.regular,
   },
   statusBadge: {
     paddingVertical: 4,
@@ -508,7 +514,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   leaveDetails: {
     marginBottom: 16,
@@ -519,9 +525,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   detailText: {
-    color: '#E2E8F0',
+    color: colors.text,
     fontSize: 14,
     marginLeft: 8,
+    fontFamily: fonts.regular,
   },
   reasonContainer: {
     marginTop: 8,
@@ -530,14 +537,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   reasonLabel: {
-    color: '#94A3B8',
+    color: colors.textSecondary,
     fontSize: 12,
     marginBottom: 4,
+    fontFamily: fonts.bold,
   },
   reasonText: {
-    color: '#E2E8F0',
+    color: colors.text,
     fontSize: 13,
     lineHeight: 18,
+    fontFamily: fonts.regular,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -561,8 +570,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 112, 67, 0.1)',
   },
   updateStatusButton: {
-    borderColor: '#3B82F6',
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '10',
   },
   updateOptionsRow: {
     flexDirection: 'row',
@@ -586,7 +595,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     marginLeft: 6,
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
   },
   emptyStateContainer: {
     alignItems: 'center',
@@ -595,8 +604,8 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#94A3B8',
-    fontWeight: 'bold',
+    color: colors.textSecondary,
+    fontFamily: fonts.bold,
   },
 });
 

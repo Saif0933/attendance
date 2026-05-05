@@ -18,7 +18,8 @@ import { useTheme } from '../theme/ThemeContext';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const AddDesignationScreen = () => {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, fonts } = useTheme();
+  const styles = createStyles(colors, fonts);
   const navigation = useNavigation<NavigationProp>();
   const [designationName, setDesignationName] = useState('');
 
@@ -82,7 +83,7 @@ const AddDesignationScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     flex: 1,
     marginLeft: 16,
   },
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#FFF',
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     fontSize: 14,
   },
 
@@ -126,7 +127,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: fonts.bold,
     marginBottom: 10,
   },
   input: {
@@ -135,6 +136,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+    fontFamily: fonts.regular,
   },
 
   // --- Permission Button Styles ---
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
   },
 });
 

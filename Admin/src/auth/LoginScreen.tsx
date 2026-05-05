@@ -22,12 +22,15 @@ import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRequestOtp } from '../../../api/hook/company/auth/useAuth';
 import { RootStackParamList } from '../../../src/navigation/Stack';
+import { useTheme } from '../../../src/theme/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
 const LoginScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { colors, isDark } = useTheme();
+  const styles = createStyles(colors);
   
   const { mutate: requestOtp, isPending } = useRequestOtp();
 
@@ -109,7 +112,7 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
       
       {/* Dynamic Background Elements */}
       <Animated.View style={[styles.bgCircle, { transform: [{ translateY }] }]} />
@@ -131,7 +134,7 @@ const LoginScreen = () => {
               onPress={() => navigation.goBack()}
               activeOpacity={0.7}
             >
-              <Ionicons name="chevron-back" size={24} color="#1E293B" />
+              <Ionicons name="chevron-back" size={24} color={colors.text} />
             </TouchableOpacity>
             <View style={{ width: 44 }} />
           </View>
@@ -141,7 +144,7 @@ const LoginScreen = () => {
             <Animated.View style={[styles.brandingSection, { opacity: fadeAnim, transform: [{ scale: logoScale }] }]}>
               <View style={styles.glassLogo}>
                 <LinearGradient
-                  colors={['#2FAED7', '#10B981', '#059669']}
+                  colors={[colors.primary, colors.secondary, '#059669']}
                   style={styles.logoGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
@@ -162,7 +165,7 @@ const LoginScreen = () => {
                 <View style={styles.pillInput}>
                   <View style={styles.identityBadge}>
                     <Text style={styles.countryCode}>+1</Text>
-                    <Ionicons name="caret-down" size={12} color="#94A3B8" style={{marginLeft: 6}} />
+                    <Ionicons name="caret-down" size={12} color={colors.textSecondary} style={{marginLeft: 6}} />
                   </View>
                   <View style={styles.verticalSep} />
                   <TextInput
@@ -172,7 +175,7 @@ const LoginScreen = () => {
                     keyboardType="phone-pad"
                     value={phoneNumber}
                     onChangeText={setPhoneNumber}
-                    selectionColor="#2FAED7"
+                    selectionColor={colors.primary}
                   />
                 </View>
               </View>
@@ -209,7 +212,7 @@ const LoginScreen = () => {
           <Animated.View style={[styles.footer, { opacity: fadeAnim }]}>
             <View style={styles.divider} />
             <Text style={styles.copyright}>
-              Powered by <Text style={{fontWeight: '700', color: '#1E293B'}}>Symbosys</Text> • v2.4.0
+              Powered by <Text style={{fontWeight: '700', color: colors.text}}>Symbosys</Text> • v2.4.0
             </Text>
           </Animated.View>
         </ScrollView>
@@ -218,10 +221,10 @@ const LoginScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   bgCircle: {
     position: 'absolute',
@@ -230,7 +233,7 @@ const styles = StyleSheet.create({
     width: 320,
     height: 320,
     borderRadius: 160,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.surface,
     opacity: 0.6,
   },
   bgCircleSmall: {
@@ -240,7 +243,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: colors.surface,
     opacity: 0.4,
   },
   scrollContent: {
@@ -258,7 +261,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -266,30 +269,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 3,
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10B981',
-    marginRight: 10,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   mainLayout: {
     flex: 1,
@@ -304,8 +283,8 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 35,
     padding: 3,
-    backgroundColor: '#FFF',
-    shadowColor: '#2FAED7',
+    backgroundColor: colors.surface,
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.25,
     shadowRadius: 20,
@@ -318,26 +297,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  appTitle: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#1E293B',
-    letterSpacing: 6,
-    textAlign: 'center',
-  },
   contentArea: {
     width: '100%',
   },
   headline: {
     fontSize: 36,
     fontWeight: '800',
-    color: '#1E293B',
+    color: colors.text,
     marginBottom: 10,
     letterSpacing: -1,
   },
   subheadline: {
     fontSize: 16,
-    color: '#64748B',
+    color: colors.textSecondary,
     lineHeight: 25,
     fontWeight: '400',
     marginBottom: 40,
@@ -348,7 +320,7 @@ const styles = StyleSheet.create({
   inputOverline: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#94A3B8',
+    color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 2,
     marginBottom: 15,
@@ -358,10 +330,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 70,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.surface,
     borderRadius: 24,
     borderWidth: 2,
-    borderColor: '#F1F5F9',
+    borderColor: colors.border,
     paddingHorizontal: 25,
   },
   identityBadge: {
@@ -372,23 +344,20 @@ const styles = StyleSheet.create({
   countryCode: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#1E293B',
+    color: colors.text,
   },
   verticalSep: {
     width: 2,
     height: 25,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: colors.border,
     marginRight: 20,
   },
   phoneField: {
     flex: 1,
     fontSize: 19,
     fontWeight: '700',
-    color: '#1E293B',
+    color: colors.text,
     letterSpacing: 1,
-  },
-  tickBox: {
-    paddingLeft: 10,
   },
   actionBtn: {
     height: 68,
@@ -425,19 +394,6 @@ const styles = StyleSheet.create({
   btnDimmed: {
     opacity: 0.75,
   },
-  biometricLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    padding: 15,
-  },
-  biometricLabel: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#94A3B8',
-    marginLeft: 12,
-  },
   footer: {
     marginTop: 'auto',
     alignItems: 'center',
@@ -447,12 +403,12 @@ const styles = StyleSheet.create({
   divider: {
     width: 50,
     height: 2,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.border,
     marginBottom: 20,
   },
   copyright: {
     fontSize: 13,
-    color: '#CBD5E1',
+    color: colors.textSecondary,
     letterSpacing: 0.5,
   },
 });

@@ -21,11 +21,14 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useVerifyOtp } from '../../../api/hook/company/auth/useAuth';
 import { RootStackParamList } from '../../../src/navigation/Stack';
 import { useAuthStore } from '../../../src/store/useAuthStore';
+import { useTheme } from '../../../src/theme/ThemeContext';
 
 const VerificationScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'VerificationScreen'>>();
   const { mobile } = route.params;
+  const { colors, isDark } = useTheme();
+  const styles = createStyles(colors);
 
   const [otp, setOtp] = useState(['', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -93,12 +96,12 @@ const VerificationScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F9FB" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Ionicons name="chevron-back" size={26} color="#000" />
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={26} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Verification</Text>
         <View style={{ width: 26 }} /> {/* Spacer for balance */}
@@ -144,10 +147,11 @@ const VerificationScreen = () => {
                   onChangeText={(value) => handleOtpChange(value, index)}
                   onKeyPress={(e) => handleKeyPress(e, index)}
                   showSoftInputOnFocus={true}
+                  placeholderTextColor={colors.textSecondary}
                 />
                  {/* Visual Cursor Simulation for the screenshot look */}
                 {focusedIndex === index && digit === '' && (
-                   <View style={styles.fakeCursor} />
+                   <View style={[styles.fakeCursor, { backgroundColor: colors.text }]} />
                 )}
               </View>
             ))}
@@ -224,10 +228,10 @@ const VerificationScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FB',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -239,7 +243,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
+    color: colors.text,
   },
   backButton: {
     padding: 5,
@@ -256,20 +260,20 @@ const styles = StyleSheet.create({
   },
   mainTitle: {
     fontSize: 28,
-    fontWeight: '700', // Bold but not heavy
-    color: '#111',
+    fontWeight: '700', 
+    color: colors.text,
     marginBottom: 15,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#111',
+    color: colors.text,
     fontWeight: '400',
     marginBottom: 5,
   },
   phoneNumber: {
     fontSize: 16,
-    color: '#4b43f0', // Bright Blue
+    color: colors.primary, 
     fontWeight: '600',
   },
 
@@ -277,7 +281,7 @@ const styles = StyleSheet.create({
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 15, // Spacing between boxes
+    gap: 15, 
     marginBottom: 40,
   },
   otpBox: {
@@ -285,8 +289,8 @@ const styles = StyleSheet.create({
     height: 65,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E4E9F2',
-    backgroundColor: '#FFF',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -296,14 +300,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   otpBoxFocused: {
-    borderColor: '#4b43f0',
-    borderWidth: 2.5, // Thicker border for focus
-    shadowColor: '#4b43f0',
+    borderColor: colors.primary,
+    borderWidth: 2.5, 
+    shadowColor: colors.primary,
     shadowOpacity: 0.2,
   },
   otpInput: {
     fontSize: 24,
-    color: '#111',
+    color: colors.text,
     textAlign: 'center',
     width: '100%',
     height: '100%',
@@ -312,7 +316,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 1.5,
     height: 24,
-    backgroundColor: '#111',
   },
 
   // Timer Styles
@@ -325,13 +328,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   timerLabelText: {
-    color: '#7D8A99',
+    color: colors.textSecondary,
     marginLeft: 6,
     fontSize: 15,
   },
   timerClockRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start', // Align tops of boxes
+    alignItems: 'flex-start', 
     marginBottom: 20,
   },
   timeBoxGroup: {
@@ -340,31 +343,33 @@ const styles = StyleSheet.create({
   timeBox: {
     width: 50,
     height: 50,
-    backgroundColor: '#E8E7FF', // Light Cyan/Blue bg for timer
+    backgroundColor: colors.surface, 
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   timeText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#4b43f0',
+    color: colors.primary,
   },
   timeUnit: {
     fontSize: 10,
-    color: '#7D8A99',
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   colon: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#4b43f0',
+    color: colors.primary,
     marginHorizontal: 10,
     marginTop: 8,
   },
   resendLink: {
-    color: '#8FBAD6', // Lighter blue to look disabled or secondary
+    color: colors.secondary, 
     fontSize: 16,
     fontWeight: '500',
   },
@@ -373,11 +378,11 @@ const styles = StyleSheet.create({
   bottomContainer: {
     paddingHorizontal: 25,
     paddingBottom: 20,
-    marginTop: 'auto', // Pushes to bottom
+    marginTop: 'auto', 
   },
   buttonWrapper: {
     marginBottom: 25,
-    shadowColor: '#4b43f0',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -398,7 +403,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     textAlign: 'center',
-    color: '#9AA5B1',
+    color: colors.textSecondary,
     fontSize: 12,
     lineHeight: 18,
     paddingHorizontal: 10,
@@ -407,7 +412,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 130,
     height: 5,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: colors.border,
     borderRadius: 10,
     marginTop: 20,
   },

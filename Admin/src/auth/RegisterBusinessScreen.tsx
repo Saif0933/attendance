@@ -27,6 +27,7 @@ import { OnboardCompanyPayload } from '../../../api/hook/company/onBoarding/comp
 import { useOnboardCompany } from '../../../api/hook/company/onBoarding/useCompany';
 import { RootStackParamList } from '../../../src/navigation/Stack';
 import { useAuthStore } from '../../../src/store/useAuthStore';
+import { useTheme } from '../../../src/theme/ThemeContext';
 
 // Interfaces remain same
 interface InputGroupProps {
@@ -71,6 +72,8 @@ const RegisterBusinessScreen = () => {
   const [pickerTitle, setPickerTitle] = useState('');
   const [pickerOptions, setPickerOptions] = useState<string[]>([]);
   const [currentSelectionHandler, setCurrentSelectionHandler] = useState<(val: string) => void>(() => {});
+  const { colors, isDark } = useTheme();
+  const styles = createStyles(colors);
   const company = useAuthStore((state) => state.company);
   const token = useAuthStore((state) => state.token);
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -212,12 +215,12 @@ const RegisterBusinessScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F9FB" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={26} color="#000" />
+          <Ionicons name="chevron-back" size={26} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Register Your Business</Text>
         <View style={{ width: 26 }} />
@@ -361,42 +364,52 @@ const RegisterBusinessScreen = () => {
 };
 
 // --- COMPONENTS ---
-const InputGroup: React.FC<InputGroupProps> = ({ label, placeholder, keyboardType, icon, isMaterialIcon, value, onChangeText, editable = true }) => (
-  <View style={styles.inputContainer}>
-    <Text style={styles.label}>{label}</Text>
-    <View style={[styles.inputWrapper, !editable && styles.disabledInput]}>
-      <TextInput
-        style={[styles.input, !editable && { color: '#94A3B8' }]}
-        placeholder={placeholder}
-        placeholderTextColor="#8F9BB3"
-        keyboardType={keyboardType}
-        value={value}
-        onChangeText={onChangeText}
-        editable={editable}
-      />
-      {icon && (
-        <View style={styles.iconContainer}>
-            {isMaterialIcon ? <MaterialCommunityIcons name={icon} size={20} color="#5F6D7E" /> : <Ionicons name={icon} size={20} color="#5F6D7E" />}
-        </View>
-      )}
+const InputGroup: React.FC<InputGroupProps> = ({ label, placeholder, keyboardType, icon, isMaterialIcon, value, onChangeText, editable = true }) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  
+  return (
+    <View style={styles.inputContainer}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={[styles.inputWrapper, !editable && styles.disabledInput]}>
+        <TextInput
+          style={[styles.input, !editable && { color: colors.textSecondary }]}
+          placeholder={placeholder}
+          placeholderTextColor={colors.textSecondary}
+          keyboardType={keyboardType}
+          value={value}
+          onChangeText={onChangeText}
+          editable={editable}
+        />
+        {icon && (
+          <View style={styles.iconContainer}>
+              {isMaterialIcon ? <MaterialCommunityIcons name={icon} size={20} color={colors.textSecondary} /> : <Ionicons name={icon} size={20} color={colors.textSecondary} />}
+          </View>
+        )}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
-const DropdownGroup: React.FC<DropdownGroupProps> = ({ label, value, onPress }) => (
-  <View style={styles.inputContainer}>
-    <Text style={styles.label}>{label}</Text>
-    <TouchableOpacity style={[styles.inputWrapper, styles.dropdownWrapper]} onPress={onPress} activeOpacity={0.7}>
-      <Text style={styles.inputText} numberOfLines={1}>{value}</Text>
-      <Ionicons name="chevron-down" size={18} color="#7D8A99" />
-    </TouchableOpacity>
-  </View>
-);
+const DropdownGroup: React.FC<DropdownGroupProps> = ({ label, value, onPress }) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FB' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#F8F9FB' },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: '#000' },
+  return (
+    <View style={styles.inputContainer}>
+      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity style={[styles.inputWrapper, styles.dropdownWrapper]} onPress={onPress} activeOpacity={0.7}>
+        <Text style={styles.inputText} numberOfLines={1}>{value}</Text>
+        <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const createStyles = (colors: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: colors.background },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: colors.text },
   backButton: { padding: 5 },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 20 },
   
@@ -409,24 +422,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
     borderRadius: 50,
-    position: 'relative', // Important for absolute positioning of badge
+    position: 'relative', 
   },
   uploadedLogo: {
     width: 90,
     height: 90,
     borderRadius: 45,
     borderWidth: 4,
-    borderColor: '#FFF',
+    borderColor: colors.surface,
   },
   logoPlaceholder: {
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
-    borderColor: '#FFF',
+    borderColor: colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -438,49 +451,48 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#D0D5DD',
+    borderColor: colors.border,
     marginBottom: 4,
   },
-  logoPlaceholderText: { fontSize: 6, color: '#98A2B3', fontWeight: '600' },
+  logoPlaceholderText: { fontSize: 6, color: colors.textSecondary, fontWeight: '600' },
   
-  // Camera Badge Fixes
   cameraBadge: {
     position: 'absolute',
     bottom: 5,
     right: 5,
-    backgroundColor: '#2FAED7',
+    backgroundColor: colors.primary,
     width: 26,
     height: 26,
     borderRadius: 13,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFF',
-    zIndex: 999, // Ensure it sits on top and receives touches
-    elevation: 10, // Android shadow/layering
+    borderColor: colors.surface,
+    zIndex: 999, 
+    elevation: 10, 
   },
-  uploadTitle: { fontSize: 18, fontWeight: '700', color: '#111', marginBottom: 4 },
-  uploadSubtitle: { fontSize: 14, color: '#667085' },
-  sectionHeader: { fontSize: 12, fontWeight: '700', color: '#5F6D7E', marginTop: 20, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
+  uploadTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 4 },
+  uploadSubtitle: { fontSize: 14, color: colors.textSecondary },
+  sectionHeader: { fontSize: 12, fontWeight: '700', color: colors.textSecondary, marginTop: 20, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
   inputContainer: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '500', color: '#111', marginBottom: 8 },
-  inputWrapper: { backgroundColor: '#FFF', borderRadius: 10, borderWidth: 1, borderColor: '#E4E9F2', height: 50, justifyContent: 'center' },
-  disabledInput: { backgroundColor: '#F2F4F7', borderColor: '#D0D5DD' },
-  input: { flex: 1, fontSize: 15, color: '#344054', paddingHorizontal: 15 },
-  textArea: { height: 80, paddingTop: 12, textAlignVertical: 'top', backgroundColor: '#FFF', borderRadius: 10, borderWidth: 1, borderColor: '#E4E9F2' },
+  label: { fontSize: 14, fontWeight: '500', color: colors.text, marginBottom: 8 },
+  inputWrapper: { backgroundColor: colors.surface, borderRadius: 10, borderWidth: 1, borderColor: colors.border, height: 50, justifyContent: 'center' },
+  disabledInput: { backgroundColor: colors.background, borderColor: colors.border },
+  input: { flex: 1, fontSize: 15, color: colors.text, paddingHorizontal: 15 },
+  textArea: { height: 80, paddingTop: 12, textAlignVertical: 'top', backgroundColor: colors.surface, borderRadius: 10, borderWidth: 1, borderColor: colors.border },
   iconContainer: { position: 'absolute', right: 15 },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 15 },
   col: { flex: 1 },
   dropdownWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 15 },
-  inputText: { fontSize: 15, color: '#344054', flex: 1, marginRight: 5 },
-  createButton: { backgroundColor: '#2FAED7', height: 56, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginTop: 10, shadowColor: '#2FAED7', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  inputText: { fontSize: 15, color: colors.text, flex: 1, marginRight: 5 },
+  createButton: { backgroundColor: colors.primary, height: 56, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginTop: 10, shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
   createButtonText: { fontSize: 16, fontWeight: '700', color: '#FFF' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '50%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#E4E9F2', paddingBottom: 15 },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
-  modalOption: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#F2F4F7', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  modalOptionText: { fontSize: 16, color: '#344054' },
+  modalContent: { backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '50%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 15 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
+  modalOption: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  modalOptionText: { fontSize: 16, color: colors.text },
 });
 
 export default RegisterBusinessScreen;

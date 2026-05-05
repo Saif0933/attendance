@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -26,6 +26,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { OnboardCompanyPayload } from '../../../api/hook/company/onBoarding/company.api';
 import { useOnboardCompany } from '../../../api/hook/company/onBoarding/useCompany';
 import { RootStackParamList } from '../../../src/navigation/Stack';
+import { useAuthStore } from '../../../src/store/useAuthStore';
 
 // Interfaces remain same
 interface InputGroupProps {
@@ -36,6 +37,7 @@ interface InputGroupProps {
   isMaterialIcon?: boolean;
   value?: string;
   onChangeText?: (text: string) => void;
+  editable?: boolean;
 }
 
 interface DropdownGroupProps {
@@ -69,11 +71,38 @@ const RegisterBusinessScreen = () => {
   const [pickerTitle, setPickerTitle] = useState('');
   const [pickerOptions, setPickerOptions] = useState<string[]>([]);
   const [currentSelectionHandler, setCurrentSelectionHandler] = useState<(val: string) => void>(() => {});
+  const company = useAuthStore((state) => state.company);
+  const token = useAuthStore((state) => state.token);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (company) {
+      if (company.phone) setPhone(company.phone);
+      if (company.code) setCode(company.code);
+      if (company.name) setName(company.name);
+      if (company.email) setEmail(company.email);
+      if (company.address) setAddress(company.address);
+      if (company.website) setWebsite(company.website);
+      if (company.gstNumber) setGst(company.gstNumber);
+      if (company.numberOfEmployees) setEmployees(company.numberOfEmployees.toString());
+      if (company.status) setStatus(company.status);
+      if (company.payPeriod) setPayPeriod(company.payPeriod);
+      
+      // Formatting date for YYYY-MM-DD input
+      if (company.estiblishedDate) {
+        const dateStr = company.estiblishedDate.split('T')[0];
+        setEstablished(dateStr);
+      }
+      
+      if (company.logo) setLogoUri(typeof company.logo === 'string' ? company.logo : (company.logo as any).url || (company.logo as any).secure_url);
+    }
+  }, [company]);
+
+  useEffect(() => {
     const checkRegistration = async () => {
       const registered = await AsyncStorage.getItem('adminIsBusinessRegistered');
-      if (registered === 'true') {
+      // If server returned company address or local flag is set
+      if (company?.address || registered === 'true') {
         navigation.reset({
           index: 0,
           routes: [{ name: 'AdminBottomTabNavigation' }],
@@ -81,7 +110,7 @@ const RegisterBusinessScreen = () => {
       }
     };
     checkRegistration();
-  }, []);
+  }, [company, navigation]);
 
   // --- FUNCTIONS ---
   const handleImagePick = async () => {
@@ -160,6 +189,10 @@ const RegisterBusinessScreen = () => {
               console.error('Error saving business registration state', error);
             }
 
+            if (data?.data && token) {
+                setAuth(token, data.data);
+            }
+
             Alert.alert("Success", "Business Profile Created!", [
                 { 
                     text: "OK", 
@@ -236,7 +269,7 @@ const RegisterBusinessScreen = () => {
           {/* --- BASIC INFORMATION --- */}
           <Text style={styles.sectionHeader}>BASIC INFORMATION</Text>
           <InputGroup label="Business Name" placeholder="e.g. Acme Corporation" value={name} onChangeText={setName} />
-          <InputGroup label="Unique Company Code" placeholder="e.g. BIZ123" value={code} onChangeText={setCode} />
+          <InputGroup label="Unique Company Code" placeholder="e.g. BIZ123" value={code} onChangeText={setCode} editable={false} />
 
           <View style={styles.row}>
             <View style={styles.col}>
@@ -250,7 +283,7 @@ const RegisterBusinessScreen = () => {
           {/* --- CONTACT DETAILS --- */}
           <Text style={styles.sectionHeader}>CONTACT DETAILS</Text>
           <InputGroup label="Email Address" placeholder="contact@business.com" keyboardType="email-address" value={email} onChangeText={setEmail} />
-          <InputGroup label="Phone Number" placeholder="+1 (555) 000-0000" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+          <InputGroup label="Phone Number" placeholder="+1 (555) 000-0000" keyboardType="phone-pad" value={phone} onChangeText={setPhone} editable={false} />
           <InputGroup label="Website" placeholder="https://www.business.com" value={website} onChangeText={setWebsite} />
           
           <View style={styles.inputContainer}>
@@ -328,17 +361,18 @@ const RegisterBusinessScreen = () => {
 };
 
 // --- COMPONENTS ---
-const InputGroup: React.FC<InputGroupProps> = ({ label, placeholder, keyboardType, icon, isMaterialIcon, value, onChangeText }) => (
+const InputGroup: React.FC<InputGroupProps> = ({ label, placeholder, keyboardType, icon, isMaterialIcon, value, onChangeText, editable = true }) => (
   <View style={styles.inputContainer}>
     <Text style={styles.label}>{label}</Text>
-    <View style={styles.inputWrapper}>
+    <View style={[styles.inputWrapper, !editable && styles.disabledInput]}>
       <TextInput
-        style={styles.input}
+        style={[styles.input, !editable && { color: '#94A3B8' }]}
         placeholder={placeholder}
         placeholderTextColor="#8F9BB3"
         keyboardType={keyboardType}
         value={value}
         onChangeText={onChangeText}
+        editable={editable}
       />
       {icon && (
         <View style={styles.iconContainer}>
@@ -431,6 +465,7 @@ const styles = StyleSheet.create({
   inputContainer: { marginBottom: 16 },
   label: { fontSize: 14, fontWeight: '500', color: '#111', marginBottom: 8 },
   inputWrapper: { backgroundColor: '#FFF', borderRadius: 10, borderWidth: 1, borderColor: '#E4E9F2', height: 50, justifyContent: 'center' },
+  disabledInput: { backgroundColor: '#F2F4F7', borderColor: '#D0D5DD' },
   input: { flex: 1, fontSize: 15, color: '#344054', paddingHorizontal: 15 },
   textArea: { height: 80, paddingTop: 12, textAlignVertical: 'top', backgroundColor: '#FFF', borderRadius: 10, borderWidth: 1, borderColor: '#E4E9F2' },
   iconContainer: { position: 'absolute', right: 15 },

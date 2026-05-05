@@ -4,8 +4,8 @@ import { useEmployeeAuthStore } from "../src/store/useEmployeeAuthStore";
 
 
 // - Physical Device: Use your machine's local IP (e.g., "http://192.168.1.10:8000/api/v1")
-export const BASE_URL = "http://192.168.1.10:5000/api/v1"; 
-export const IMAGE_BASE_URL = "http://192.168.1.10:5000"; // Assuming images are served from root or specific uploads folder
+export const BASE_URL = "http://192.168.1.8:5000/api/v1"; 
+export const IMAGE_BASE_URL = "http://192.168.1.8:5000"; // Assuming images are served from root or specific uploads folder
 //192.168.1.9, localhost
 
 export const api = axios.create({

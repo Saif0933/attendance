@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -122,7 +123,7 @@ const RootNavigator = () => {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList>('SelectRoleScreen');
 
   useEffect(() => {
-    const checkLoginStatus = () => {
+    const checkLoginStatus = async () => {
       const adminStore = useAuthStore.getState();
       const employeeStore = useEmployeeAuthStore.getState();
 
@@ -131,7 +132,11 @@ const RootNavigator = () => {
         setInitialRoute('EmployeeBottomTab');
       } else if (adminStore.isLoggedIn && adminStore.token && adminStore.company) {
         // Admin/Company login
-        if (adminStore.company.name) {
+        const registrationKey = `isRegistered_${adminStore.company.phone}`;
+        const registered = await AsyncStorage.getItem(registrationKey);
+        const genericRegistered = await AsyncStorage.getItem('adminIsBusinessRegistered');
+        
+        if (adminStore.company.address || registered === 'true' || genericRegistered === 'true') {
           setInitialRoute('AdminBottomTabNavigation');
         } else {
           setInitialRoute('RegisterBusinessScreen');

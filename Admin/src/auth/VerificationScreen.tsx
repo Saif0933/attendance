@@ -1,18 +1,19 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useRef, useState } from 'react';
 import {
-    ActivityIndicator, Alert,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator, Alert,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -68,7 +69,12 @@ const VerificationScreen = () => {
           // Store auth data in Zustand (which persists to AsyncStorage)
           setAuth(token, company);
 
-          const isRegistered = !!company.name;
+          // Use phone-specific key for registration status
+          const registrationKey = `isRegistered_${company.phone}`;
+          const registered = await AsyncStorage.getItem(registrationKey);
+          
+          // If company.address exists from backend or we have a local flag for this phone
+          const isRegistered = !!company.address || registered === 'true';
 
           navigation.reset({
             index: 0,

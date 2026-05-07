@@ -665,6 +665,7 @@ import {
   Image,
   ImageBackground,
   ScrollView,
+  Share,
   StatusBar,
   StyleSheet,
   Switch,
@@ -767,6 +768,18 @@ const AdminSettingScreen = () => {
 
   const handleToggle = (key: keyof typeof toggles) => {
     setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleShare = async () => {
+    try {
+      const companyCode = companyInfo?.code || '5ZUFU';
+      await Share.share({
+        message: `Join our company on the Attendance app using this code: ${companyCode}`,
+        title: 'Invite Employee',
+      });
+    } catch (error: any) {
+      showError(error);
+    }
   };
 
   const handleEditProfilePicture = () => {
@@ -1185,13 +1198,19 @@ const AdminSettingScreen = () => {
                 <View style={[styles.inviteCard, { backgroundColor: isDark ? colors.surface : '#F1F5F9' }]}>
                     <View>
                         <Text style={[styles.inviteLabel, { color: colors.textSecondary }]}>Company Code</Text>
-                        <Text style={[styles.inviteCode, { color: colors.primary }]}>5ZUFU</Text>
+                        <Text style={[styles.inviteCode, { color: colors.primary }]}>{companyInfo?.code || '5ZUFU'}</Text>
                     </View>
                     <View style={styles.inviteActions}>
-                        <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.primary }]}>
+                        <TouchableOpacity 
+                            style={[styles.iconButton, { backgroundColor: colors.primary }]}
+                            onPress={() => showSuccess("Code copied to clipboard (Feature coming soon)")}
+                        >
                             <Ionicons name="copy-outline" size={20} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.primary }]}>
+                        <TouchableOpacity 
+                            style={[styles.iconButton, { backgroundColor: colors.primary }]}
+                            onPress={handleShare}
+                        >
                             <Ionicons name="share-social-outline" size={20} color="#fff" />
                         </TouchableOpacity>
                     </View>
@@ -1214,7 +1233,6 @@ const AdminSettingScreen = () => {
             </Text>
           </View>
 
-          {/* Extra bottom padding */}
           <View style={{ height: 40 }} />
         </Animated.View>
       </ScrollView>

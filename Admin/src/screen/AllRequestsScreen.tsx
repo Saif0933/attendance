@@ -211,9 +211,9 @@ const AllRequestsScreen = () => {
             <ClipboardList size={28} color={colors.text} strokeWidth={2.5} style={{ marginRight: 10 }} />
             <Text style={[styles.headerTitle, { color: colors.text }]}>All Requests.</Text>
           </View>
-          <TouchableOpacity onPress={() => refetch()} activeOpacity={0.7}>
+          {/* <TouchableOpacity onPress={() => refetch()} activeOpacity={0.7}>
             <RefreshCw size={22} color={colors.text} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>

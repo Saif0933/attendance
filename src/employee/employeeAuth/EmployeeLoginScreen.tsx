@@ -14,6 +14,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ToastAndroid
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -57,7 +58,13 @@ const EmployeeLoginScreen = () => {
     requestOtpMutation.mutate(
       { mobile: formattedPhone },
       {
-        onSuccess: (data) => {
+        onSuccess: (data: any) => {
+          const successMsg = data?.message || 'OTP sent successfully';
+          if (Platform.OS === 'android') {
+            ToastAndroid.show(successMsg, ToastAndroid.LONG);
+          } else {
+            Alert.alert('Success', successMsg);
+          }
           navigation.navigate('EmployeeVerificationScreen', { mobile: formattedPhone });
         },
         onError: (err: any) => {

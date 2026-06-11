@@ -10,7 +10,6 @@ import {
   KeyboardTypeOptions,
   Modal,
   Platform,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -28,6 +27,7 @@ import { useOnboardCompany } from '../../../api/hook/company/onBoarding/useCompa
 import { RootStackParamList } from '../../../src/navigation/Stack';
 import { useAuthStore } from '../../../src/store/useAuthStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Interfaces remain same
 interface InputGroupProps {

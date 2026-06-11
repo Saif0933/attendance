@@ -14,14 +14,14 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ToastAndroid
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../../navigation/Stack';
-import { useEmployeeRequestOtp } from '../hook/useEmployeeAuth';
+import { useEmployeeLoginWithPassword } from '../hook/useEmployeeAuth';
 import { useTheme } from '../../theme/ThemeContext';
-import { EmployeeOtpValidator } from '../validator/auth.validator';
+import { useEmployeeAuthStore } from '../../store/useEmployeeAuthStore';
+import { EmployeePasswordLoginValidator } from '../validator/auth.validator';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -29,55 +29,68 @@ const EmployeeLoginScreen = () => {
   const { colors, isDark, fonts } = useTheme();
   const styles = createStyles(colors, fonts);
   const navigation = useNavigation<NavigationProp>();
+
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [error, setError] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
-  // TanStack Query mutation for requesting OTP
-  const requestOtpMutation = useEmployeeRequestOtp();
+  const loginMutation = useEmployeeLoginWithPassword();
 
-  const handleSignIn = async () => {
-    setError('');
+  const handleSignIn = () => {
+    // Reset errors
+    setPhoneError('');
+    setPasswordError('');
 
-    if (phoneNumber.length !== 10) {
-      setError('Please enter a valid 10-digit number');
-      return;
-    }
+    // Client-side validation
+    const validationResult = EmployeePasswordLoginValidator.safeParse({
+      mobile: phoneNumber,
+      password,
+    });
 
-    const formattedPhone = phoneNumber;
-
-    // Validate mobile number using Zod
-    const validationResult = EmployeeOtpValidator.safeParse({ mobile: formattedPhone });
-    
     if (!validationResult.success) {
-      const errorMessage = validationResult.error.issues[0]?.message || 'Invalid mobile number';
-      setError(errorMessage);
+      const issues = validationResult.error.issues;
+      issues.forEach((issue) => {
+        if (issue.path[0] === 'mobile') setPhoneError(issue.message);
+        if (issue.path[0] === 'password') setPasswordError(issue.message);
+      });
       return;
     }
 
-    // Call the API
-    requestOtpMutation.mutate(
-      { mobile: formattedPhone },
+    loginMutation.mutate(
+      { mobile: phoneNumber, password },
       {
         onSuccess: (data: any) => {
-          const successMsg = data?.message || 'OTP sent successfully';
-          if (Platform.OS === 'android') {
-            ToastAndroid.show(successMsg, ToastAndroid.LONG);
+          // Handle both `data` and `data.data` response shapes
+          const responseData = data?.data || data;
+          const { token, employee, company } = responseData;
+
+          if (token && employee && company) {
+            useEmployeeAuthStore
+              .getState()
+              .setEmployeeAuth(token, employee, company);
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'EmployeeBottomTab' }],
+            });
           } else {
-            Alert.alert('Success', successMsg);
+            Alert.alert('Login Failed', 'Invalid response from server. Please try again.');
           }
-          navigation.navigate('EmployeeVerificationScreen', { mobile: formattedPhone });
         },
         onError: (err: any) => {
-          const errorMsg = err?.response?.data?.message || err?.message || 'Failed to send OTP';
-          setError(errorMsg);
-          Alert.alert('Error', errorMsg);
+          const errorMsg =
+            err?.response?.data?.message ||
+            err?.message ||
+            'Incorrect phone number or password.';
+          setPasswordError(errorMsg);
         },
       }
     );
   };
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  const slideAnim = React.useRef(new Animated.Value(20)).current;
+  const slideAnim = React.useRef(new Animated.Value(24)).current;
 
   React.useEffect(() => {
     Animated.parallel([
@@ -97,41 +110,66 @@ const EmployeeLoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
-      
-      <KeyboardAvoidingView 
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.background}
+      />
+
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent} 
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={false}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Top Actions */}
+          {/* Top Bar */}
           <View style={styles.topBar}>
-            <TouchableOpacity style={styles.backIconButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity
+              style={styles.backIconButton}
+              onPress={() => navigation.goBack()}
+            >
               <Ionicons name="chevron-back" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.mainContent}>
-            {/* Animated Branding Section */}
-            <Animated.View style={[styles.heroSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            {/* Hero Section */}
+            <Animated.View
+              style={[
+                styles.heroSection,
+                { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+              ]}
+            >
               <View style={styles.logoRing}>
                 <View style={styles.logoInner}>
                   <Ionicons name="person" size={40} color={colors.primary} />
                 </View>
               </View>
               <Text style={styles.heroTitle}>Employee Login</Text>
-              <Text style={styles.heroSubtitle}>Please confirm your identity to manage your attendance and tasks.</Text>
+              <Text style={styles.heroSubtitle}>
+                Enter your registered mobile number and the password set by your administrator.
+              </Text>
             </Animated.View>
 
-            {/* Animated Form Section */}
-            <Animated.View style={[styles.formArea, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            {/* Form */}
+            <Animated.View
+              style={[
+                styles.formArea,
+                { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+              ]}
+            >
+              {/* Phone Input */}
               <View style={styles.inputWrapper}>
-                <Text style={styles.overline}>Mobile Identity</Text>
-                <View style={[styles.modernInput, error ? styles.modernInputError : null]}>
+                <Text style={styles.overline}>Mobile Number</Text>
+                <View
+                  style={[
+                    styles.modernInput,
+                    phoneError ? styles.modernInputError : null,
+                  ]}
+                >
                   <View style={styles.prefixBox}>
                     <Text style={styles.prefixText}>+91</Text>
                   </View>
@@ -145,34 +183,84 @@ const EmployeeLoginScreen = () => {
                     onChangeText={(text) => {
                       const cleaned = text.replace(/[^0-9]/g, '');
                       setPhoneNumber(cleaned);
-                      if (error) setError('');
+                      if (phoneError) setPhoneError('');
                     }}
-                    editable={!requestOtpMutation.isPending}
+                    editable={!loginMutation.isPending}
                   />
                 </View>
-                {error && (
+                {phoneError ? (
                   <View style={styles.errorBanner}>
-                    <Ionicons name="alert-circle" size={16} color="#EF4444" />
-                    <Text style={styles.errorBannerText}>{error}</Text>
+                    <Ionicons name="alert-circle" size={15} color="#EF4444" />
+                    <Text style={styles.errorBannerText}>{phoneError}</Text>
                   </View>
-                )}
+                ) : null}
               </View>
 
-              <TouchableOpacity 
-                style={[styles.primaryButton, requestOtpMutation.isPending && styles.buttonDisabled]} 
+              {/* Password Input */}
+              <View style={styles.inputWrapper}>
+                <Text style={styles.overline}>Password</Text>
+                <View
+                  style={[
+                    styles.modernInput,
+                    passwordError ? styles.modernInputError : null,
+                  ]}
+                >
+                  <View style={styles.iconBox}>
+                    <Ionicons name="lock-closed" size={18} color={colors.textSecondary} />
+                  </View>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#94A3B8"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      if (passwordError) setPasswordError('');
+                    }}
+                    editable={!loginMutation.isPending}
+                    returnKeyType="done"
+                    onSubmitEditing={handleSignIn}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword((prev) => !prev)}
+                    style={styles.eyeButton}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      color={colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                </View>
+                {passwordError ? (
+                  <View style={styles.errorBanner}>
+                    <Ionicons name="alert-circle" size={15} color="#EF4444" />
+                    <Text style={styles.errorBannerText}>{passwordError}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Login Button */}
+              <TouchableOpacity
+                style={[
+                  styles.primaryButton,
+                  loginMutation.isPending && styles.buttonDisabled,
+                ]}
                 activeOpacity={0.9}
                 onPress={handleSignIn}
-                disabled={requestOtpMutation.isPending}
+                disabled={loginMutation.isPending}
               >
                 <LinearGradient
                   colors={['#8f8aebff', '#0e08b2ff']}
                   style={styles.buttonGradient}
                 >
-                  {requestOtpMutation.isPending ? (
+                  {loginMutation.isPending ? (
                     <ActivityIndicator color="#FFF" size="small" />
                   ) : (
                     <>
-                      <Text style={styles.buttonLabel}>Request Access Code</Text>
+                      <Text style={styles.buttonLabel}>Sign In</Text>
                       <View style={styles.buttonArrow}>
                         <Ionicons name="arrow-forward" size={16} color="#FFF" />
                       </View>
@@ -184,8 +272,8 @@ const EmployeeLoginScreen = () => {
 
             {/* Footer */}
             <Animated.View style={[styles.supportArea, { opacity: fadeAnim }]}>
-              <Text style={styles.supportLabel}>Having trouble logging in?</Text>
-              <TouchableOpacity activeOpacity={1}>
+              <Text style={styles.supportLabel}>Forgot your password?</Text>
+              <TouchableOpacity activeOpacity={0.8}>
                 <Text style={styles.supportAction}>Contact System Administrator</Text>
               </TouchableOpacity>
             </Animated.View>
@@ -196,180 +284,192 @@ const EmployeeLoginScreen = () => {
   );
 };
 
-const createStyles = (colors: any, fonts: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  topBar: {
-    paddingTop: Platform.OS === 'ios' ? 20 : 40,
-    paddingHorizontal: 24,
-  },
-  backIconButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-  },
-  mainContent: {
-    flex: 1,
-    paddingHorizontal: 30,
-    paddingTop: 20,
-    paddingBottom: 40,
-  },
-  heroSection: {
-    alignItems: 'center',
-    marginBottom: 50,
-  },
-  logoRing: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    marginBottom: 24,
-    shadowColor: '#4b43f0',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    elevation: 5,
-  },
-  logoInner: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#EEF2FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  heroTitle: {
-    fontSize: 28,
-    fontFamily: fonts.bold,
-    color: colors.text,
-    marginBottom: 12,
-    letterSpacing: -0.5,
-  },
-  heroSubtitle: {
-    fontSize: 15,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 10,
-  },
-  formArea: {
-    width: '100%',
-  },
-  inputWrapper: {
-    marginBottom: 32,
-  },
-  overline: {
-    fontSize: 12,
-    fontFamily: fonts.bold,
-    color: colors.textSecondary,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: 12,
-    marginLeft: 4,
-  },
-  modernInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 64,
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    paddingHorizontal: 20,
-  },
-  modernInputError: {
-    borderColor: '#FCA5A5',
-    backgroundColor: '#FEF2F2',
-  },
-  prefixBox: {
-    marginRight: 16,
-    paddingRight: 16,
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
-  },
-  prefixText: {
-    fontSize: 16,
-    fontFamily: fonts.bold,
-    color: colors.text,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 18,
-    fontFamily: fonts.bold,
-    color: colors.text,
-    letterSpacing: 1,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    marginLeft: 4,
-  },
-  errorBannerText: {
-    color: '#EF4444',
-    fontSize: 13,
-    fontFamily: fonts.bold,
-    marginLeft: 8,
-  },
-  primaryButton: {
-    height: 64,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#4b43f0',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  buttonGradient: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-  buttonLabel: {
-    color: '#FFF',
-    fontSize: 17,
-    fontFamily: fonts.bold,
-    marginRight: 12,
-  },
-  buttonArrow: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  supportArea: {
-    marginTop: 50,
-    alignItems: 'center',
-  },
-  supportLabel: {
-    fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-    marginBottom: 6,
-  },
-  supportAction: {
-    fontSize: 15,
-    color: colors.primary,
-    fontFamily: fonts.bold,
-  },
-});
+const createStyles = (colors: any, fonts: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollContent: {
+      flexGrow: 1,
+    },
+    topBar: {
+      paddingTop: Platform.OS === 'ios' ? 20 : 40,
+      paddingHorizontal: 24,
+    },
+    backIconButton: {
+      width: 44,
+      height: 44,
+      justifyContent: 'center',
+    },
+    mainContent: {
+      flex: 1,
+      paddingHorizontal: 30,
+      paddingTop: 20,
+      paddingBottom: 40,
+    },
+    heroSection: {
+      alignItems: 'center',
+      marginBottom: 44,
+    },
+    logoRing: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      borderWidth: 1,
+      borderColor: '#F1F5F9',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.background,
+      marginBottom: 24,
+      shadowColor: '#4b43f0',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 15,
+      elevation: 5,
+    },
+    logoInner: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: '#EEF2FF',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    heroTitle: {
+      fontSize: 28,
+      fontFamily: fonts.bold,
+      color: colors.text,
+      marginBottom: 12,
+      letterSpacing: -0.5,
+    },
+    heroSubtitle: {
+      fontSize: 15,
+      fontFamily: fonts.regular,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+      paddingHorizontal: 10,
+    },
+    formArea: {
+      width: '100%',
+    },
+    inputWrapper: {
+      marginBottom: 24,
+    },
+    overline: {
+      fontSize: 12,
+      fontFamily: fonts.bold,
+      color: colors.textSecondary,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      marginBottom: 12,
+      marginLeft: 4,
+    },
+    modernInput: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: 64,
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      paddingHorizontal: 20,
+    },
+    modernInputError: {
+      borderColor: '#FCA5A5',
+      backgroundColor: '#FEF2F2',
+    },
+    prefixBox: {
+      marginRight: 16,
+      paddingRight: 16,
+      borderRightWidth: 1,
+      borderRightColor: colors.border,
+    },
+    prefixText: {
+      fontSize: 16,
+      fontFamily: fonts.bold,
+      color: colors.text,
+    },
+    iconBox: {
+      marginRight: 14,
+      paddingRight: 14,
+      borderRightWidth: 1,
+      borderRightColor: colors.border,
+      justifyContent: 'center',
+    },
+    textInput: {
+      flex: 1,
+      fontSize: 16,
+      fontFamily: fonts.bold,
+      color: colors.text,
+      letterSpacing: 0.5,
+    },
+    eyeButton: {
+      padding: 4,
+    },
+    errorBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 10,
+      marginLeft: 4,
+    },
+    errorBannerText: {
+      color: '#EF4444',
+      fontSize: 13,
+      fontFamily: fonts.bold,
+      marginLeft: 8,
+    },
+    primaryButton: {
+      height: 64,
+      borderRadius: 20,
+      overflow: 'hidden',
+      shadowColor: '#4b43f0',
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.3,
+      shadowRadius: 16,
+      elevation: 8,
+      marginTop: 8,
+    },
+    buttonGradient: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 24,
+    },
+    buttonLabel: {
+      color: '#FFF',
+      fontSize: 17,
+      fontFamily: fonts.bold,
+      marginRight: 12,
+    },
+    buttonArrow: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    buttonDisabled: {
+      opacity: 0.6,
+    },
+    supportArea: {
+      marginTop: 48,
+      alignItems: 'center',
+    },
+    supportLabel: {
+      fontSize: 14,
+      fontFamily: fonts.regular,
+      color: colors.textSecondary,
+      marginBottom: 6,
+    },
+    supportAction: {
+      fontSize: 15,
+      color: colors.primary,
+      fontFamily: fonts.bold,
+    },
+  });
 
 export default EmployeeLoginScreen;

@@ -11,6 +11,11 @@ export interface EmployeeVerifyOtpPayload {
   otp: string;
 }
 
+export interface EmployeeLoginWithPasswordPayload {
+  mobile: string;
+  password: string;
+}
+
 export interface Employee {
   id: string;
   userId: string;
@@ -49,6 +54,17 @@ export const verifyEmployeeOtpApi = async (
 ) => {
   const { data } = await api.post<EmployeeVerifyOtpResponse>(
     "/employee/auth/verify-otp",
+    payload
+  );
+  return data;
+};
+
+// POST /api/v1/employee/auth/login
+export const loginWithPasswordApi = async (
+  payload: EmployeeLoginWithPasswordPayload
+) => {
+  const { data } = await api.post<EmployeeVerifyOtpResponse>(
+    "/employee/auth/login",
     payload
   );
   return data;

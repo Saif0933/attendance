@@ -6,7 +6,8 @@ import { useEmployeeAuthStore } from "../src/store/useEmployeeAuthStore";
 
 export const Production_URL = "https://attendance.symbosys.com/api/v1";
 // export const BASE_URL = "http://172.21.192.1:5000/api/v1";
-// export const IMAGE_BASE_URL = "http://192.168.1.8:5000"; // Assuming images are served from root or specific uploads folder
+export const IMAGE_BASE_URL = "http://192.168.1.8:5000"; //
+//  Assuming images are served from root or specific uploads folder
 //192.168.1.9, localhost
   
 export const api = axios.create({

@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
@@ -17,6 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useGetAllEmployeesWithInfiniteQuery } from '../../../../src/employee/hook/useEmployee';
 import { useAuthStore } from '../../../../src/store/useAuthStore';
 import { useTheme } from '../../../../src/theme/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const IMAGE_BASE_URL = "http://192.168.1.5:5000";
 

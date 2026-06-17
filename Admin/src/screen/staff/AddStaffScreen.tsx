@@ -102,6 +102,7 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
   const [currentSelectionField, setCurrentSelectionField] = useState<keyof typeof formData | null>(null);
   const [currentOptions, setCurrentOptions] = useState<string[]>([]);
   const [modalTitle, setModalTitle] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Date Picker State
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -139,6 +140,7 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
   };
 
   const openSelector = (field: keyof typeof formData, title: string) => {
+    setSearchQuery('');
     // We cast field to string to check against DROPDOWN_OPTIONS keys
     if (DROPDOWN_OPTIONS[field as string]) {
       setCurrentSelectionField(field);
@@ -585,7 +587,7 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
             />
           </View>
         </TouchableOpacity>
-
+{/* Emergency Contact */}
         <Text style={[styles.sectionTitle, {marginTop: 15}]}>Emergency Contact</Text>
         <InputItem label="Contact Name" value={formData.emergencyName} onChange={(text: string) => handleInputChange('emergencyName', text)} />
         <InputItem label="Contact Phone" keyboardType="phone-pad" value={formData.emergencyPhone} onChange={(text: string) => handleInputChange('emergencyPhone', text)} />
@@ -619,8 +621,28 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
               <Ionicons name="close-circle" size={28} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
+
+          {/* Search box inside dropdown modal for a react-select feel */}
+          <View style={[styles.modalSearchContainer, { borderColor: colors.border, backgroundColor: colors.background }]}>
+            <Ionicons name="search" size={18} color={colors.textSecondary} style={{ marginRight: 8 }} />
+            <TextInput
+              style={[styles.modalSearchInput, { color: colors.text }]}
+              placeholder="Search..."
+              placeholderTextColor={colors.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCorrect={false}
+              clearButtonMode="while-editing"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+
           <FlatList
-            data={currentOptions}
+            data={currentOptions.filter(option => option.toLowerCase().includes(searchQuery.toLowerCase()))}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => {
               const isShift = currentSelectionField === 'shiftId';
@@ -678,7 +700,7 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
                <Text style={[styles.datePickerSubTitle, { color: colors.textSecondary }]}>Scroll to select the date</Text>
             </View>
             <TouchableOpacity onPress={() => setShowDatePicker(false)} style={[styles.closeBtnCircle, { borderColor: colors.border }]}>
-              <Ionicons name="close" size={20} color={colors.textSecondary} />
+               <Ionicons name="close" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
           
@@ -689,6 +711,8 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
           </View>
 
           <View style={[styles.wheelMainContainer, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            {/* selection highlight bar */}
+            <View style={[styles.wheelSelectionBar, { borderColor: colors.primary + '30', backgroundColor: colors.surface + '20' }]} pointerEvents="none" />
             <View style={styles.wheelRow}>
               {/* Day Wheel */}
               <View style={styles.wheelColumn}>
@@ -717,10 +741,13 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
                   decelerationRate="fast"
                   disableIntervalMomentum={true}
                   scrollEventThrottle={16}
-                  initialScrollIndex={Math.max(0, DAYS.indexOf(tempDay))}
                   getItemLayout={(_, index) => ({ length: 50, offset: 50 * index, index })}
                   contentContainerStyle={{ paddingVertical: 100 }}
                   onMomentumScrollEnd={(e) => {
+                    const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                    if (DAYS[index]) setTempDay(DAYS[index]);
+                  }}
+                  onScrollEndDrag={(e) => {
                     const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                     if (DAYS[index]) setTempDay(DAYS[index]);
                   }}
@@ -755,10 +782,13 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
                   decelerationRate="fast"
                   disableIntervalMomentum={true}
                   scrollEventThrottle={16}
-                  initialScrollIndex={Math.max(0, MONTHS.findIndex(m => m.value === tempMonth))}
                   getItemLayout={(_, index) => ({ length: 50, offset: 50 * index, index })}
                   contentContainerStyle={{ paddingVertical: 100 }}
                   onMomentumScrollEnd={(e) => {
+                    const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                    if (MONTHS[index]) setTempMonth(MONTHS[index].value);
+                  }}
+                  onScrollEndDrag={(e) => {
                     const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                     if (MONTHS[index]) setTempMonth(MONTHS[index].value);
                   }}
@@ -793,10 +823,13 @@ const AddStaffScreen: React.FC<AddStaffScreenProps> = ({ onClose }) => {
                   decelerationRate="fast"
                   disableIntervalMomentum={true}
                   scrollEventThrottle={16}
-                  initialScrollIndex={Math.max(0, YEARS.indexOf(tempYear))}
                   getItemLayout={(_, index) => ({ length: 50, offset: 50 * index, index })}
                   contentContainerStyle={{ paddingVertical: 100 }}
                   onMomentumScrollEnd={(e) => {
+                    const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                    if (YEARS[index]) setTempYear(YEARS[index]);
+                  }}
+                  onScrollEndDrag={(e) => {
                     const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                     if (YEARS[index]) setTempYear(YEARS[index]);
                   }}
@@ -982,6 +1015,21 @@ const createStyles = (colors: any, fonts: any) => StyleSheet.create({
   },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { fontSize: 20, fontFamily: fonts.bold },
+  modalSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    height: 48,
+    marginBottom: 16,
+  },
+  modalSearchInput: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: fonts.regular,
+    paddingVertical: 0,
+  },
   modalItem: {
     paddingVertical: 16, borderBottomWidth: 1,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
@@ -1023,8 +1071,8 @@ const createStyles = (colors: any, fonts: any) => StyleSheet.create({
     overflow: 'hidden', borderWidth: 1,
   },
   wheelSelectionBar: {
-    position: 'absolute', top: '50%', left: 12, right: 12, height: 60,
-    marginTop: -30, borderRadius: 20, borderWidth: 1.5,
+    position: 'absolute', top: '50%', left: 12, right: 12, height: 50,
+    marginTop: -25, borderRadius: 12, borderWidth: 1.5,
   },
   wheelRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%'

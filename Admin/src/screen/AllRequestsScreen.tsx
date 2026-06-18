@@ -12,7 +12,6 @@ import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
